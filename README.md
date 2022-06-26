@@ -3,7 +3,7 @@
 Powered by  <a href="https://github.com/Stephane-D/SGDK">SGDK</a>
 
 Pequeno projeto com a idéia de portar o Super Metroid de SNes para o Mega Drive / Sega Genesis. <br>
-[en] Small project with the intension of porting Super Metroid for Mega Drive / Sega Genesis.
+[en] Small project with the intention of porting Super Metroid for Mega Drive / Sega Genesis.
 
 <h3>✔️ To do</h3>
 Próximos objetivos <br>
