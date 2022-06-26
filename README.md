@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 <h1 align="center">Mega Metroid</h1>
 
 Powered by  <a href="https://github.com/Stephane-D/SGDK">SGDK</a>
