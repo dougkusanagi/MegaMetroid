@@ -16,4 +16,4 @@ Próximos objetivos <br>
 
 <h3>☕ Seja um dos contribuidores</h3>
 Sinta-se livre para fazer um fork e contribuir ou mesmo estudar o pouco que fiz. <br>
-[en] Feel free to fork and contribute or just using for study this lil snippet.
+[en] Feel free to fork and contribute or just using for study this lil snippet code.
