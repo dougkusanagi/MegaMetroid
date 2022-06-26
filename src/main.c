@@ -37,8 +37,8 @@
 
 Sprite* player;
 
-Map *bga;
-Map *bgb;
+Map *fg;
+Map *bg;
 
 s16 camera_offset_x = 0;
 s16 camera_offset_y = SCREEN_LIMIT_H_D;
@@ -89,15 +89,18 @@ int main(){
     u16 ind = TILE_USERINDEX;
     u16 numTile;
 	
-    VDP_setPalette(PAL0, bga_palette.data);
-    VDP_loadTileSet(&bga_tileset, TILE_USERINDEX, DMA);
-    bga = MAP_create(&bga_map, BG_A, TILE_ATTR_FULL(PAL0, FALSE, FALSE, FALSE, ind));
-    ind += bga_map.tileset->numTile;
+    VDP_setPalette(PAL0, fg_palette.data);
+    VDP_loadTileSet(&fg_tileset, TILE_USERINDEX, DMA);
+    fg = MAP_create(&fg_map, BG_A, TILE_ATTR_FULL(PAL0, FALSE, FALSE, FALSE, ind));
+    ind += fg_map.tileset->numTile;
 
-    // VDP_setPalette(PAL1, bgb_palette.data);
-    // VDP_loadTileSet(&bgb_tileset, ind, DMA);
-    // bgb = MAP_create(&bgb_map, BG_B, TILE_ATTR_FULL(PAL1, FALSE, FALSE, FALSE, ind));
-    // ind += bgb_map.tileset->numTile;
+    VDP_setPalette(PAL1, bg_palette.data);
+    VDP_loadTileSet(&bg_tileset, ind, DMA);
+    bg = MAP_create(&bg_map, BG_B, TILE_ATTR_FULL(PAL1, FALSE, FALSE, FALSE, ind));
+    ind += bg_map.tileset->numTile;
+
+    // need to increase a bit DMA buffer size to init both plan tilemap
+    DMA_setBufferSize(9000);
 
     camera_offset_x = -1;
     camera_offset_y = -1;
@@ -133,7 +136,6 @@ int main(){
 	
     return (0);
 }
-
 
 static void handleInput(u16 joy, u16 changed, u16 state){
     if (changed & state & BUTTON_START){
@@ -212,26 +214,6 @@ static void updatePhysic(){
         player_vel_x = 0;
     }
 
-    // if (player_input_y > 0){
-    //     player_vel_y = player_speed_y;
-    // }
-    // else if (player_input_y < 0){
-    //     player_vel_y = -player_speed_y;
-    // }
-    // else{
-    //     player_vel_y = 0;
-    // }
-
-    // if (player_input_y > 0){
-    //     player_vel_y = player_speed_y;
-    // }
-    // else if (player_input_y < 0){
-    //     player_vel_y = -player_speed_y;
-    // }
-    // else{
-    //     player_vel_y = 0;
-    // }
-
     player_pos_x += player_vel_x;
     player_pos_y += player_vel_y;
 
@@ -283,19 +265,7 @@ static void updateCamera(){
 
     s16 np_cam_x, np_cam_y;
 
-    // adjust new camera position
-    // if (px_scr > 240) np_cam_x = px - 240;
-    // else if (px_scr < 40) np_cam_x = px - 40;
-    // else np_cam_x = camera_offset_x;
-    
-    // if (py_scr > 140) np_cam_y = py - 140;
-    // else if (py_scr < 60) np_cam_y = py - 60;
-    // else np_cam_y = camera_offset_y;
-
-    // centralized Camera
-    // if(px_scr > 148) np_cam_x = px - 148;
-    // else if(px_scr < 148) np_cam_x = px - 148;
-
+    // move the camera following the player movement direction
     if(player_input_x > 0){
         if(px_scr > 92) np_cam_x += 4;
         else if(px_scr >= 88 && px_scr <= 92) np_cam_x = px - 88;
@@ -333,9 +303,9 @@ static void setCameraPosition(s16 x, s16 y){
         camera_offset_y = y;
 
         // scroll maps
-        MAP_scrollTo(bga, x, y);
+        MAP_scrollTo(fg, x, y);
         // scrolling is slower on BGB
         // MAP_scrollTo(bgb, x >> 3, y >> 5);
-        // MAP_scrollTo(bgb, 0, 0);
+        MAP_scrollTo(bg, 0, 0);
     }
 }
