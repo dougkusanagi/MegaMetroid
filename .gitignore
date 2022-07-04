@@ -1,3 +1,0 @@
-*.asm linguist-detectable=false
-*.s linguist-detectable=false
-*.d linguist-detectable=false
