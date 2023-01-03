@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+
+<svg
+   width="256"
+   height="240"
+   viewBox="0 0 67.733334 63.5"
+   version="1.1"
+   id="svg5"
+   inkscape:version="1.2.1 (9c6d41e410, 2022-07-14)"
+   sodipodi:docname="camera-position.svg"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg">
+  <sodipodi:namedview
+     id="namedview7"
+     pagecolor="#505050"
+     bordercolor="#eeeeee"
+     borderopacity="1"
+     inkscape:showpageshadow="0"
+     inkscape:pageopacity="0"
+     inkscape:pagecheckerboard="0"
+     inkscape:deskcolor="#505050"
+     inkscape:document-units="mm"
+     showgrid="false"
+     inkscape:zoom="1.9099422"
+     inkscape:cx="62.567337"
+     inkscape:cy="148.6956"
+     inkscape:window-width="1920"
+     inkscape:window-height="991"
+     inkscape:window-x="-9"
+     inkscape:window-y="-9"
+     inkscape:window-maximized="1"
+     inkscape:current-layer="layer1" />
+  <defs
+     id="defs2" />
+  <g
+     inkscape:label="Camada 1"
+     inkscape:groupmode="layer"
+     id="layer1">
+    <rect
+       style="fill:#b3b3b3;stroke-width:0.12781"
+       id="rect111"
+       width="211.66667"
+       height="67.73333"
+       x="0"
+       y="-4.2333331" />
+    <rect
+       style="fill:#008080;stroke-width:0.0700041"
+       id="rect273"
+       width="10.583333"
+       height="12.7"
+       x="0"
+       y="50.799999" />
+    <rect
+       style="fill:none;stroke:#800000;stroke-width:0.2638;stroke-dasharray:none;paint-order:markers stroke fill"
+       id="rect381"
+       width="67.469536"
+       height="63.236198"
+       x="-28.4431"
+       y="25.5319" />
+  </g>
+</svg>

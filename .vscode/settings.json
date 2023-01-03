@@ -5,6 +5,13 @@
     "inc"
 ],
 "files.associations": {
-    "gfx.h": "c"
+    "*.blade.php": "html",
+    "resources.h": "c",
+    "types.h": "c",
+    "map.h": "c",
+    "physics.h": "c",
+    "better-org": "cpp",
+    "genesis.h": "c",
+    "config.h": "c"
 }
 }
