@@ -101,7 +101,7 @@ static void playerInit()
 
     // initial player position
     player.position.x = 0;
-    player.position.y = MAX_Y - (12 << 3) - player.pixel_height;
+    player.position.y = MAP_HEIGHT - (12 << 3) - player.pixel_height;
 
     player.velocity.x = 0;
     player.velocity.y = 0;
@@ -307,7 +307,8 @@ static void updatePlayerAnim()
 
 static void updateCamera()
 {
-    s16 new_camera_position_x, new_camera_position_y;
+    s16 new_camera_position_x;
+    s16 new_camera_position_y;
 
     new_camera_position_x = player.position.x - (SCREEN_WIDTH / 2) + 20;
     new_camera_position_y = player.position.y - (SCREEN_HEIGHT / 2) + 24;
@@ -317,18 +318,18 @@ static void updateCamera()
     {
         new_camera_position_x = 0;
     }
-    else if (new_camera_position_x > (MAX_X - SCREEN_WIDTH))
+    else if (new_camera_position_x > (MAP_WIDTH - SCREEN_WIDTH))
     {
-        new_camera_position_x = (MAX_X - SCREEN_WIDTH);
+        new_camera_position_x = (MAP_WIDTH - SCREEN_WIDTH);
     }
 
     if (new_camera_position_y < 0)
     {
         new_camera_position_y = 0;
     }
-    else if (new_camera_position_y > (MAX_Y - SCREEN_HEIGHT))
+    else if (new_camera_position_y > (MAP_HEIGHT - SCREEN_HEIGHT))
     {
-        new_camera_position_y = (MAX_Y - SCREEN_HEIGHT);
+        new_camera_position_y = (MAP_HEIGHT - SCREEN_HEIGHT);
     }
 
     // KLog_S1("new_camera_position_y=", new_camera_position_y);
