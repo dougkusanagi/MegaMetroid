@@ -24,11 +24,10 @@
 
 Player player;
 Camera camera;
-Map *map;
-Map *map_bg;
+Map *current_map;
+Map *current_map_bg;
 
 u16 VDPTilesFilled = TILE_USER_INDEX;
-bool active_gravity = TRUE;
 
 // Forwarding functions
 static void cameraInit();
@@ -38,6 +37,7 @@ static void setPlayerAnimation(u16 animation);
 static void updatePlayer();
 static void updatePlayerAnim();
 static void checkTileCollisions();
+static void movePlayer(s16 x, s16 y);
 static void setCameraPosition(s16 x, s16 y);
 static void updateCamera();
 static void handleInput(u16 joy, u16 changed, u16 state);
@@ -85,21 +85,21 @@ static void cameraInit()
     camera.position.x = -1;
     camera.position.y = -1;
 
-    MAP_scrollTo(map, camera.position.x, camera.position.y);
+    MAP_scrollTo(current_map, camera.position.x, camera.position.y);
 }
 
 static void levelInit()
 {
     PAL_setPalette(LEVEL_PALETTE, level_palette.data, DMA);
     VDP_loadTileSet(&level_tileset, VDPTilesFilled, DMA);
-    map = MAP_create(&level_map, TILEMAP_PLANE, TILE_ATTR_FULL(LEVEL_PALETTE, FALSE, FALSE, FALSE, VDPTilesFilled));
+    current_map = MAP_create(&level_map, TILEMAP_PLANE, TILE_ATTR_FULL(LEVEL_PALETTE, FALSE, FALSE, FALSE, VDPTilesFilled));
 
     // Update the number of tiles filled in order to avoid overlaping them when loading more
     VDPTilesFilled += level_tileset.numTile;
 
     PAL_setPalette(BG_PALETTE, bg_palette.data, DMA);
     VDP_loadTileSet(&bg_tileset, VDPTilesFilled, DMA);
-    map_bg = MAP_create(&bg_map, BACKGROUND_PLANE, TILE_ATTR_FULL(PAL1, FALSE, FALSE, FALSE, VDPTilesFilled));
+    current_map_bg = MAP_create(&bg_map, BACKGROUND_PLANE, TILE_ATTR_FULL(PAL1, FALSE, FALSE, FALSE, VDPTilesFilled));
 
     // Update the number of tiles filled in order to avoid overlaping them when loading more
     VDPTilesFilled += bg_tileset.numTile;
@@ -109,33 +109,45 @@ static void levelInit()
 
 static void playerInit()
 {
-    // var * 8
+    player.is_on_floor = FALSE;
+
+    // calculated in tiles
     player.tile_width = 5;
     player.tile_height = 6;
 
-    player.pixel_width = 5 << 3;
-    player.pixel_height = 6 << 3;
-
-    // initial player position
-    player.position.x = (32 << 3);
-    player.position.y = MAP_HEIGHT - (8 << 3) - player.pixel_height;
+    player.pixel_width = tileToPixel(player.tile_width);
+    player.pixel_height = tileToPixel(player.tile_height);
 
     player.velocity.x = 0;
     player.velocity.y = 0;
 
-    player.is_on_floor = FALSE;
+    // initial player position
+    movePlayer(
+        tileToPixel(32),
+        MAP_HEIGHT - player.pixel_height - tileToPixel(8));
 
 	//Setup the jump SFX with an index between 64 and 255
     SND_setPCM_XGM(64, jump_sfx, sizeof(jump_sfx));
 
     PAL_setPalette(PLAYER_PALETTE, player_sprite.palette->data, DMA);
-    player.sprite = SPR_addSprite(
-        &player_sprite,
+
+    player.sprite = SPR_addSprite(&player_sprite,
         fix32ToInt(player.position.x) - camera.position.x,
         fix32ToInt(player.position.y) - camera.position.y,
         TILE_ATTR(PLAYER_PALETTE, TRUE, FALSE, FALSE));
 
     setPlayerAnimation(ANIM_STAND);
+}
+
+static void movePlayer(s16 x, s16 y)
+{
+    player.position.x = x;
+    player.position.y = y;
+
+    player.box_collision.min.x = player.position.x + 8;
+    player.box_collision.min.y = player.position.y + 8;
+    player.box_collision.max.x = player.box_collision.min.x + 24;
+    player.box_collision.max.y = player.box_collision.min.y + 40;
 }
 
 static void setPlayerAnimation(u16 animation)
@@ -207,9 +219,14 @@ static void checkTileCollisions()
 {
     if (!player.velocity.x && !player.velocity.y)
         return;
+    
+    movePlayer(
+        player.position.x + fix16ToInt(player.velocity.x),
+        player.position.y + fix16ToInt(player.velocity.y)
+    );
 
-    s16 player_x_tile = pixelToTile(player.position.x + fix16ToInt(player.velocity.x));
-    s16 player_y_tile = pixelToTile(player.position.y + fix16ToInt(player.velocity.y));
+    s16 player_x_tile = pixelToTile(player.position.x);
+    s16 player_y_tile = pixelToTile(player.position.y);
 
     s16 player_left_tile = player_x_tile;
     s16 player_right_tile = player_x_tile + player.tile_width;
@@ -217,24 +234,6 @@ static void checkTileCollisions()
     s16 player_bottom_tile = player_y_tile + player.tile_height;
 
     s16 player_right = player.position.x + player.pixel_width;
-
-    // active_gravity = FALSE;
-
-    player.position.x += fix16ToInt(player.velocity.x);
-    player.position.y += fix16ToInt(player.velocity.y);
-
-    // s16 player_feet_pos = getPlayerFeetPosition();
-    // u16 tile_value = MAP_getTile(map, fix32ToInt(player.position.x) >> 3, player_feet_pos >> 3);
-
-    // if (tile_value == TILE_SLOPE)
-    // {
-    //     u16 left_tile_value = MAP_getTile(map, (fix32ToInt(player.position.x) >> 3) - 1, player_feet_pos >> 3);
-    //     u16 right_tile_value = MAP_getTile(map, (fix32ToInt(player.position.x) >> 3) + 1, player_feet_pos >> 3);
-
-    //     fix16 slope = fix16Div(FIX16(1), fix16FromInt(right_tile_value - left_tile_value));
-
-    //     player.position.y = fix32Add(player.position.y, fix16Mul(fix16Sub(fix16FromInt(right_tile_value), fix16FromInt(tile_value)), slope));
-    // }
 
     for (s16 x = player_left_tile; x <= player_right_tile; x++)
     {
@@ -383,10 +382,10 @@ static void setCameraPosition(s16 x, s16 y)
         camera.position.y = y;
 
         // scroll maps
-        MAP_scrollTo(map, x, y);
+        MAP_scrollTo(current_map, x, y);
 
         // scroll maps
-        MAP_scrollTo(map_bg, 0, 0);
+        MAP_scrollTo(current_map_bg, 0, 0);
     }
 }
 
