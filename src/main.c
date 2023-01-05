@@ -117,8 +117,8 @@ static void playerInit()
     player.pixel_height = 6 << 3;
 
     // initial player position
-    player.position.x = 0;
-    player.position.y = MAP_HEIGHT - (12 << 3) - player.pixel_height;
+    player.position.x = (32 << 3);
+    player.position.y = MAP_HEIGHT - (8 << 3) - player.pixel_height;
 
     player.velocity.x = 0;
     player.velocity.y = 0;
@@ -126,7 +126,6 @@ static void playerInit()
     player.is_on_floor = FALSE;
 
 	//Setup the jump SFX with an index between 64 and 255
-	// XGM_setPCM(64, jump_sfx, sizeof(jump_sfx));
     SND_setPCM_XGM(64, jump_sfx, sizeof(jump_sfx));
 
     PAL_setPalette(PLAYER_PALETTE, player_sprite.palette->data, DMA);
