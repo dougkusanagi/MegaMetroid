@@ -6,23 +6,26 @@
 #include "../res/resources.h"
 
 #define SCREEN_WIDTH        256
-#define SCREEN_HEIGHT       240
+#define SCREEN_HEIGHT       224
 
 #define ANIM_STAND          0
 #define ANIM_WALK           1
 #define ANIM_JUMP           2
 
-#define GRAVITY             FIX16(0.11)
-#define GRAVITY_MAX         FIX16(30)
+#define GRAVITY             FIX16(0.22)
+#define GRAVITY_MAX         300
 #define JUMP                FIX16(6.6L)
 
 #define TILEMAP_PLANE       BG_A
-#define PLAYER_PALETTE      PAL1
+#define BACKGROUND_PLANE    BG_B
 #define LEVEL_PALETTE       PAL0
+#define BG_PALETTE          PAL1
+#define PLAYER_PALETTE      PAL2
 
 Player player;
 Camera camera;
 Map *map;
+Map *map_bg;
 
 u16 VDPTilesFilled = TILE_USER_INDEX;
 bool active_gravity = TRUE;
@@ -52,9 +55,16 @@ int main(bool resetType)
         SYS_hardReset();
 
     // need to increase a bit DMA buffer size to init both plan tilemap and sprites
-    DMA_setBufferSize(10000);
-    DMA_setMaxTransferSize(10000);
+    DMA_setBufferSize(13000);
+    DMA_setMaxTransferSize(13000);
     // DMA_setBufferSize(9000);
+
+    // MEM_getAllocated();
+    // MEM_getFree();
+    KLog_S1("Allocated Memory = ", MEM_getAllocated());
+    KLog_S1("Available Memory = ", MEM_getFree());
+
+    DMA_setMaxQueueSize(120);
 
     playerInit();
     levelInit();
@@ -87,6 +97,13 @@ static void levelInit()
     // Update the number of tiles filled in order to avoid overlaping them when loading more
     VDPTilesFilled += level_tileset.numTile;
 
+    PAL_setPalette(BG_PALETTE, bg_palette.data, DMA);
+    VDP_loadTileSet(&bg_tileset, VDPTilesFilled, DMA);
+    map_bg = MAP_create(&bg_map, BACKGROUND_PLANE, TILE_ATTR_FULL(PAL1, FALSE, FALSE, FALSE, VDPTilesFilled));
+
+    // Update the number of tiles filled in order to avoid overlaping them when loading more
+    VDPTilesFilled += bg_tileset.numTile;
+
     cameraInit();
 }
 
@@ -108,6 +125,10 @@ static void playerInit()
 
     player.is_on_floor = FALSE;
 
+	//Setup the jump SFX with an index between 64 and 255
+	// XGM_setPCM(64, jump_sfx, sizeof(jump_sfx));
+    SND_setPCM_XGM(64, jump_sfx, sizeof(jump_sfx));
+
     PAL_setPalette(PLAYER_PALETTE, player_sprite.palette->data, DMA);
     player.sprite = SPR_addSprite(
         &player_sprite,
@@ -126,16 +147,16 @@ static void setPlayerAnimation(u16 animation)
 
 static void applyGravity()
 {
-    if (active_gravity && !player.is_on_floor)
+    if (player.velocity.y < GRAVITY_MAX)
     {
-        // if (player.velocity.y <= 400)
-            player.velocity.y += GRAVITY;
+        player.velocity.y += GRAVITY;
     }
 }
 
 static void updatePlayer()
 {
-    player.velocity.y += GRAVITY;
+    // Only after check collision with tiles
+    applyGravity();
 
     if (player.control.d_pad.x > 0)
     {
@@ -159,12 +180,9 @@ static void updatePlayer()
         player.velocity.y = -FIX16(2.3);
     }
 
-    // KLog_S1("is_on_floor= ", player.is_on_floor);
+    // KLog_S1("player.velocity.y = ", player.velocity.y);
 
     checkTileCollisions();
-
-    // Only after check collision with tiles
-    applyGravity();
 
     SPR_setPosition(player.sprite,
                     player.position.x - camera.position.x,
@@ -253,7 +271,7 @@ static void checkTileCollisions()
                         {
                             player.position.y = tileToPixel(y) - player.pixel_height;
                             player.velocity.y = 0;
-                            player.is_on_floor = TRUE;
+                            player.is_on_floor = FALSE;
                         }
                     }
                     else if (player.velocity.y < 0)
@@ -262,12 +280,27 @@ static void checkTileCollisions()
                         {
                             player.position.y = tileToPixel(y) + 8;
                             player.velocity.y = 0;
+                            player.is_on_floor = FALSE;
                         }
+                    }
+                    else
+                    {
+                        player.is_on_floor = TRUE;
                     }
                 }
             }
         }
     }
+}
+
+static void playSoundJump()
+{
+    if (!SND_isPlayingPCM_XGM(SOUND_PCM_CH2_MSK)) SND_startPlayPCM_XGM(64, 15, SOUND_PCM_CH2);
+}
+
+static void stopSoundJump()
+{
+    if (SND_isPlayingPCM_XGM(SOUND_PCM_CH2_MSK)) SND_stopPlayPCM_XGM(SOUND_PCM_CH2);
 }
 
 static void updatePlayerAnim()
@@ -276,6 +309,8 @@ static void updatePlayerAnim()
     if (!player.is_on_floor)
     {
         setPlayerAnimation(ANIM_JUMP);
+
+        playSoundJump();
 
         if (player.velocity.x > 0)
         {
@@ -288,6 +323,8 @@ static void updatePlayerAnim()
     }
     else
     {
+        stopSoundJump();
+
         if (player.velocity.x > 0)
         {
             setPlayerAnimation(ANIM_WALK);
@@ -310,8 +347,9 @@ static void updateCamera()
     s16 new_camera_position_x;
     s16 new_camera_position_y;
 
-    new_camera_position_x = player.position.x - (SCREEN_WIDTH / 2) + 20;
-    new_camera_position_y = player.position.y - (SCREEN_HEIGHT / 2) + 24;
+    // w >> 1 = w / 2
+    new_camera_position_x = player.position.x - (SCREEN_WIDTH >> 1) + (player.pixel_width >> 1);
+    new_camera_position_y = player.position.y - (SCREEN_HEIGHT >> 1) + (player.pixel_height >> 1);
 
     // Limit camera to screen size
     if (new_camera_position_x < 0)
@@ -347,6 +385,9 @@ static void setCameraPosition(s16 x, s16 y)
 
         // scroll maps
         MAP_scrollTo(map, x, y);
+
+        // scroll maps
+        MAP_scrollTo(map_bg, 0, 0);
     }
 }
 
