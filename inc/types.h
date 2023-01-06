@@ -9,47 +9,27 @@ typedef struct {
 typedef struct {
 	u8 x;
 	u8 y;
-}Vect2D_u8;
+} Vect2D_u8;
 
 typedef struct {
 	s8 x;
 	s8 y;
-}Vect2D_s8;
+} Vect2D_s8;
 
 typedef struct {
 	Vect2D_s16 min;
 	Vect2D_s16 max;
-}AABB;
+} AABB;
 
-typedef struct {
-    Vect2D_s16 position;
-    Vect2D_f16 velocity;
-	AABB box_collision;
-
-    s16 tile_width;
-    s16 tile_height;
-
-    s16 pixel_width;
-    s16 pixel_height;
-    
-    bool is_on_floor;
-    bool is_flipped;
-	bool is_jumping;
-	bool is_falling;
-
-    Sprite* sprite;
-	u16 current_animation;
-
-    struct {
-        Vect2D_s16 d_pad;
-        bool a;
-        bool b;
-        bool c;
-        bool x;
-        bool y;
-        bool z;
-    } control;
-} Player;
+struct {
+    Vect2D_s16 d_pad;
+    bool a;
+    bool b;
+    bool c;
+    bool x;
+    bool y;
+    bool z;
+} control;
 
 AABB newAABB(s16 x1, s16 x2, s16 y1, s16 y2);
 

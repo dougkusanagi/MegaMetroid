@@ -2,6 +2,7 @@
 
 #include "../inc/types.h"
 #include "../inc/map.h"
+#include "../inc/entity.h"
 #include "../inc/physics.h"
 #include "../res/resources.h"
 
@@ -22,7 +23,7 @@
 #define BG_PALETTE          PAL1
 #define PLAYER_PALETTE      PAL2
 
-Player player;
+Entity player;
 Camera camera;
 Map *current_map;
 Map *current_map_bg;
@@ -30,19 +31,20 @@ Map *current_map_bg;
 u16 VDPTilesFilled = TILE_USER_INDEX;
 
 // Forwarding functions
-static void cameraInit();
 static void levelInit();
-static void playerInit();
-static void setPlayerAnimation(u16 animation);
-static void updatePlayer();
-static void updatePlayerAnim();
-static void checkTileCollisions();
-static void movePlayer(s16 x, s16 y);
-static void setCameraPosition(s16 x, s16 y);
+
+static void cameraInit();
 static void updateCamera();
+
+static void playerInit();
+static void playerUpdate();
+static void playerUpdateAnimation();
+static void playerApplyGravity();
+static s16 playerGetFeetPosition();
+
+static void checkTileCollisions();
+static void setCameraPosition(s16 x, s16 y);
 static void handleInput(u16 joy, u16 changed, u16 state);
-static void applyGravity();
-static s16 getPlayerFeetPosition();
 
 int main(bool resetType)
 {
@@ -71,7 +73,7 @@ int main(bool resetType)
 
     while (1)
     {
-        updatePlayer();
+        playerUpdate();
         SPR_update();
         SYS_doVBlankProcess();
     }
@@ -115,16 +117,18 @@ static void playerInit()
     player.tile_width = 5;
     player.tile_height = 6;
 
-    player.pixel_width = tileToPixel(player.tile_width);
-    player.pixel_height = tileToPixel(player.tile_height);
+    // calculated in tiles
+    player.tile_collision_width = 3;
+    player.tile_collision_height = 5;
 
     player.velocity.x = 0;
     player.velocity.y = 0;
 
     // initial player position
-    movePlayer(
+    ENTITY_setPosition(
+        &player,
         tileToPixel(32),
-        MAP_HEIGHT - player.pixel_height - tileToPixel(8));
+        MAP_HEIGHT - tileToPixel(player.tile_height) - 8);
 
 	//Setup the jump SFX with an index between 64 and 255
     SND_setPCM_XGM(64, jump_sfx, sizeof(jump_sfx));
@@ -132,31 +136,16 @@ static void playerInit()
     PAL_setPalette(PLAYER_PALETTE, player_sprite.palette->data, DMA);
 
     player.sprite = SPR_addSprite(&player_sprite,
-        fix32ToInt(player.position.x) - camera.position.x,
-        fix32ToInt(player.position.y) - camera.position.y,
+        player.position.x - camera.position.x,
+        player.position.y - camera.position.y,
         TILE_ATTR(PLAYER_PALETTE, TRUE, FALSE, FALSE));
 
-    setPlayerAnimation(ANIM_STAND);
+    ENTITY_setAnimation(&player, ANIM_STAND);
 }
 
-static void movePlayer(s16 x, s16 y)
-{
-    player.position.x = x;
-    player.position.y = y;
 
-    player.box_collision.min.x = player.position.x + 8;
-    player.box_collision.min.y = player.position.y + 8;
-    player.box_collision.max.x = player.box_collision.min.x + 24;
-    player.box_collision.max.y = player.box_collision.min.y + 40;
-}
+static void playerApplyGravity()
 
-static void setPlayerAnimation(u16 animation)
-{
-    SPR_setAnim(player.sprite, animation);
-    player.current_animation = animation;
-}
-
-static void applyGravity()
 {
     if (player.velocity.y < GRAVITY_MAX)
     {
@@ -164,16 +153,16 @@ static void applyGravity()
     }
 }
 
-static void updatePlayer()
+static void playerUpdate()
 {
+    playerApplyGravity();
     // Only after check collision with tiles
-    applyGravity();
 
-    if (player.control.d_pad.x > 0)
+    if (control.d_pad.x > 0)
     {
         player.velocity.x = FIX16(2.3);
     }
-    else if (player.control.d_pad.x < 0)
+    else if (control.d_pad.x < 0)
     {
         player.velocity.x = -FIX16(2.3);
     }
@@ -182,11 +171,11 @@ static void updatePlayer()
         player.velocity.x = 0;
     }
 
-    if (player.control.d_pad.y > 0)
+    if (control.d_pad.y > 0)
     {
         player.velocity.y = FIX16(2.3);
     }
-    else if (player.control.d_pad.y < 0)
+    else if (control.d_pad.y < 0)
     {
         player.velocity.y = -FIX16(2.3);
     }
@@ -195,24 +184,24 @@ static void updatePlayer()
 
     checkTileCollisions();
 
-    SPR_setPosition(player.sprite,
-                    player.position.x - camera.position.x,
-                    player.position.y - camera.position.y);
+    ENTITY_moveSprite(&player,
+        player.position.x - camera.position.x,
+        player.position.y - camera.position.y);
 
     // Update the player animations
-    updatePlayerAnim();
+    playerUpdateAnimation();
 
     updateCamera();
 }
 
 static bool checkHorizontalTile(s16 tile_y)
 {
-    return tile_y + 8 > player.position.y && tile_y < player.position.y + player.pixel_height;
+    return tile_y + 8 > player.position.y && tile_y < player.position.y + tileToPixel(player.tile_height);
 }
 
 static bool checkVerticalTile(s16 tile_x)
 {
-    return tile_x + 8 > player.position.x && tile_x < player.position.x + player.pixel_width;
+    return tile_x + 8 > player.position.x && tile_x < player.position.x + tileToPixel(player.tile_width);
 }
 
 static void checkTileCollisions()
@@ -220,7 +209,8 @@ static void checkTileCollisions()
     if (!player.velocity.x && !player.velocity.y)
         return;
     
-    movePlayer(
+    ENTITY_setPosition(
+        &player,
         player.position.x + fix16ToInt(player.velocity.x),
         player.position.y + fix16ToInt(player.velocity.y)
     );
@@ -233,7 +223,7 @@ static void checkTileCollisions()
     s16 player_top_tile = player_y_tile;
     s16 player_bottom_tile = player_y_tile + player.tile_height;
 
-    s16 player_right = player.position.x + player.pixel_width;
+    s16 player_right = player.position.x + tileToPixel(player.tile_width);
 
     for (s16 x = player_left_tile; x <= player_right_tile; x++)
     {
@@ -248,7 +238,7 @@ static void checkTileCollisions()
                         if (player_right >= tileToPixel(x))
                         {
                             player.velocity.x = 0;
-                            player.position.x = (tileToPixel(x)) - player.pixel_width;
+                            player.position.x = (tileToPixel(x)) - tileToPixel(player.tile_width);
                         }
                     }
                     else if (player.velocity.x < 0)
@@ -265,9 +255,9 @@ static void checkTileCollisions()
                 {
                     if (player.velocity.y > 0)
                     {
-                        if (getPlayerFeetPosition() > tileToPixel(y))
+                        if (playerGetFeetPosition() > tileToPixel(y))
                         {
-                            player.position.y = tileToPixel(y) - player.pixel_height;
+                            player.position.y = tileToPixel(y) - tileToPixel(player.tile_height);
                             player.velocity.y = 0;
                             player.is_on_floor = FALSE;
                         }
@@ -301,12 +291,12 @@ static void stopSoundJump()
     if (SND_isPlayingPCM_XGM(SOUND_PCM_CH2_MSK)) SND_stopPlayPCM_XGM(SOUND_PCM_CH2);
 }
 
-static void updatePlayerAnim()
+static void playerUpdateAnimation()
 {
     // jumping
     if (!player.is_on_floor)
     {
-        setPlayerAnimation(ANIM_JUMP);
+        ENTITY_setAnimation(&player, ANIM_JUMP);
 
         playSoundJump();
 
@@ -325,17 +315,17 @@ static void updatePlayerAnim()
 
         if (player.velocity.x > 0)
         {
-            setPlayerAnimation(ANIM_WALK);
+            ENTITY_setAnimation(&player, ANIM_WALK);
             SPR_setHFlip(player.sprite, FALSE);
         }
         else if (player.velocity.x < 0)
         {
-            setPlayerAnimation(ANIM_WALK);
+            ENTITY_setAnimation(&player, ANIM_WALK);
             SPR_setHFlip(player.sprite, TRUE);
         }
         else
         {
-            setPlayerAnimation(ANIM_STAND);
+            ENTITY_setAnimation(&player, ANIM_STAND);
         }
     }
 }
@@ -346,8 +336,8 @@ static void updateCamera()
     s16 new_camera_position_y;
 
     // w >> 1 = w / 2
-    new_camera_position_x = player.position.x - (SCREEN_WIDTH >> 1) + (player.pixel_width >> 1);
-    new_camera_position_y = player.position.y - (SCREEN_HEIGHT >> 1) + (player.pixel_height >> 1);
+    new_camera_position_x = player.position.x - (SCREEN_WIDTH >> 1) + (tileToPixel(player.tile_width) >> 1);
+    new_camera_position_y = player.position.y - (SCREEN_HEIGHT >> 1) + (tileToPixel(player.tile_height) >> 1);
 
     // Limit camera to screen size
     if (new_camera_position_x < 0)
@@ -396,29 +386,29 @@ static void handleInput(u16 joy, u16 changed, u16 state)
         // Update x velocity
         if (state & BUTTON_RIGHT)
         {
-            player.control.d_pad.x = 1;
+            control.d_pad.x = 1;
         }
         else if (state & BUTTON_LEFT)
         {
-            player.control.d_pad.x = -1;
+            control.d_pad.x = -1;
         }
         else if ((changed & BUTTON_RIGHT) | (changed & BUTTON_LEFT))
         {
-            player.control.d_pad.x = 0;
+            control.d_pad.x = 0;
         }
 
         // Update x velocity
         if (state & BUTTON_DOWN)
         {
-            player.control.d_pad.y = 1;
+            control.d_pad.y = 1;
         }
         else if (state & BUTTON_UP)
         {
-            player.control.d_pad.y = -1;
+            control.d_pad.y = -1;
         }
         else if ((changed & BUTTON_DOWN) | (changed & BUTTON_UP))
         {
-            player.control.d_pad.y = 0;
+            control.d_pad.y = 0;
         }
 
         if (state & BUTTON_C)
@@ -432,7 +422,7 @@ static void handleInput(u16 joy, u16 changed, u16 state)
     }
 }
 
-static s16 getPlayerFeetPosition()
+static s16 playerGetFeetPosition()
 {
-    return player.position.y + player.pixel_height;
+    return player.position.y + tileToPixel(player.tile_height);
 }

@@ -11,4 +11,5 @@ out/src/main.o: src/main.c D:/sgdk/inc/genesis.h D:/sgdk/inc/types.h \
  D:/sgdk/inc/xgm.h D:/sgdk/inc/z80_ctrl.h D:/sgdk/inc/ym2612.h \
  D:/sgdk/inc/psg.h D:/sgdk/inc/joy.h D:/sgdk/inc/timer.h \
  D:/sgdk/inc/task.h D:/sgdk/inc/task_cst.h src/../inc/types.h \
- src/../inc/map.h src/../inc/physics.h src/../res/resources.h
+ src/../inc/map.h src/../inc/entity.h src/../inc/physics.h \
+ src/../res/resources.h

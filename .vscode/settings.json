@@ -12,6 +12,7 @@
     "physics.h": "c",
     "better-org": "cpp",
     "genesis.h": "c",
-    "config.h": "c"
+    "config.h": "c",
+    "entity.h": "c"
 }
 }
