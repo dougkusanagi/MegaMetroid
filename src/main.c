@@ -27,6 +27,7 @@ Entity player;
 Camera camera;
 Map *current_map;
 Map *current_map_bg;
+AABB roomSize;
 
 u16 VDPTilesFilled = TILE_USER_INDEX;
 
@@ -92,6 +93,8 @@ static void cameraInit()
 
 static void levelInit()
 {
+    roomSize = newAABB(0, MAP_WIDTH, 0, MAP_HEIGHT);
+
     PAL_setPalette(LEVEL_PALETTE, level_palette.data, DMA);
     VDP_loadTileSet(&level_tileset, VDPTilesFilled, DMA);
     current_map = MAP_create(&level_map, TILEMAP_PLANE, TILE_ATTR_FULL(LEVEL_PALETTE, FALSE, FALSE, FALSE, VDPTilesFilled));
@@ -117,18 +120,18 @@ static void playerInit()
     player.tile_width = 5;
     player.tile_height = 6;
 
-    // calculated in tiles
-    player.tile_collision_width = 3;
-    player.tile_collision_height = 5;
+    player.collision_size = newAABB(
+        8, 32, 8, 48
+    );
 
     player.velocity.x = 0;
     player.velocity.y = 0;
 
     // initial player position
-    ENTITY_setPosition(
+    Entity_setPosition(
         &player,
         tileToPixel(32),
-        MAP_HEIGHT - tileToPixel(player.tile_height) - 8);
+        MAP_HEIGHT - tileToPixel(player.tile_height) - 24);
 
 	//Setup the jump SFX with an index between 64 and 255
     SND_setPCM_XGM(64, jump_sfx, sizeof(jump_sfx));
@@ -140,7 +143,7 @@ static void playerInit()
         player.position.y - camera.position.y,
         TILE_ATTR(PLAYER_PALETTE, TRUE, FALSE, FALSE));
 
-    ENTITY_setAnimation(&player, ANIM_STAND);
+    Entity_setAnimation(&player, ANIM_STAND);
 }
 
 
@@ -149,14 +152,14 @@ static void playerApplyGravity()
 {
     if (player.velocity.y < GRAVITY_MAX)
     {
-        player.velocity.y += GRAVITY;
+        player.velocity.y = fix16Add(player.velocity.y, GRAVITY);
     }
 }
 
 static void playerUpdate()
 {
-    playerApplyGravity();
     // Only after check collision with tiles
+    playerApplyGravity();
 
     if (control.d_pad.x > 0)
     {
@@ -179,12 +182,22 @@ static void playerUpdate()
     {
         player.velocity.y = -FIX16(2.3);
     }
+    // else if (!control.d_pad.y)
+    // {
+    //     player.velocity.y = 0;
+    // }
 
     // KLog_S1("player.velocity.y = ", player.velocity.y);
 
+    Entity_setPosition(
+        &player,
+        player.position.x + fix16ToInt(player.velocity.x),
+        player.position.y + fix16ToInt(player.velocity.y)
+    );
+
     checkTileCollisions();
 
-    ENTITY_moveSprite(&player,
+    Entity_moveSprite(&player,
         player.position.x - camera.position.x,
         player.position.y - camera.position.y);
 
@@ -196,20 +209,251 @@ static void playerUpdate()
 
 static bool checkHorizontalTile(s16 tile_y)
 {
-    return tile_y + 8 > player.position.y && tile_y < player.position.y + tileToPixel(player.tile_height);
+    return tile_y + 8 > player.position.y + 8
+        && tile_y < player.position.y + tileToPixel(player.tile_height);
 }
 
 static bool checkVerticalTile(s16 tile_x)
 {
-    return tile_x + 8 > player.position.x && tile_x < player.position.x + tileToPixel(player.tile_width);
+    return tile_x + 8 > player.position.x
+        && tile_x < player.position.x + tileToPixel(player.tile_width);
 }
 
+static void checkTileCollisions()
+{   
+    AABB levelLimits = roomSize;
+
+    player.collision_position = newAABB(
+        player.position.x + player.collision_size.min.x,
+        player.position.x + player.collision_size.max.x,
+        player.position.y + player.collision_size.min.y,
+        player.position.y + player.collision_size.max.y
+    );
+
+	//Skin width (yIntVelocity) changes depending on the vertical velocity
+	s16 yIntVelocity = fix16ToRoundedInt(player.velocity.y);
+	s16 playerHeadPos = player.collision_size.min.y - yIntVelocity + player.position.y;
+	s16 playerFeetPos = player.collision_size.max.y - yIntVelocity + player.position.y;
+
+	//Positions in tiles
+	Vect2D_u16 minTilePos = posToTile(newVector2D_s16(player.collision_position.min.x, player.collision_position.min.y));
+	Vect2D_u16 maxTilePos = posToTile(newVector2D_s16(player.collision_position.max.x, player.collision_position.max.y));
+
+	//Used to limit how many tiles we have to check for collision
+	Vect2D_u16 tileBoundDifference = newVector2D_u16(maxTilePos.x - minTilePos.x, maxTilePos.y - minTilePos.y);
+
+	//First we check for horizontal collisions
+	for (u16 i = 0; i <= tileBoundDifference.y; i++) {
+		//Height position constant as a helper
+		const u16 y = minTilePos.y + i;
+
+		//Right position constant as a helper
+		const u16 rx = maxTilePos.x;
+
+		// u16 rTileValue = getTileValue(rx, y);
+		u16 rTileValue = map_collision[y][rx];
+
+		//After getting the tile value, we check if that is one of whom we can collide/trigger with horizontally
+		if (rTileValue == GROUND_TILE) {
+			AABB tileBounds = getTileBounds(rx, y);
+
+			//Before taking that tile as a wall, we have to check if that is within the player hitbox, e.g. not seeing ground as a wall
+			if (tileBounds.min.x < levelLimits.max.x &&
+                tileBounds.min.y < playerFeetPos &&
+                tileBounds.max.y > playerHeadPos) {
+				levelLimits.max.x = tileBounds.min.x;
+				break;
+			}
+		}
+
+        // else if (map_collision[y][rx] == 2)
+        // {
+        //     AABB tileBounds = getTileBounds(rx, y);
+
+        //     s16 x_dif = player.collision_position.max.x - tileBounds.min.x;
+
+        //     if (x_dif > 8) x_dif = 8;
+
+        //     KLog_S1("tileBounds.max.y = ", tileBounds.max.y);
+        //     KLog_S1("x_dif = ", x_dif);
+        //     KLog_S1("new_y = ", tileBounds.max.y - x_dif);
+            
+        //     levelLimits.max.y = tileBounds.max.y - x_dif;
+        // }
+
+		//Left position constant as a helper
+		const s16 lx = minTilePos.x;
+
+		// u16 lTileValue = getTileValue(lx, y);
+		u16 lTileValue = map_collision[y][lx];
+
+		//We do the same here but for the left side
+		if (lTileValue == GROUND_TILE) {
+			AABB tileBounds = getTileBounds(lx, y);
+
+			if (tileBounds.max.x > levelLimits.min.x &&
+                tileBounds.min.y < playerFeetPos &&
+                tileBounds.max.y > playerHeadPos) {
+				levelLimits.min.x = tileBounds.max.x;
+				break;
+			}
+		}
+
+        // else if (map_collision[y][lx] == 3)
+        // {
+        //     AABB tileBounds = getTileBounds(lx, y);
+
+        //     s16 x_dif = (player.collision_position.min.x - tileBounds.max.x) * -1;
+
+        //     if (x_dif > 8) x_dif = 8;
+
+        //     KLog_S1("tileBounds.max.y = ", tileBounds.max.y);
+        //     KLog_S1("x_dif = ", x_dif);
+        //     KLog_S1("new_y = ", tileBounds.max.y - x_dif);
+
+        //     levelLimits.max.y = tileBounds.max.y - x_dif;
+        // }
+	}
+
+	//After checking for horizontal positions we can modify the positions if the player is colliding
+	if (levelLimits.max.x < player.collision_position.max.x) {
+		player.position.x = levelLimits.max.x - player.collision_size.max.x;
+		player.velocity.x = player.velocity.x = 0;
+	}
+	if (levelLimits.min.x > player.collision_position.min.x) {
+		player.position.x = levelLimits.min.x - player.collision_size.min.x;
+		player.velocity.x = player.velocity.x = 0;
+	}
+
+    player.collision_position = newAABB(
+        player.position.x + player.collision_size.min.x,
+        player.position.x + player.collision_size.max.x,
+        player.position.y + player.collision_size.min.y,
+        player.position.y + player.collision_size.max.y
+    );
+
+	//And do the same to the variables that are used to check for them
+	minTilePos = posToTile(newVector2D_s16(player.collision_position.min.x, player.collision_position.min.y));
+	maxTilePos = posToTile(newVector2D_s16(player.collision_position.max.x - 1, player.collision_position.max.y));
+    
+	//Used to limit how many tiles we have to check for collision
+	tileBoundDifference = newVector2D_u16(maxTilePos.x - minTilePos.x, maxTilePos.y - minTilePos.y);
+
+    if (yIntVelocity >= 0) {
+		for (u16 i = 0; i <= tileBoundDifference.x; i++) {
+			s16 x = minTilePos.x + i;
+			u16 y = maxTilePos.y;
+
+			//This is the exact same method that we use for horizontal collisions
+			// u16 bottomTileValue = getTileValue(x, y);
+		    u16 bottomTileValue = map_collision[y][x];
+
+			if (bottomTileValue == GROUND_TILE) {
+				if (getTileRightEdge(x) == levelLimits.min.x || getTileLeftEdge(x) == levelLimits.max.x)
+					continue;
+
+				u16 bottomEdgePos = getTileTopEdge(y);
+
+				//The error correction is used to add some extra width pixels in case the player isn't high enough by just some of them
+				if (bottomEdgePos < levelLimits.max.y) {
+					levelLimits.max.y = bottomEdgePos;
+				}
+			}
+		}
+	}else {
+		for (u16 i = 0; i <= tileBoundDifference.x; i++) {
+			s16 x = minTilePos.x + i;
+			u16 y = minTilePos.y;
+
+			//And the same once again
+			// u16 topTileValue = getTileValue(x, y);
+		    u16 topTileValue = map_collision[y][x];
+
+			if (topTileValue == GROUND_TILE) {
+				if (getTileRightEdge(x) == levelLimits.min.x || getTileLeftEdge(x) == levelLimits.max.x)
+					continue;
+
+				u16 upperEdgePos = getTileBottomEdge(y);
+				if (upperEdgePos < levelLimits.max.y) {
+					levelLimits.min.y = upperEdgePos;
+					break;
+				}
+			}
+		}
+	}
+
+    player.collision_position = newAABB(
+        player.position.x + player.collision_size.min.x,
+        player.position.x + player.collision_size.max.x,
+        player.position.y + player.collision_size.min.y,
+        player.position.y + player.collision_size.max.y
+    );
+
+	minTilePos = posToTile(newVector2D_s16(player.collision_position.min.x, player.collision_position.min.y));
+	maxTilePos = posToTile(newVector2D_s16(player.collision_position.max.x, player.collision_position.max.y));
+
+    for (s16 x = minTilePos.x; x <= maxTilePos.x; x++)
+    {
+        for (s16 y = minTilePos.y; y <= maxTilePos.y; y++)
+        {
+            if (map_collision[y][x] == 2)
+            {
+                AABB tileBounds = getTileBounds(x, y);
+
+                s16 x_dif = player.collision_position.max.x - tileBounds.min.x;
+
+                if (x_dif > 8) x_dif = 8;
+
+                KLog_S1("tileBounds.max.y = ", tileBounds.max.y);
+                KLog_S1("x_dif = ", x_dif);
+                KLog_S1("new_y = ", tileBounds.max.y - x_dif);
+				
+                levelLimits.max.y = tileBounds.max.y - x_dif;
+            }
+
+            if (map_collision[y][x] == 3)
+            {
+                AABB tileBounds = getTileBounds(x, y);
+
+                s16 x_dif = (player.collision_position.min.x - tileBounds.max.x) * -1;
+
+                if (x_dif > 8) x_dif = 8;
+
+                KLog_S1("tileBounds.max.y = ", tileBounds.max.y);
+                KLog_S1("x_dif = ", x_dif);
+                KLog_S1("new_y = ", tileBounds.max.y - x_dif);
+
+                levelLimits.max.y = tileBounds.max.y - x_dif;
+            }
+        }
+    }
+
+	//Now we modify the player position and some properties if necessary
+	if (levelLimits.min.y > player.collision_position.min.y) {
+		player.position.y = levelLimits.min.y - player.collision_size.min.y;
+		player.velocity.y = 0;
+	}
+
+	if (levelLimits.max.y <= player.collision_position.max.y) {
+		if (levelLimits.max.y == roomSize.max.y) {
+			player.is_on_floor = FALSE;
+		}else {
+			player.is_on_floor = TRUE;
+			player.position.y = levelLimits.max.y - player.collision_size.max.y;
+			player.velocity.y = 0;
+		}
+	}else {
+		player.is_on_floor = FALSE;
+	}
+}
+
+/*
 static void checkTileCollisions()
 {
     if (!player.velocity.x && !player.velocity.y)
         return;
     
-    ENTITY_setPosition(
+    Entity_setPosition(
         &player,
         player.position.x + fix16ToInt(player.velocity.x),
         player.position.y + fix16ToInt(player.velocity.y)
@@ -280,6 +524,7 @@ static void checkTileCollisions()
         }
     }
 }
+*/
 
 static void playSoundJump()
 {
@@ -296,9 +541,9 @@ static void playerUpdateAnimation()
     // jumping
     if (!player.is_on_floor)
     {
-        ENTITY_setAnimation(&player, ANIM_JUMP);
+        Entity_setAnimation(&player, ANIM_JUMP);
 
-        playSoundJump();
+        // playSoundJump();
 
         if (player.velocity.x > 0)
         {
@@ -315,17 +560,17 @@ static void playerUpdateAnimation()
 
         if (player.velocity.x > 0)
         {
-            ENTITY_setAnimation(&player, ANIM_WALK);
+            Entity_setAnimation(&player, ANIM_WALK);
             SPR_setHFlip(player.sprite, FALSE);
         }
         else if (player.velocity.x < 0)
         {
-            ENTITY_setAnimation(&player, ANIM_WALK);
+            Entity_setAnimation(&player, ANIM_WALK);
             SPR_setHFlip(player.sprite, TRUE);
         }
         else
         {
-            ENTITY_setAnimation(&player, ANIM_STAND);
+            Entity_setAnimation(&player, ANIM_STAND);
         }
     }
 }
