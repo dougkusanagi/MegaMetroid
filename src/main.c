@@ -266,21 +266,6 @@ static void checkTileCollisions()
 			}
 		}
 
-        // else if (map_collision[y][rx] == 2)
-        // {
-        //     AABB tileBounds = getTileBounds(rx, y);
-
-        //     s16 x_dif = player.collision_position.max.x - tileBounds.min.x;
-
-        //     if (x_dif > 8) x_dif = 8;
-
-        //     KLog_S1("tileBounds.max.y = ", tileBounds.max.y);
-        //     KLog_S1("x_dif = ", x_dif);
-        //     KLog_S1("new_y = ", tileBounds.max.y - x_dif);
-            
-        //     levelLimits.max.y = tileBounds.max.y - x_dif;
-        // }
-
 		//Left position constant as a helper
 		const s16 lx = minTilePos.x;
 
@@ -299,20 +284,36 @@ static void checkTileCollisions()
 			}
 		}
 
-        // else if (map_collision[y][lx] == 3)
-        // {
-        //     AABB tileBounds = getTileBounds(lx, y);
+        else if (map_collision[y][rx] == 2)
+        {
+            AABB tileBounds = getTileBounds(rx, y);
 
-        //     s16 x_dif = (player.collision_position.min.x - tileBounds.max.x) * -1;
+            s16 x_dif = (player.collision_position.max.x - tileBounds.min.x) << 1;
 
-        //     if (x_dif > 8) x_dif = 8;
+            if (x_dif > 8) x_dif = 8;
 
-        //     KLog_S1("tileBounds.max.y = ", tileBounds.max.y);
-        //     KLog_S1("x_dif = ", x_dif);
-        //     KLog_S1("new_y = ", tileBounds.max.y - x_dif);
+            KLog_S1("player.collision_position.max.x = ", player.collision_position.max.x);
+            KLog_S1("tileBounds.min.x = ", tileBounds.min.x);
+            KLog_S1("x_dif = ", x_dif);
+            KLog_S1("new_y = ", tileBounds.max.y - x_dif);
+            
+            levelLimits.max.y = tileBounds.max.y - x_dif;
+        }
 
-        //     levelLimits.max.y = tileBounds.max.y - x_dif;
-        // }
+        else if (map_collision[y][lx] == 3)
+        {
+            AABB tileBounds = getTileBounds(lx, y);
+
+            s16 x_dif = ((player.collision_position.min.x - tileBounds.max.x) << 1) * -1;
+
+            if (x_dif > 8) x_dif = 8;
+
+            KLog_S1("tileBounds.max.y = ", tileBounds.max.y);
+            KLog_S1("x_dif = ", x_dif);
+            KLog_S1("new_y = ", tileBounds.max.y - x_dif);
+
+            levelLimits.max.y = tileBounds.max.y - x_dif;
+        }
 	}
 
 	//After checking for horizontal positions we can modify the positions if the player is colliding
@@ -374,6 +375,7 @@ static void checkTileCollisions()
 					continue;
 
 				u16 upperEdgePos = getTileBottomEdge(y);
+
 				if (upperEdgePos < levelLimits.max.y) {
 					levelLimits.min.y = upperEdgePos;
 					break;
@@ -382,51 +384,41 @@ static void checkTileCollisions()
 		}
 	}
 
-    player.collision_position = newAABB(
-        player.position.x + player.collision_size.min.x,
-        player.position.x + player.collision_size.max.x,
-        player.position.y + player.collision_size.min.y,
-        player.position.y + player.collision_size.max.y
-    );
+    // for (s16 x = minTilePos.x; x <= maxTilePos.x; x++)
+    // {
+    //     for (s16 y = minTilePos.y; y <= maxTilePos.y; y++)
+    //     {
+    //         if (map_collision[y][x] == 2)
+    //         {
+    //             AABB tileBounds = getTileBounds(x, y);
 
-	minTilePos = posToTile(newVector2D_s16(player.collision_position.min.x, player.collision_position.min.y));
-	maxTilePos = posToTile(newVector2D_s16(player.collision_position.max.x, player.collision_position.max.y));
+    //             s16 x_dif = player.collision_position.max.x - tileBounds.min.x;
 
-    for (s16 x = minTilePos.x; x <= maxTilePos.x; x++)
-    {
-        for (s16 y = minTilePos.y; y <= maxTilePos.y; y++)
-        {
-            if (map_collision[y][x] == 2)
-            {
-                AABB tileBounds = getTileBounds(x, y);
+    //             if (x_dif > 8) x_dif = 8;
 
-                s16 x_dif = player.collision_position.max.x - tileBounds.min.x;
-
-                if (x_dif > 8) x_dif = 8;
-
-                KLog_S1("tileBounds.max.y = ", tileBounds.max.y);
-                KLog_S1("x_dif = ", x_dif);
-                KLog_S1("new_y = ", tileBounds.max.y - x_dif);
+    //             KLog_S1("tileBounds.max.y = ", tileBounds.max.y);
+    //             KLog_S1("x_dif = ", x_dif);
+    //             KLog_S1("new_y = ", tileBounds.max.y - x_dif);
 				
-                levelLimits.max.y = tileBounds.max.y - x_dif;
-            }
+    //             levelLimits.max.y = tileBounds.max.y - x_dif;
+    //         }
 
-            if (map_collision[y][x] == 3)
-            {
-                AABB tileBounds = getTileBounds(x, y);
+    //         if (map_collision[y][x] == 3)
+    //         {
+    //             AABB tileBounds = getTileBounds(x, y);
 
-                s16 x_dif = (player.collision_position.min.x - tileBounds.max.x) * -1;
+    //             s16 x_dif = (player.collision_position.min.x - tileBounds.max.x) * -1;
 
-                if (x_dif > 8) x_dif = 8;
+    //             if (x_dif > 8) x_dif = 8;
 
-                KLog_S1("tileBounds.max.y = ", tileBounds.max.y);
-                KLog_S1("x_dif = ", x_dif);
-                KLog_S1("new_y = ", tileBounds.max.y - x_dif);
+    //             KLog_S1("tileBounds.max.y = ", tileBounds.max.y);
+    //             KLog_S1("x_dif = ", x_dif);
+    //             KLog_S1("new_y = ", tileBounds.max.y - x_dif);
 
-                levelLimits.max.y = tileBounds.max.y - x_dif;
-            }
-        }
-    }
+    //             levelLimits.max.y = tileBounds.max.y - x_dif;
+    //         }
+    //     }
+    // }
 
 	//Now we modify the player position and some properties if necessary
 	if (levelLimits.min.y > player.collision_position.min.y) {
