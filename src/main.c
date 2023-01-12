@@ -96,18 +96,18 @@ static void levelInit()
     roomSize = newAABB(0, MAP_WIDTH, 0, MAP_HEIGHT);
 
     PAL_setPalette(LEVEL_PALETTE, crateria_1_fg_palette.data, DMA);
-    VDP_loadTileSet(&level_tileset, VDPTilesFilled, DMA);
-    current_map = MAP_create(&level_map, TILEMAP_PLANE, TILE_ATTR_FULL(LEVEL_PALETTE, FALSE, FALSE, FALSE, VDPTilesFilled));
+    VDP_loadTileSet(&crateria_1_fg_tileset, VDPTilesFilled, DMA);
+    current_map = MAP_create(&crateria_1_fg_map, TILEMAP_PLANE, TILE_ATTR_FULL(LEVEL_PALETTE, FALSE, FALSE, FALSE, VDPTilesFilled));
 
     // Update the number of tiles filled in order to avoid overlaping them when loading more
-    VDPTilesFilled += level_tileset.numTile;
+    VDPTilesFilled += crateria_1_fg_tileset.numTile;
 
     PAL_setPalette(BG_PALETTE, crateria_1_bg_palette.data, DMA);
-    VDP_loadTileSet(&bg_tileset, VDPTilesFilled, DMA);
-    current_map_bg = MAP_create(&bg_map, BACKGROUND_PLANE, TILE_ATTR_FULL(PAL1, FALSE, FALSE, FALSE, VDPTilesFilled));
+    VDP_loadTileSet(&crateria_1_bg_tileset, VDPTilesFilled, DMA);
+    current_map_bg = MAP_create(&crateria_1_bg_map, BACKGROUND_PLANE, TILE_ATTR_FULL(PAL1, FALSE, FALSE, FALSE, VDPTilesFilled));
 
     // Update the number of tiles filled in order to avoid overlaping them when loading more
-    VDPTilesFilled += bg_tileset.numTile;
+    VDPTilesFilled += crateria_1_bg_tileset.numTile;
 
     cameraInit();
 }
