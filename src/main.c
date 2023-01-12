@@ -5,6 +5,7 @@
 #include "../inc/entity.h"
 #include "../inc/physics.h"
 #include "../res/resources.h"
+#include "../res/crateria_1.h"
 
 #define SCREEN_WIDTH        256
 #define SCREEN_HEIGHT       224
@@ -41,7 +42,6 @@ static void playerInit();
 static void playerUpdate();
 static void playerUpdateAnimation();
 static void playerApplyGravity();
-static s16 playerGetFeetPosition();
 
 static void checkTileCollisions();
 static void setCameraPosition(s16 x, s16 y);
@@ -95,14 +95,14 @@ static void levelInit()
 {
     roomSize = newAABB(0, MAP_WIDTH, 0, MAP_HEIGHT);
 
-    PAL_setPalette(LEVEL_PALETTE, level_palette.data, DMA);
+    PAL_setPalette(LEVEL_PALETTE, crateria_1_fg_palette.data, DMA);
     VDP_loadTileSet(&level_tileset, VDPTilesFilled, DMA);
     current_map = MAP_create(&level_map, TILEMAP_PLANE, TILE_ATTR_FULL(LEVEL_PALETTE, FALSE, FALSE, FALSE, VDPTilesFilled));
 
     // Update the number of tiles filled in order to avoid overlaping them when loading more
     VDPTilesFilled += level_tileset.numTile;
 
-    PAL_setPalette(BG_PALETTE, bg_palette.data, DMA);
+    PAL_setPalette(BG_PALETTE, crateria_1_bg_palette.data, DMA);
     VDP_loadTileSet(&bg_tileset, VDPTilesFilled, DMA);
     current_map_bg = MAP_create(&bg_map, BACKGROUND_PLANE, TILE_ATTR_FULL(PAL1, FALSE, FALSE, FALSE, VDPTilesFilled));
 
@@ -207,18 +207,6 @@ static void playerUpdate()
     updateCamera();
 }
 
-static bool checkHorizontalTile(s16 tile_y)
-{
-    return tile_y + 8 > player.position.y + 8
-        && tile_y < player.position.y + tileToPixel(player.tile_height);
-}
-
-static bool checkVerticalTile(s16 tile_x)
-{
-    return tile_x + 8 > player.position.x
-        && tile_x < player.position.x + tileToPixel(player.tile_width);
-}
-
 static void checkTileCollisions()
 {   
     AABB levelLimits = roomSize;
@@ -319,11 +307,9 @@ static void checkTileCollisions()
 	//After checking for horizontal positions we can modify the positions if the player is colliding
 	if (levelLimits.max.x < player.collision_position.max.x) {
 		player.position.x = levelLimits.max.x - player.collision_size.max.x;
-		player.velocity.x = player.velocity.x = 0;
 	}
 	if (levelLimits.min.x > player.collision_position.min.x) {
 		player.position.x = levelLimits.min.x - player.collision_size.min.x;
-		player.velocity.x = player.velocity.x = 0;
 	}
 
     player.collision_position = newAABB(
@@ -440,6 +426,24 @@ static void checkTileCollisions()
 }
 
 /*
+
+static bool checkHorizontalTile(s16 tile_y)
+{
+    return tile_y + 8 > player.position.y + 8
+        && tile_y < player.position.y + tileToPixel(player.tile_height);
+}
+
+static bool checkVerticalTile(s16 tile_x)
+{
+    return tile_x + 8 > player.position.x
+        && tile_x < player.position.x + tileToPixel(player.tile_width);
+}
+
+static s16 playerGetFeetPosition()
+{
+    return player.position.y + tileToPixel(player.tile_height);
+}
+
 static void checkTileCollisions()
 {
     if (!player.velocity.x && !player.velocity.y)
@@ -520,7 +524,7 @@ static void checkTileCollisions()
 
 static void playSoundJump()
 {
-    if (!SND_isPlayingPCM_XGM(SOUND_PCM_CH2_MSK)) SND_startPlayPCM_XGM(64, 15, SOUND_PCM_CH2);
+    // if (!SND_isPlayingPCM_XGM(SOUND_PCM_CH2_MSK)) SND_startPlayPCM_XGM(64, 15, SOUND_PCM_CH2);
 }
 
 static void stopSoundJump()
@@ -535,7 +539,7 @@ static void playerUpdateAnimation()
     {
         Entity_setAnimation(&player, ANIM_JUMP);
 
-        // playSoundJump();
+        playSoundJump();
 
         if (player.velocity.x > 0)
         {
@@ -657,9 +661,4 @@ static void handleInput(u16 joy, u16 changed, u16 state)
             }
         }
     }
-}
-
-static s16 playerGetFeetPosition()
-{
-    return player.position.y + tileToPixel(player.tile_height);
 }
