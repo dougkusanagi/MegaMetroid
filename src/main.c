@@ -6,6 +6,7 @@
 #include "../inc/physics.h"
 #include "../res/resources.h"
 #include "../res/crateria_1.h"
+#include "../res/crateria_2.h"
 
 #define SCREEN_WIDTH        256
 #define SCREEN_HEIGHT       224
@@ -29,6 +30,9 @@ Camera camera;
 Map *current_map;
 Map *current_map_bg;
 AABB roomSize;
+
+const level_def *all_level_defs[2];
+u8 curr_level_index;
 
 u16 VDPTilesFilled = TILE_USER_INDEX;
 
@@ -68,6 +72,11 @@ int main(bool resetType)
     KLog_S1("Available Memory = ", MEM_getFree());
 
     DMA_setMaxQueueSize(120);
+    
+    curr_level_index = 0;
+    all_level_defs[curr_level_index] = &level_crateria_1;
+
+    KLog_S1("all_level_defs[0]->map_width = ", all_level_defs[curr_level_index]->map_width);
 
     playerInit();
     levelInit();
@@ -93,21 +102,23 @@ static void cameraInit()
 
 static void levelInit()
 {
-    roomSize = newAABB(0, MAP_WIDTH, 0, MAP_HEIGHT);
+    roomSize = newAABB(
+        0, all_level_defs[curr_level_index]->map_width,
+        0, all_level_defs[curr_level_index]->map_height);
 
-    PAL_setPalette(LEVEL_PALETTE, crateria_1_fg_palette.data, DMA);
-    VDP_loadTileSet(&crateria_1_fg_tileset, VDPTilesFilled, DMA);
-    current_map = MAP_create(&crateria_1_fg_map, TILEMAP_PLANE, TILE_ATTR_FULL(LEVEL_PALETTE, FALSE, FALSE, FALSE, VDPTilesFilled));
-
-    // Update the number of tiles filled in order to avoid overlaping them when loading more
-    VDPTilesFilled += crateria_1_fg_tileset.numTile;
-
-    PAL_setPalette(BG_PALETTE, crateria_1_bg_palette.data, DMA);
-    VDP_loadTileSet(&crateria_1_bg_tileset, VDPTilesFilled, DMA);
-    current_map_bg = MAP_create(&crateria_1_bg_map, BACKGROUND_PLANE, TILE_ATTR_FULL(PAL1, FALSE, FALSE, FALSE, VDPTilesFilled));
+    PAL_setPalette(LEVEL_PALETTE, all_level_defs[curr_level_index]->palette_fg->data, DMA);
+    VDP_loadTileSet(all_level_defs[curr_level_index]->tileset_fg, VDPTilesFilled, DMA);
+    current_map = MAP_create(all_level_defs[curr_level_index]->map_fg, TILEMAP_PLANE, TILE_ATTR_FULL(LEVEL_PALETTE, FALSE, FALSE, FALSE, VDPTilesFilled));
 
     // Update the number of tiles filled in order to avoid overlaping them when loading more
-    VDPTilesFilled += crateria_1_bg_tileset.numTile;
+    VDPTilesFilled += all_level_defs[curr_level_index]->tileset_fg->numTile;
+
+    PAL_setPalette(BG_PALETTE, all_level_defs[curr_level_index]->palette_bg->data, DMA);
+    VDP_loadTileSet(all_level_defs[curr_level_index]->tileset_bg, VDPTilesFilled, DMA);
+    current_map_bg = MAP_create(all_level_defs[curr_level_index]->map_bg, BACKGROUND_PLANE, TILE_ATTR_FULL(PAL1, FALSE, FALSE, FALSE, VDPTilesFilled));
+
+    // Update the number of tiles filled in order to avoid overlaping them when loading more
+    VDPTilesFilled += all_level_defs[curr_level_index]->tileset_bg->numTile;
 
     cameraInit();
 }
@@ -131,7 +142,7 @@ static void playerInit()
     Entity_setPosition(
         &player,
         tileToPixel(32),
-        MAP_HEIGHT - tileToPixel(player.tile_height) - 24);
+        all_level_defs[curr_level_index]->map_height - tileToPixel(player.tile_height) - 24);
 
 	//Setup the jump SFX with an index between 64 and 255
     SND_setPCM_XGM(64, jump_sfx, sizeof(jump_sfx));
@@ -585,18 +596,18 @@ static void updateCamera()
     {
         new_camera_position_x = 0;
     }
-    else if (new_camera_position_x > (MAP_WIDTH - SCREEN_WIDTH))
+    else if (new_camera_position_x > (all_level_defs[curr_level_index]->map_width - SCREEN_WIDTH))
     {
-        new_camera_position_x = (MAP_WIDTH - SCREEN_WIDTH);
+        new_camera_position_x = (all_level_defs[curr_level_index]->map_width - SCREEN_WIDTH);
     }
 
     if (new_camera_position_y < 0)
     {
         new_camera_position_y = 0;
     }
-    else if (new_camera_position_y > (MAP_HEIGHT - SCREEN_HEIGHT))
+    else if (new_camera_position_y > (all_level_defs[curr_level_index]->map_height - SCREEN_HEIGHT))
     {
-        new_camera_position_y = (MAP_HEIGHT - SCREEN_HEIGHT);
+        new_camera_position_y = (all_level_defs[curr_level_index]->map_height - SCREEN_HEIGHT);
     }
 
     // KLog_S1("new_camera_position_y=", new_camera_position_y);

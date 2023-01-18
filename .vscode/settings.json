@@ -14,6 +14,8 @@
     "genesis.h": "c",
     "config.h": "c",
     "entity.h": "c",
-    "crateria_1.h": "c"
+    "crateria_1.h": "c",
+    "map_crateria_2.h": "c",
+    "map_crateria_1.h": "c"
 }
 }
