@@ -1,0 +1,15 @@
+#pragma once
+
+#define SCREEN_WIDTH 256
+#define SCREEN_HEIGHT 224
+
+#define TILEMAP_PLANE BG_A
+#define PLAYER_PALETTE PAL1
+#define LEVEL_PALETTE PAL0
+
+#define PLAYER_ANIM_IDLE 0
+#define PLAYER_ANIM_WALK 1
+#define PLAYER_ANIM_JUMP 2
+#define PLAYER_ANIM_FALL 3
+#define PLAYER_ANIM_LAND 4
+#define PLAYER_ANIM_DIE 5
