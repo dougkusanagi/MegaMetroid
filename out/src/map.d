@@ -1,4 +1,4 @@
-out/src/main.o: src/main.c D:/sgdk/inc/genesis.h D:/sgdk/inc/types.h \
+out/src/map.o: src/map.c D:/sgdk/inc/genesis.h D:/sgdk/inc/types.h \
  D:/sgdk/inc/config.h D:/sgdk/inc/asm.h D:/sgdk/inc/sys.h \
  D:/sgdk/inc/sram.h D:/sgdk/inc/mapper.h D:/sgdk/inc/memory.h \
  D:/sgdk/inc/memory_base.h D:/sgdk/inc/tools.h D:/sgdk/inc/bmp.h \
@@ -13,5 +13,4 @@ out/src/main.o: src/main.c D:/sgdk/inc/genesis.h D:/sgdk/inc/types.h \
  D:/sgdk/inc/joy.h D:/sgdk/inc/timer.h D:/sgdk/inc/task.h \
  D:/sgdk/inc/task_cst.h D:/sgdk/inc/ext/flash-save/flash.h \
  D:/sgdk/inc/types.h D:/sgdk/inc/ext/flash-save/saveman.h \
- src/../inc/global.h src/../inc/entity.h src/../inc/camera.h \
- src/../inc/map.h src/../inc/player.h src/../res/resources.h
+ src/../inc/map.h
