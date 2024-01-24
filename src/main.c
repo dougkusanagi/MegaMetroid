@@ -34,52 +34,25 @@ AABB roomSize;
 const level_def *all_level_defs[2];
 u8 curr_level_index;
 
-u16 VDPTilesFilled = TILE_USER_INDEX;
-
 // Forwarding functions
-static void levelInit();
+void boot(void);
+u16 levelInit(u16 vram_index);
 
-static void cameraInit();
-static void updateCamera();
+void cameraInit();
+void updateCamera();
 
-static void playerInit();
-static void playerUpdate();
-static void playerUpdateAnimation();
-static void playerApplyGravity();
+void playerInit();
+void playerUpdate();
+void playerUpdateAnimation();
+void playerApplyGravity();
 
-static void checkTileCollisions();
-static void setCameraPosition(s16 x, s16 y);
-static void handleInput(u16 joy, u16 changed, u16 state);
+void checkTileCollisions();
+void setCameraPosition(s16 x, s16 y);
+void handleInput(u16 joy, u16 changed, u16 state);
 
-int main(bool resetType)
+int main()
 {
-    VDP_setScreenWidth256();
-    SPR_init();
-    JOY_init();
-    JOY_setEventHandler(&handleInput);
-
-    if (!resetType)
-        SYS_hardReset();
-
-    // need to increase a bit DMA buffer size to init both plan tilemap and sprites
-    DMA_setBufferSize(13000);
-    DMA_setMaxTransferSize(13000);
-    // DMA_setBufferSize(9000);
-
-    // MEM_getAllocated();
-    // MEM_getFree();
-    KLog_S1("Allocated Memory = ", MEM_getAllocated());
-    KLog_S1("Available Memory = ", MEM_getFree());
-
-    DMA_setMaxQueueSize(120);
-
-    curr_level_index = 0;
-    all_level_defs[curr_level_index] = &level_crateria_1;
-
-    KLog_S1("all_level_defs[0]->map_width = ", all_level_defs[curr_level_index]->map_width);
-
-    playerInit();
-    levelInit();
+    boot();
 
     while (1)
     {
@@ -91,7 +64,40 @@ int main(bool resetType)
     return (0);
 }
 
-static void cameraInit()
+void boot(void)
+{
+    u16 VDPTilesFilled = TILE_USER_INDEX;
+
+    SYS_disableInts();
+    VDP_setScreenWidth256();
+    SPR_init();
+    JOY_init();
+    JOY_setEventHandler(&handleInput);
+
+    // need to increase a bit DMA buffer size to init both plan tilemap and sprites
+    DMA_setBufferSize(10000);
+    DMA_setMaxTransferSize(10000);
+
+    // MEM_getAllocated();
+    // MEM_getFree();
+
+    DMA_setMaxQueueSize(120);
+
+    curr_level_index = 0;
+    all_level_defs[curr_level_index] = &level_crateria_1;
+
+    KLog_S1("all_level_defs[0]->map_width = ", all_level_defs[curr_level_index]->map_width);
+
+    VDPTilesFilled += levelInit(VDPTilesFilled);
+    playerInit();
+    cameraInit();
+
+    // can restore default DMA buffer size
+    DMA_setBufferSizeToDefault();
+    DMA_setMaxTransferSizeToDefault();
+}
+
+void cameraInit()
 {
     // camera position (force refresh)
     camera.position.x = -1;
@@ -100,30 +106,28 @@ static void cameraInit()
     MAP_scrollTo(current_map, camera.position.x, camera.position.y);
 }
 
-static void levelInit()
+u16 levelInit(u16 vram_index)
 {
+    u16 index = vram_index;
+
     roomSize = newAABB(
         0, all_level_defs[curr_level_index]->map_width,
         0, all_level_defs[curr_level_index]->map_height);
 
     PAL_setPalette(LEVEL_PALETTE, all_level_defs[curr_level_index]->palette_fg->data, DMA);
-    VDP_loadTileSet(all_level_defs[curr_level_index]->tileset_fg, VDPTilesFilled, DMA);
-    current_map = MAP_create(all_level_defs[curr_level_index]->map_fg, TILEMAP_PLANE, TILE_ATTR_FULL(LEVEL_PALETTE, FALSE, FALSE, FALSE, VDPTilesFilled));
-
-    // Update the number of tiles filled in order to avoid overlaping them when loading more
-    VDPTilesFilled += all_level_defs[curr_level_index]->tileset_fg->numTile;
+    VDP_loadTileSet(all_level_defs[curr_level_index]->tileset_fg, index, DMA);
+    current_map = MAP_create(all_level_defs[curr_level_index]->map_fg, TILEMAP_PLANE, TILE_ATTR_FULL(LEVEL_PALETTE, FALSE, FALSE, FALSE, index));
+    index += all_level_defs[curr_level_index]->tileset_fg->numTile;
 
     PAL_setPalette(BG_PALETTE, all_level_defs[curr_level_index]->palette_bg->data, DMA);
-    VDP_loadTileSet(all_level_defs[curr_level_index]->tileset_bg, VDPTilesFilled, DMA);
-    current_map_bg = MAP_create(all_level_defs[curr_level_index]->map_bg, BACKGROUND_PLANE, TILE_ATTR_FULL(PAL1, FALSE, FALSE, FALSE, VDPTilesFilled));
+    VDP_loadTileSet(all_level_defs[curr_level_index]->tileset_bg, index, DMA);
+    current_map_bg = MAP_create(all_level_defs[curr_level_index]->map_bg, BACKGROUND_PLANE, TILE_ATTR_FULL(PAL1, FALSE, FALSE, FALSE, index));
+    index += all_level_defs[curr_level_index]->tileset_bg->numTile;
 
-    // Update the number of tiles filled in order to avoid overlaping them when loading more
-    VDPTilesFilled += all_level_defs[curr_level_index]->tileset_bg->numTile;
-
-    cameraInit();
+    return index;
 }
 
-static void playerInit()
+void playerInit()
 {
     player.is_on_floor = FALSE;
 
@@ -156,7 +160,7 @@ static void playerInit()
     Entity_setAnimation(&player, ANIM_STAND);
 }
 
-static void playerApplyGravity()
+void playerApplyGravity()
 
 {
     if (player.velocity.y < GRAVITY_MAX)
@@ -165,7 +169,7 @@ static void playerApplyGravity()
     }
 }
 
-static void playerUpdate()
+void playerUpdate()
 {
     // Only after check collision with tiles
     playerApplyGravity();
@@ -211,7 +215,7 @@ static void playerUpdate()
     updateCamera();
 }
 
-static void checkTileCollisions()
+void checkTileCollisions()
 {
     AABB levelLimits = roomSize;
 
@@ -411,19 +415,19 @@ static void checkTileCollisions()
     }
 }
 
-static void playSoundJump()
+void playSoundJump()
 {
     if (!XGM_isPlayingPCM(SOUND_PCM_CH2_MSK))
         XGM_startPlayPCM(64, 15, SOUND_PCM_CH2);
 }
 
-static void stopSoundJump()
+void stopSoundJump()
 {
     if (XGM_isPlayingPCM(SOUND_PCM_CH2_MSK))
         stopSoundJump(SOUND_PCM_CH2);
 }
 
-static void playerUpdateAnimation()
+void playerUpdateAnimation()
 {
     // jumping
     if (!player.is_on_floor)
@@ -462,7 +466,7 @@ static void playerUpdateAnimation()
     }
 }
 
-static void updateCamera()
+void updateCamera()
 {
     s16 new_camera_position_x;
     s16 new_camera_position_y;
@@ -496,7 +500,7 @@ static void updateCamera()
     setCameraPosition(new_camera_position_x, new_camera_position_y);
 }
 
-static void setCameraPosition(s16 x, s16 y)
+void setCameraPosition(s16 x, s16 y)
 {
     if ((x != camera.position.x) || (y != camera.position.y))
     {
@@ -511,7 +515,7 @@ static void setCameraPosition(s16 x, s16 y)
     }
 }
 
-static void handleInput(u16 joy, u16 changed, u16 state)
+void handleInput(u16 joy, u16 changed, u16 state)
 {
     if (joy == JOY_1)
     {
