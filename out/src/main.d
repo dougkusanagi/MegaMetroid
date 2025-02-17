@@ -8,11 +8,15 @@ out/src/main.o: src/main.c D:/sgdk/inc/genesis.h D:/sgdk/inc/types.h \
  D:/sgdk/inc/font.h D:/sgdk/res/libres.h D:/sgdk/inc/string.h \
  D:/sgdk/inc/tab_cnv.h D:/sgdk/inc/maths3D.h D:/sgdk/inc/vdp_spr.h \
  D:/sgdk/inc/vdp_pal.h D:/sgdk/inc/vram.h D:/sgdk/inc/sprite_eng.h \
- D:/sgdk/inc/sprite_eng_legacy.h D:/sgdk/inc/sound.h D:/sgdk/inc/xgm.h \
- D:/sgdk/inc/z80_ctrl.h D:/sgdk/inc/ym2612.h D:/sgdk/inc/psg.h \
+ D:/sgdk/inc/sprite_eng_legacy.h D:/sgdk/inc/z80_ctrl.h \
+ D:/sgdk/inc/ym2612.h D:/sgdk/inc/psg.h D:/sgdk/inc/snd/sound.h \
+ D:/sgdk/inc/snd/xgm.h D:/sgdk/inc/snd/xgm2.h D:/sgdk/inc/snd/smp_null.h \
+ D:/sgdk/inc/snd/smp_null_dpcm.h D:/sgdk/inc/snd/pcm/snd_pcm.h \
+ D:/sgdk/inc/snd/pcm/snd_dpcm2.h D:/sgdk/inc/snd/pcm/snd_pcm4.h \
  D:/sgdk/inc/joy.h D:/sgdk/inc/timer.h D:/sgdk/inc/task.h \
  D:/sgdk/inc/task_cst.h D:/sgdk/inc/ext/flash-save/flash.h inc/types.h \
- D:/sgdk/inc/ext/flash-save/saveman.h src/../inc/map.h \
- src/../inc/./map_crateria_1.h src/../inc/./map_crateria_2.h \
- src/../inc/entity.h src/../inc/physics.h src/../res/resources.h \
- src/../res/crateria_1.h src/../res/crateria_2.h
+ D:/sgdk/inc/ext/flash-save/saveman.h D:/sgdk/inc/ext/console.h \
+ D:/sgdk/inc/config.h D:/sgdk/inc/string.h D:/sgdk/inc/maths.h \
+ D:/sgdk/inc/dma.h src/../inc/map.h src/../inc/./map_crateria_1.h \
+ src/../inc/./map_crateria_2.h src/../inc/entity.h src/../inc/physics.h \
+ src/../res/resources.h src/../res/crateria_1.h src/../res/crateria_2.h
