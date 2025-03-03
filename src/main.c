@@ -50,8 +50,10 @@ void checkTileCollisions();
 void setCameraPosition(s16 x, s16 y);
 void handleInput(u16 joy, u16 changed, u16 state);
 
-int main()
+int main(bool hardReset)
 {
+    (void)hardReset; // Explicitly mark unused parameter to avoid warnings
+
     boot();
 
     while (1)
