@@ -163,11 +163,10 @@ void playerInit()
 }
 
 void playerApplyGravity()
-
 {
     if (player.velocity.y < GRAVITY_MAX)
     {
-        player.velocity.y = player.velocity.y + GRAVITY;
+        player.velocity.y += GRAVITY;
     }
 }
 

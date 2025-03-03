@@ -6,6 +6,7 @@
 ],
 "files.associations": {
     "*.blade.php": "html",
+    "*.json5": "jsonc",
     "resources.h": "c",
     "types.h": "c",
     "map.h": "c",
@@ -16,6 +17,7 @@
     "entity.h": "c",
     "crateria_1.h": "c",
     "map_crateria_2.h": "c",
-    "map_crateria_1.h": "c"
+    "map_crateria_1.h": "c",
+    "crateria_2.h": "c"
 }
 }
