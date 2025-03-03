@@ -175,13 +175,14 @@ void playerUpdate()
     // Only after check collision with tiles
     playerApplyGravity();
 
+    // Fix for consistent movement speed in both directions
     if (control.d_pad.x > 0)
     {
         player.velocity.x = FIX16(2.3);
     }
     else if (control.d_pad.x < 0)
     {
-        player.velocity.x = -FIX16(2.3);
+        player.velocity.x = FIX16(-2.3); // Changed from -FIX16(2.3) to FIX16(-2.3) for consistency
     }
     else
     {
@@ -285,7 +286,8 @@ void checkTileCollisions()
             }
         }
 
-        else if (map_collision[y][rx] == 2)
+        // Fix for right slopes (type 2)
+        else if (map_collision[y][rx] == SLOPE_RIGHT_TILE)
         {
             AABB tileBounds = getTileBounds(rx, y);
 
@@ -294,10 +296,18 @@ void checkTileCollisions()
             if (x_dif > 8)
                 x_dif = 8;
 
+            // Set the player to be on the slope
             levelLimits.max.y = tileBounds.max.y - x_dif;
+
+            // If player is on this slope, mark as on floor
+            if (player.collision_position.max.y >= tileBounds.max.y - x_dif - 2)
+            {
+                player.is_on_floor = TRUE;
+            }
         }
 
-        else if (map_collision[y][lx] == 3)
+        // Fix for left slopes (type 3)
+        else if (map_collision[y][lx] == SLOPE_LEFT_TILE)
         {
             AABB tileBounds = getTileBounds(lx, y);
 
@@ -306,11 +316,14 @@ void checkTileCollisions()
             if (x_dif > 8)
                 x_dif = 8;
 
-            KLog_S1("tileBounds.max.y = ", tileBounds.max.y);
-            KLog_S1("x_dif = ", x_dif);
-            KLog_S1("new_y = ", tileBounds.max.y - x_dif);
-
+            // Set the player to be on the slope
             levelLimits.max.y = tileBounds.max.y - x_dif;
+
+            // If player is on this slope, mark as on floor
+            if (player.collision_position.max.y >= tileBounds.max.y - x_dif - 2)
+            {
+                player.is_on_floor = TRUE;
+            }
         }
     }
 
@@ -397,6 +410,7 @@ void checkTileCollisions()
         player.velocity.y = 0;
     }
 
+    // Modify the slope handling in the vertical collision section
     if (levelLimits.max.y <= player.collision_position.max.y)
     {
         if (levelLimits.max.y == roomSize.max.y)
@@ -410,8 +424,18 @@ void checkTileCollisions()
             player.velocity.y = 0;
         }
     }
+    else if (player.is_on_floor)
+    {
+        // If we're on a floor (including slopes) but not touching the ground,
+        // apply gravity but cap it to ensure we stick to slopes
+        if (player.velocity.y < FIX16(3.0))
+        {
+            player.velocity.y = FIX16(3.0);
+        }
+    }
     else
     {
+        // If we're not on any floor, make sure is_on_floor is FALSE
         player.is_on_floor = FALSE;
     }
 }
