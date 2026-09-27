@@ -189,7 +189,7 @@ const level_def level_crateria_2 = {
     10 << 3,
   },
 
-	// .map_collision = &map_collision_crateria_2,
+	.map_collision = &map_collision_crateria_2[0][0],
 	// .room_size,
 	// .level_limits,
 };

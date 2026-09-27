@@ -1,0 +1,5 @@
+/build/
+/build.bin
+/tests/out/
+*.pyc
+__pycache__/
