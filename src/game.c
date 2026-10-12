@@ -59,7 +59,7 @@ bool game_init(Game *g, u16 level_index)
     MmRect hitbox = {8, 8, 32, 48};
     g->level = level_get(level_index);
     if (!g->level) return FALSE;
-    g->input.previous = 0; g->pal_phase = 0;
+    g->input.previous = 0; g->pal_phase = 0; g->frame = 0;
     g->beam_sound_timer = 0;
     mm_weapon_init(&g->weapon);
     g->animation = 0xFFFF;
@@ -115,6 +115,7 @@ void game_update(Game *g, MmInput input)
     /* A 60 Hz simulation also runs at the same speed on a 50 Hz console. */
     if (SYS_isPAL() && ++g->pal_phase == 5) { steps = 2; g->pal_phase = 0; }
     while (steps--) {
+        ++g->frame;
         mm_tick(&g->world, &g->player, input);
         mm_weapon_tick(&g->weapon, &g->world, &g->player, input, g->camera);
         if (g->weapon.fired) g->beam_sound_timer = 8;

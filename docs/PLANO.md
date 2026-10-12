@@ -55,7 +55,7 @@ Cada etapa é pequena, testável no emulador e termina em **commit + push** (ver
 |---|-------|---------|-------|
 | 1.1 ✅ | Dividir `main.c` | `player.c`, `camera.c`, `collision.c`, `input.c`, `level.c` + headers em `inc/` | Comportamento idêntico no trecho inicial |
 | 1.2 ✅ | Input por polling | `JOY_readJoypad` por frame (pressionado / segurado / solto), sem estado em `handleInput` | Andar, pular e soltar direção sem "travar" |
-| 1.3 | Loop e tempo fixos | Loop único (`update` → `draw` → `SYS_doVBlankProcess`) e contador de frames | 60 fps estáveis |
+| 1.3 ✅ | Loop e tempo fixos | Loop único (`update` → `draw` → `SYS_doVBlankProcess`) e contador de frames | 60 fps estáveis |
 | 1.4 | Debug overlay | Posição, velocidade, `is_on_floor`, tile sob os pés (ligado por `#define`) | Valores coerentes ao andar |
 
 ### Fase 2 — Movimento da Samus

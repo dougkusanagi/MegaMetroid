@@ -13,7 +13,7 @@ int main(bool hardReset)
     }
     start = g.player.x;
     for (frame = 0; frame < 480; ++frame) {
-        MmInput input = {0, 0};
+        MmInput input = {0};
         if (frame >= 60 && frame < 180) input.axis = 1;
         if (frame >= 180 && frame < 300) input.axis = -1;
         input.jump_pressed = frame == 330;
@@ -26,8 +26,13 @@ int main(bool hardReset)
         SYS_doVBlankProcess();
     }
     if (after_right <= start || after_left >= after_right || !jumped || !g.player.grounded) failed = 1;
-    VDP_drawText(failed ? "SMOKE FAIL" : "SMOKE PASS", 1, 1);
-    VDP_drawText("MOVE L/R JUMP CAMERA", 1, 2);
+    /* PAL adds one tick in every five game_update calls: 480 calls become 576 ticks. */
+    if (g.frame != 480 + (SYS_isPAL() ? 96 : 0)) failed = 1;
+    /* Window plane keeps the result on screen; plane A scrolls with the camera. */
+    VDP_setWindowVPos(FALSE, 2);
+    VDP_setTextPlane(WINDOW);
+    VDP_drawText(failed ? "SMOKE FAIL" : "SMOKE PASS", 1, 0);
+    VDP_drawText("MOVE L/R JUMP CAMERA", 1, 1);
     while (1) SYS_doVBlankProcess();
     return 0;
 }
