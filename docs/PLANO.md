@@ -74,7 +74,7 @@ Cada etapa é pequena, testável no emulador e termina em **commit + push** (ver
 
 | # | Etapa | Entrega | Teste |
 |---|-------|---------|-------|
-| 3.1 | Pipeline de sprite | Pranchas originais → PNG indexado → `.res` (`scripts/extract_*.py`), convenções em `docs/SPRITES.md` | Sprite novo carrega seguindo o doc |
+| 3.1 | Pipeline de sprite | Pranchas originais → PNG indexado → `.res` (`scripts/extract_*.py`), convenções em `docs/SPRITES.md`. Extração feita e todos os `.res` compilam no `rescomp`; falta carregar no jogo, o que acontece na 3.2.1 | Sprite novo carrega seguindo o doc |
 | 3.2 ⏭️ | Animações atuais com os sprites originais | Trocar a folha Dread (`player_sprite`) pelas poses de `res/images/samus-original-sgdk/poses` em tudo o que o código já faz. Dividida nas sub-etapas 3.2.1–3.2.7 abaixo, cada uma com commit próprio | Ver a tabela da 3.2 |
 | 3.3 | Animações completas | Virar, mirar (cima/baixo/diagonal), agachar, bola, spin | Todas visíveis em sequência |
 | 3.4 | Hitbox por estado | `collision_size` varia por estado | Sem prender na parede ao trocar de estado |
