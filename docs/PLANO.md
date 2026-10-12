@@ -75,11 +75,63 @@ Cada etapa é pequena, testável no emulador e termina em **commit + push** (ver
 | # | Etapa | Entrega | Teste |
 |---|-------|---------|-------|
 | 3.1 | Pipeline de sprite | Pranchas originais → PNG indexado → `.res` (`scripts/extract_*.py`), convenções em `docs/SPRITES.md` | Sprite novo carrega seguindo o doc |
-| 3.2 ⏭️ | Animações atuais com os sprites originais | Trocar a folha Dread (`player_sprite`) pelas poses de `res/images/samus-original-sgdk/poses` nas animações que já existem (parada, andando, pulo/spin, pose de tiro), com arte própria para cada lado | Andar, pular, girar e atirar para os dois lados com os quadros originais, sem tremer nem trocar de cor |
+| 3.2 ⏭️ | Animações atuais com os sprites originais | Trocar a folha Dread (`player_sprite`) pelas poses de `res/images/samus-original-sgdk/poses` em tudo o que o código já faz. Dividida nas sub-etapas 3.2.1–3.2.7 abaixo, cada uma com commit próprio | Ver a tabela da 3.2 |
 | 3.3 | Animações completas | Virar, mirar (cima/baixo/diagonal), agachar, bola, spin | Todas visíveis em sequência |
 | 3.4 | Hitbox por estado | `collision_size` varia por estado | Sem prender na parede ao trocar de estado |
 | 3.5 | Orçamento de VRAM | Alocação automática de VRAM / streaming de tiles do sprite | `SPR_showVRAMUsage` dentro do orçamento |
 | 3.6 | Paletas da Samus | Varia/Gravity e ciclos de cor (charge, speed booster, screw attack, dano, Hyper Beam) por troca de paleta, sem tiles novos | Ciclos visíveis sem trocar tiles |
+
+#### Detalhe da 3.2: o que o código já faz e que pose usar
+
+Levantamento de `src/game.c` (`render`) e `src/core/world.c` / `weapon.c` em 2026-10-12. Hoje existem 3 animações (`ANIM_STAND`, `ANIM_WALK`, `ANIM_JUMP`) da folha Dread 40×48, com `SPR_setHFlip` para a esquerda. O tiro congela a Samus no quadro `shoot_frame` de `ANIM_STAND` por 10 ticks. Poses no formato direita/esquerda; os números são os do jogo (`manifest_poses.csv`).
+
+| Situação no código | Como está hoje | Poses novas (dir./esq.) | Sub-etapa |
+|---|---|---|---|
+| Parado (`STAND`) | `ANIM_STAND` | `01`/`02` | 3.2.1 |
+| Andando / correndo (`WALK`, `run_extra`) | `ANIM_WALK`, timer encurtado na corrida | `09`/`0A` (10 quadros), mesmo encurtamento | 3.2.1 |
+| Pulo parado (sem girar) | quadro 0 de `ANIM_STAND` | `4B`/`4C` na saída, `4D`/`4E` subindo, `29`/`2A` caindo, `A4`/`A5` no pouso | 3.2.2 |
+| Pulo andando (`spin_jumping`) | `ANIM_JUMP` | `19`/`1A` (9 quadros); pouso `A6`/`A7` | 3.2.2 |
+| Pulo de parede | `ANIM_JUMP` | `83`/`84`, seguido de `19`/`1A` | 3.2.2 |
+| Som do pulo | `jump_sfx` em todo pulo, cortado no pouso | Só no pulo giratório e no de parede; o pulo parado fica sem o som de giro | 3.2.2 |
+| Abaixar (`CROUCH`, hitbox já menor) | sem sprite: aparece em pé | `35`/`36` ao abaixar, `27`/`28` agachado, `3B`/`3C` ao levantar | 3.2.3 |
+| Bola (`BALL`) | usa os quadros do giro | `37`/`38` ao entrar, `1D`/`1F` no chão (anima só com `vx` ≠ 0), `31`/`32` no ar (mesmos quadros na prancha), `3D`/`3E` ao sair | 3.2.4 |
+| Mirar para cima parado | só no instante do tiro (`shoot_frame` 1) | `03`/`04`, enquanto ↑ estiver segurado | 3.2.5 |
+| Atirar andando | congela na pose parada | `0B`/`0C` (canhão estendido, mantém o ciclo das pernas) | 3.2.5 |
+| Mirar na diagonal andando (↑/↓ + direção) | congela na pose parada | `0F`/`10` (acima), `11`/`12` (abaixo) | 3.2.5 |
+| Atirar agachado / mirar para cima agachado | pose parada; tiro sai na altura de quem está em pé | `27`/`28` com o tiro mais baixo; `85`/`86` para cima | 3.2.5 |
+| Atirar ou mirar no pulo parado | pose parada | `13`/`14` (frente), `15`/(falta `16`), `17`/`18` (baixo), `69`/`6A` (diagonal acima), `6B`/`6C` (diagonal abaixo) | 3.2.5 |
+| Atirar ou mirar caindo | pose parada | `67`/`68` (frente), `2B`/`2C` (cima), `2D`/`2E` (baixo), `6D`/`6E`, `6F`/`70` (diagonais) | 3.2.5 |
+| Atirar no pulo giratório | corta o giro (`spin_jumping = 0`) e usa a pose parada | Mesmo corte; cai nas poses de pulo/queda com mira acima | 3.2.5 |
+| Origem do tiro | fixa em `(x + 20, y + 22)` | Tabela por pose com a boca do canhão no quadro 64×64 | 3.2.5 |
+| Sprite do tiro | tile 8×8 desenhado à mão (`src/beam_sprite.c`) | `weapons_power_beam` (8 direções; conferir no jogo que é o Power Beam) e `weapons_impact_*` ao bater na parede | 3.2.6 |
+| Virar de lado | flip instantâneo | `25`/`26` parado; `2F`/`30` no ar (as faixas `43`/`44` agachado e `87`/`88` caindo usam os mesmos quadros) | 3.2.7 |
+
+**3.2.1 Base.** Um script monta uma folha única do jogador a partir de uma lista de poses (todas têm 64×64, então cada linha da folha é uma animação) e gera o enum das animações. Também:
+- A paleta passa a ser `pal_samus_power_suit` e sai o `SPR_setHFlip`.
+- O sprite é desenhado em `(x − 12, y − 11)`, para que os pés (linha 59 do quadro) caiam no fundo da hitbox `{8, 8, 32, 48}`. Ajustar no emulador. Câmera, hitbox e física não mudam.
+- O `player_sprite` (folha Dread) sai do `resources.res`.
+
+Teste: parado e andando para os dois lados, sem tremer nem trocar de cor.
+
+**3.2.2 Pulos.** Separar o pulo parado (sem giro, sem som) do giratório e do de parede, com transição de saída, queda e pouso.
+
+**3.2.3 Agachar.** Transições de abaixar e levantar, inclusive quando o teto mantém a Samus agachada.
+
+**3.2.4 Bola.** Transições de entrar e sair; rolamento só em movimento.
+
+**3.2.5 Mira e tiro.** Escolher a pose pela combinação de estado, mira (`aim_y`, direção) e tiro. A mira passa a valer enquanto o botão estiver segurado, não só no tiro, e a pose de tiro mantém o ciclo das pernas ao andar. Uma tabela por pose dá a posição da boca do canhão, e `mm_weapon_tick` passa a usá-la no lugar de `(20, 22)`. Teste: tiro sai do canhão em todas as poses.
+
+**3.2.6 Sprite do tiro.** Trocar o tile do `beam_sprite.c` pela tira de 8 direções e mostrar o impacto ao bater na parede.
+
+**3.2.7 Virar.** Animação curta de virada antes de trocar a pose de lado.
+
+**Fora da 3.2.** Ficam para a 3.3:
+- Mira diagonal parado (`05`–`08`) e agachado (`71`–`74`): no SNES vem de L/R, e o controle de 3 botões não tem botões livres. Decidir entre X/Y/Z do controle de 6 botões ou outra combinação.
+- Moonwalk, pouso atirando (`E6`/`E7`), pouco HP, space jump e screw attack.
+
+**Lacunas da prancha.**
+- Falta a pose `16` (pulo parado, esquerda, mirando para cima): usar `2C` ou desenhar a partir de `15`.
+- A faixa da `69` diz "Facing left - aiming up-right", provável erro de digitação ("Facing right").
 
 > **Prioridade (2026-10-12)**: a 3.2 vem antes de qualquer outra implementação.
 
