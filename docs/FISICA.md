@@ -58,6 +58,23 @@ Cálculo do SM com os valores da tabela, só como estimativa: altura v²/2g ≈ 
 tempo no ar ≈ 89 ticks. Não foi medido no jogo original. O plano pede essa medida
 antes de fixar constantes (seção 4 de [PLANO.md](PLANO.md)).
 
+## Rampas (45°)
+
+- Os tiles 2 e 3 são rampas de 45°. Em `mm_rect_blocked`, o tile 2 bloqueia a
+  linha de pixels abaixo da diagonal (altura `7 - coluna`), e o tile 3 faz o
+  inverso. Assim a altura de cada coluna de pixel já está definida pelo tile, sem
+  lógica separada de rampa.
+- `mm_move` sobe 1 px por passo de 1 px quando está no chão, nos dois sentidos,
+  então a Samus sobe e desce rampas de 45° sem quicar.
+- O teste `slope_sweep()` cai sobre cada superfície de rampa de Crateria 1 que cabe
+  no hitbox em pé, anda para a direita, para a esquerda e para a direita de novo.
+  Resultado: 71 superfícies percorridas, 0 paradas indevidas e 0 quadros no ar com
+  chão a 1 px dos pés.
+- Duas superfícies (colunas 284 e 285) ficam em uma passagem mais estreita que o
+  hitbox em pé e não são percorridas. Elas dependem da bola (2.6).
+- Rampas de 22,5° não existem no mapa de Crateria 1 e não foram implementadas. Vão
+  entrar com um tipo de tile novo.
+
 ## Limites e próximos passos
 
 - A integração é de Euler por tick: `vy += g` e depois `y += vy`. Isso explica a

@@ -249,8 +249,49 @@ static void coyote_jump(void) {
     assert(!c.jumped && c.vy > 0);
     puts("PASS coyote time: jump starts within 5 ticks of leaving a ledge, not after");
 }
+/* Walks dir for ticks, counting grounded stops and airborne frames over solid ground. */
+static void sweep_walk(const MmWorld *cw, MmBody *b, int dir, int ticks, int *stalls, int *floats) {
+    MmInput in = {0};
+    int t;
+    in.axis = dir;
+    for (t = 0; t < ticks; ++t) {
+        mm_tick(cw, b, in);
+        if (b->grounded && b->vx == 0 && !mm_blocked(cw, b, mm_pixel(b->x) + dir, mm_pixel(b->y) - 1)) ++*stalls;
+        if (!b->grounded && mm_blocked(cw, b, mm_pixel(b->x), mm_pixel(b->y) + 1)) ++*floats;
+    }
+}
+/* Every 45-degree surface of Crateria 1 that the standing hitbox can reach. */
+static void slope_sweep(void) {
+    MmWorld crateria = {&real_map_1[0][0], 288, 156};
+    MmRect hitbox = {8, 8, 32, 48};
+    int c, r, walked = 0, too_narrow = 0, stalls = 0, floats = 0;
+    for (c = 0; c < crateria.columns; ++c) {
+        int top = -1;
+        for (r = 1; r < crateria.rows && top < 0; ++r)
+            if ((real_map_1[r][c] == 2 || real_map_1[r][c] == 3) && real_map_1[r - 1][c] == 1) top = r;
+        if (top < 0) continue;
+        {
+            MmBody b;
+            int x = c * MM_TILE - 12, y, t, placed = 0;
+            /* Start in the air pocket above the slope, then drop onto it. */
+            for (y = top * MM_TILE - 48; y >= 0 && !placed; y -= 4) {
+                mm_body_init(&b, x, y, hitbox);
+                placed = !mm_blocked(&crateria, &b, x, y);
+            }
+            for (t = 0; placed && t < 3000 && !b.grounded; ++t) mm_tick(&crateria, &b, (MmInput){0});
+            if (!placed || !b.grounded) { ++too_narrow; continue; }
+            ++walked;
+            sweep_walk(&crateria, &b, 1, 48, &stalls, &floats);
+            sweep_walk(&crateria, &b, -1, 96, &stalls, &floats);
+            sweep_walk(&crateria, &b, 1, 48, &stalls, &floats);
+        }
+    }
+    assert(walked >= 70 && stalls == 0 && floats == 0);
+    printf("PASS 45-degree slopes of Crateria 1: %d surfaces walked both ways, %d too narrow for the hitbox\n",
+           walked, too_narrow);
+}
 int main(void) {
     movement(); collisions(); jump_and_ledge(); states(); physics(); variable_jump(); coyote_jump();
-    slopes(); camera_and_input(); real_levels();
+    slopes(); slope_sweep(); camera_and_input(); real_levels();
     puts("All core regression tests passed."); return 0;
 }

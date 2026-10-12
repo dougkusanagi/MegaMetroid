@@ -66,7 +66,7 @@ Cada etapa é pequena, testável no emulador e termina em **commit + push** (ver
 | 2.2 ✅ | Física tabelada | Gravidade/aceleração/velocidades em subpixel (`fix16`); medidas em `docs/FISICA.md` | Altura e alcance do pulo medidos |
 | 2.3 ✅ | Pulo variável | Soltar o botão corta o pulo; coyote time curto | Pulo curto vs. longo |
 | 2.4 ✅ | Remover voo por d-pad | ↑/↓ passam a mirar / agachar | Samus não "voa" mais |
-| 2.5 | Rampas robustas | Altura por coluna (45°, depois 22,5°); subir/descer sem quicar | Percorrer todas as rampas de Crateria 1 sem travar ou flutuar |
+| 2.5 ✅ | Rampas robustas | Altura por coluna (45°, depois 22,5°); subir/descer sem quicar | Percorrer todas as rampas de Crateria 1 sem travar ou flutuar |
 | 2.6 | Agachar e bola | Hitbox menor, animações, passagens estreitas | Entrar em túnel de 1 tile |
 | 2.7 | Spin jump / wall jump | Pulo giratório; wall jump depois | Subir poço com wall jump |
 
