@@ -40,6 +40,13 @@ Compilação com SGDK 2.11, Java e Python 3, a partir da raiz do projeto:
 
 A ROM final é `build.bin`, com uma cópia em `build/rom.bin`. O build padrão do SGDK
 (`make -f %GDK%\makefile.gen`, ver `docs/BUILD.md`) gera `out/rom.bin`; `out/` e `build/` não são versionados.
+Para ver posição, velocidade, chão e tiles sob os pés na tela, gere a variante de
+depuração. Ela vai para `tests/out/variant.bin` e não substitui `build.bin`:
+
+```powershell
+./scripts/build.ps1 -Sgdk D:/apps/sgdk -Java D:/apps/jre/bin/java.exe -Define '-DMM_DEBUG_OVERLAY=1'
+```
+
 O núcleo em `src/core` não depende do SGDK; `src/game.c` integra entrada,
 renderização e áudio. Os projéteis usam um pool fixo, sem alocar durante o jogo.
 

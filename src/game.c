@@ -5,7 +5,41 @@
 #define VIEW_WIDTH 256
 #define VIEW_HEIGHT 224
 
+/* Build with -DMM_DEBUG_OVERLAY=1 to draw position, velocity, floor and foot tiles. */
+#ifndef MM_DEBUG_OVERLAY
+#define MM_DEBUG_OVERLAY 0
+#endif
+#define OVERLAY_ROWS 3
+
 enum { ANIM_STAND, ANIM_WALK, ANIM_JUMP };
+
+#if MM_DEBUG_OVERLAY
+/* Q24.8 as fixed-width signed text with two decimals, e.g. "+ 2.75". */
+static void fix_text(char *out, int value)
+{
+    int a = value < 0 ? -value : value;
+    sprintf(out, "%c%4d.%02d", value < 0 ? '-' : '+', a / MM_UNIT, a % MM_UNIT * 100 / MM_UNIT);
+}
+
+/* Foot tiles are the tiles just below the hitbox corners: 0 solid, 1 air, 2/3 slopes. */
+static void draw_debug_overlay(const Game *g)
+{
+    char x[12], y[12], vx[12], vy[12], line[40];
+    int left = mm_pixel(g->player.x) + g->player.hitbox.left;
+    int right = mm_pixel(g->player.x) + g->player.hitbox.right - 1;
+    int foot_row = (mm_pixel(g->player.y) + g->player.hitbox.bottom) / MM_TILE;
+    fix_text(x, g->player.x); fix_text(y, g->player.y);
+    fix_text(vx, g->player.vx); fix_text(vy, g->player.vy);
+    sprintf(line, "X %s  Y %s", x, y);
+    VDP_drawText(line, 0, 0);
+    sprintf(line, "VX %s  VY %s", vx, vy);
+    VDP_drawText(line, 0, 1);
+    sprintf(line, "%s  FOOT L %d R %d", g->player.grounded ? "GROUND" : "AIR   ",
+            mm_tile(&g->world, left / MM_TILE, foot_row),
+            mm_tile(&g->world, right / MM_TILE, foot_row));
+    VDP_drawText(line, 0, 2);
+}
+#endif
 
 static void render(Game *g)
 {
@@ -50,6 +84,9 @@ static void render(Game *g)
                             mm_pixel(beam->y) - g->camera.y - 4);
     }
     SPR_update();
+#if MM_DEBUG_OVERLAY
+    draw_debug_overlay(g);
+#endif
 }
 
 bool game_init(Game *g, u16 level_index)
@@ -104,6 +141,11 @@ bool game_init(Game *g, u16 level_index)
     }
     PSG_setEnvelope(0, PSG_ENVELOPE_MIN);
     SYS_enableInts();
+#if MM_DEBUG_OVERLAY
+    /* Window plane stays put while plane A scrolls, so the overlay does not move. */
+    VDP_setWindowVPos(FALSE, OVERLAY_ROWS);
+    VDP_setTextPlane(WINDOW);
+#endif
     render(g);
     SYS_doVBlankProcess();
     return TRUE;
