@@ -202,8 +202,8 @@ void playerUpdate()
 
     Entity_setPosition(
         &player,
-        player.position.x + fix16ToInt(player.velocity.x),
-        player.position.y + fix16ToInt(player.velocity.y));
+        player.position.x + F16_toInt(player.velocity.x),
+        player.position.y + F16_toInt(player.velocity.y));
 
     checkTileCollisions();
 
@@ -228,7 +228,7 @@ void checkTileCollisions()
         player.position.y + player.collision_size.max.y);
 
     // Skin width (yIntVelocity) changes depending on the vertical velocity
-    s16 yIntVelocity = fix16ToRoundedInt(player.velocity.y);
+    s16 yIntVelocity = F16_toRoundedInt(player.velocity.y);
     s16 playerHeadPos = player.collision_size.min.y - yIntVelocity + player.position.y;
     s16 playerFeetPos = player.collision_size.max.y - yIntVelocity + player.position.y;
 

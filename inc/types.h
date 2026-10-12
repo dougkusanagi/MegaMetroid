@@ -20,7 +20,7 @@ typedef struct {
 	Vect2D_s16 max;
 } AABB;
 
-struct {
+typedef struct {
     Vect2D_s16 d_pad;
     bool a;
     bool b;
@@ -28,7 +28,9 @@ struct {
     bool x;
     bool y;
     bool z;
-} control;
+} Control;
+
+extern Control control;
 
 typedef struct level_def
 {

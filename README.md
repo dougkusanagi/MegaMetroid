@@ -2,6 +2,8 @@
 
 Powered by  <a href="https://github.com/Stephane-D/SGDK">SGDK</a>
 
+Build instructions: [`docs/BUILD.md`](docs/BUILD.md).
+
 Small project with the intention of porting Super Metroid for Mega Drive / Sega Genesis.
 
 Update: simple tile collision system implemented. 
