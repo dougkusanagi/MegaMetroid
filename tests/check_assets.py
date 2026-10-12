@@ -5,7 +5,7 @@ import struct
 
 root = Path(__file__).resolve().parents[1]
 fixtures = []
-for index, rows, cols, image in [(1,156,288,'origina-smallerl-no-sprites-v2.png'), (2,160,160,'tilemap2.png')]:
+for index, rows, cols, image in [(1,156,288,'crateria1-fg-md.png'), (2,160,160,'crateria2-fg-md.png')]:
     source = (root / f'src/map_crateria_{index}.c').read_text()
     match = re.search(r'const u8 map_collision_crateria_\d+\[\d+\]\[\d+\] = (\{.*?\});', source, re.S)
     assert match, 'Missing collision array'
