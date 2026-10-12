@@ -5,6 +5,8 @@ Cada etapa é pequena, testável no emulador e termina em **commit + push** (ver
 
 Última revisão: 2026-10-12.
 
+> **Nota (revisão da refatoração `codex/refactor-game-core`)**: o código dessa branch foi incorporado a esta. Avaliação: o núcleo (`src/core/`) é C portátil sem SGDK, em ponto fixo Q24.8, com colisão varrida por pixel, pool estático de projéteis, `src/game.c` como única camada SGDK e testes de regressão em `tests/` (`scripts/test.ps1`, exige MSVC/gcc/clang no host). Isso adianta as etapas 0.3, 0.4, 1.1, 1.2, 2.4, 4.1 e 4.2 e a câmera por zonas. As etapas ✅ acima foram validadas por compilação; o teste de comportamento no emulador ainda deve ser repetido a cada etapa. Não vale aproveitar: `dev` (versão anterior da mesma refatoração, com `player.c`/`physics.c` maiores), `0.54` (reescrita abandonada com arquivos vazios) e as cópias `better-org` / `working-v-col`.
+
 ## 1. Estado atual
 
 **Já funciona**
@@ -44,15 +46,15 @@ Cada etapa é pequena, testável no emulador e termina em **commit + push** (ver
 |---|-------|---------|-------|
 | 0.1 ✅ | Ambiente de build documentado | `docs/BUILD.md`: `GDK`, comando de build (`make -f %GDK%\makefile.gen`), emulador usado | `out/rom.bin` gerado a partir de clone limpo |
 | 0.2 ✅ | `.gitignore` e limpeza | Ignorar `out/`, `git rm -r --cached out`; remover `src/better-org` e `src/working-v-col` | Build gera `rom.bin`; `git status` limpo após build |
-| 0.3 | Corrigir bugs conhecidos | `stopSoundJump` (recursão), `control` movido para `.c` + `extern`, warnings | Build sem warnings; som de pulo toca e para |
-| 0.4 | Usar `level_def` de verdade | Colisão lida pelo `level_def` (ou `getTileValue()`); remover `src/map.c` duplicado | Colisão igual à atual em Crateria 1 |
+| 0.3 ✅ | Corrigir bugs conhecidos | `stopSoundJump` (recursão), `control` movido para `.c` + `extern`, warnings | Build sem warnings; som de pulo toca e para |
+| 0.4 ✅ | Usar `level_def` de verdade | Colisão lida pelo `level_def` (`game_init` aponta `MmWorld` para `level->map_collision`); `src/map.c` ficou só com `level_get` | Colisão igual à atual em Crateria 1 |
 
 ### Fase 1 — Refatoração do núcleo
 
 | # | Etapa | Entrega | Teste |
 |---|-------|---------|-------|
-| 1.1 | Dividir `main.c` | `player.c`, `camera.c`, `collision.c`, `input.c`, `level.c` + headers em `inc/` | Comportamento idêntico no trecho inicial |
-| 1.2 | Input por polling | `JOY_readJoypad` por frame (pressionado / segurado / solto), sem estado em `handleInput` | Andar, pular e soltar direção sem "travar" |
+| 1.1 ✅ | Dividir `main.c` | `player.c`, `camera.c`, `collision.c`, `input.c`, `level.c` + headers em `inc/` | Comportamento idêntico no trecho inicial |
+| 1.2 ✅ | Input por polling | `JOY_readJoypad` por frame (pressionado / segurado / solto), sem estado em `handleInput` | Andar, pular e soltar direção sem "travar" |
 | 1.3 | Loop e tempo fixos | Loop único (`update` → `draw` → `SYS_doVBlankProcess`) e contador de frames | 60 fps estáveis |
 | 1.4 | Debug overlay | Posição, velocidade, `is_on_floor`, tile sob os pés (ligado por `#define`) | Valores coerentes ao andar |
 
@@ -63,7 +65,7 @@ Cada etapa é pequena, testável no emulador e termina em **commit + push** (ver
 | 2.1 | Máquina de estados | Parada, andando, pulando, caindo, agachada, bola, spin | Transições corretas em log |
 | 2.2 | Física tabelada | Gravidade/aceleração/velocidades em subpixel (`fix16`); medidas em `docs/FISICA.md` | Altura e alcance do pulo medidos |
 | 2.3 | Pulo variável | Soltar o botão corta o pulo; coyote time curto | Pulo curto vs. longo |
-| 2.4 | Remover voo por d-pad | ↑/↓ passam a mirar / agachar | Samus não "voa" mais |
+| 2.4 ✅ | Remover voo por d-pad | ↑/↓ passam a mirar / agachar | Samus não "voa" mais |
 | 2.5 | Rampas robustas | Altura por coluna (45°, depois 22,5°); subir/descer sem quicar | Percorrer todas as rampas de Crateria 1 sem travar ou flutuar |
 | 2.6 | Agachar e bola | Hitbox menor, animações, passagens estreitas | Entrar em túnel de 1 tile |
 | 2.7 | Spin jump / wall jump | Pulo giratório; wall jump depois | Subir poço com wall jump |
@@ -81,8 +83,8 @@ Cada etapa é pequena, testável no emulador e termina em **commit + push** (ver
 
 | # | Etapa | Entrega | Teste |
 |---|-------|---------|-------|
-| 4.1 | Pool de projéteis | Array estático (sem `malloc`) com posição, direção, vida | 5+ tiros sem queda de fps |
-| 4.2 | Tiro do canhão | Botão B, 8 direções, cadência, colisão com tiles | Tiro some na parede |
+| 4.1 ✅ | Pool de projéteis | Array estático (sem `malloc`) com posição, direção, vida | 5+ tiros sem queda de fps |
+| 4.2 ✅ | Tiro do canhão | Botão A (B ficou para a corrida), 8 direções, cadência, colisão com tiles | Tiro some na parede |
 | 4.3 | Mísseis e super mísseis | Munição, seleção, contador | Sem munição não atira |
 | 4.4 | Beams | Charge, ice, wave como flags de equipamento | Cada beam altera sprite/dano |
 
