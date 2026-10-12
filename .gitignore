@@ -9,6 +9,6 @@ out/
 /tests/out/
 *.pyc
 __pycache__/
-# Referência e sprites extraídos de material original; manter apenas localmente.
+# Pranchas originais de referência: ficam só na máquina local. O resultado
+# extraído para o SGDK (res/images/*-original-sgdk/) é versionado.
 /res/images/original-references/
-/res/images/samus-original-sgdk/

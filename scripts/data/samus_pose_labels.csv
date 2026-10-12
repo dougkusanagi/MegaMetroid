@@ -1,0 +1,218 @@
+label_x,label_y,pose,name,diamond
+16,16,00,Facing forward - Power armor - lift/saving,no
+16,144,01,Facing right - normal,yes
+16,272,02,Facing left - normal,yes
+16,400,03,Facing right - aiming up,yes
+16,528,04,Facing left - aiming up,yes
+16,656,05,Facing right - aiming up-right,yes
+16,784,06,Facing left - aiming up-left,yes
+16,912,07,Facing right - aiming down-right,yes
+16,1040,08,Facing left - aiming down-left,yes
+16,1168,09,Moving right - not aiming,no
+16,1296,0A,Moving left - not aiming,no
+16,1424,0B,Moving right - gun extended forward (not aiming),yes
+16,1552,0C,Moving left - gun extended forward (not aiming),yes
+16,1680,0D,"Moving right - aiming straight up (unused, broken frames)",no
+16,1808,0E,"Moving left - aiming straight up (unused, broken frames)",no
+16,1936,0F,Moving right - aiming up-right,yes
+16,2064,10,Moving left - aiming up-left,yes
+16,2192,11,Moving right - aiming down-right,yes
+16,2320,12,Moving left - aiming down-left,yes
+16,2448,13,Facing right - normal jump - not aiming - not moving - gun extended,yes
+16,2576,14,Facing left - normal jump - not aiming - not moving - gun extended,yes
+16,2704,15,Facing right - normal jump - aiming up,yes
+16,2961,17,Facing right - normal jump - aiming down,yes
+16,3088,18,Facing left - normal jump - aiming down,yes
+16,3216,19,Facing right - spin jump,no
+16,3344,1A,Facing left - spin jump,no
+16,3472,1B,Facing right - space jump,no
+16,3600,1C,Facing left - space jump,no
+16,3728,1D,Facing right - morph ball - no springball - on ground,no
+16,3760,1E,Moving right - morph ball - no springball - on ground,no
+16,3792,31,Facing right - morph ball - no springball - in air,no
+16,3824,32,Facing left - morph ball - no springball - in air,no
+16,3856,79,Facing right - morph ball - spring ball - on ground,no
+16,3888,7B,Moving right - morph ball - spring ball - on ground,no
+16,3920,7D,Moving right - morph ball - spring ball - falling,no
+16,3952,7F,Moving right - morph ball - spring ball - jump in air,no
+16,4080,1F,Moving left - morph ball - no springball - on ground,no
+16,4112,41,Facing left - morph ball - no springball - on ground,no
+16,4144,7A,Facing left - morph ball - spring ball - on ground,no
+16,4176,7C,Moving left - morph ball - spring ball - on ground,no
+16,4208,7E,Moving left - morph ball - spring ball - falling,no
+16,4240,80,Moving left - morph ball - spring ball - jump in air,no
+1056,16,25,Facing right - turning - standing,no
+1056,48,BF,Facing right - moonwalking - turn/jump left,no
+1056,176,26,Facing left - turning - standing,no
+1056,208,C0,Facing left - moonwalking - turn/jump right,no
+1056,336,27,Facing right - crouching,yes
+1056,464,28,Facing left - crouching,yes
+1056,592,29,Facing right - falling,no
+1056,720,2A,Facing left - falling,no
+1056,848,2B,Facing right - falling - aiming up,yes
+1056,976,2C,Facing left - falling - aiming up,yes
+1056,1104,2D,Facing right - falling - aiming down,yes
+1056,1232,2E,Facing left - falling - aiming down,yes
+1056,1360,2F,Facing right - turning - jumping,no
+1056,1392,43,Facing right - turning - crouching,no
+1056,1424,87,Facing right - turning - falling,no
+1056,1552,30,Facing left - turning - jumping,no
+1056,1584,44,Facing left - turning - crouching,no
+1056,1616,88,Facing left - turning - falling,no
+1056,1744,35,Facing right - crouching transition,no
+1056,1872,36,Facing left - crouching transition,no
+1056,2000,37,Facing right - morphing transition,no
+1056,2128,38,Facing left - morphing transition,no
+1056,2256,3B,Facing right - standing from crouching,no
+1056,2384,3C,Facing left - standing from crouching,no
+1056,2512,3D,Facing right - unmorphing transition,no
+1056,2640,3E,Facing left - unmorphing transition,no
+1056,2768,49,Facing left - moonwalk,yes
+1056,2896,4A,Facing right - moonwalk,yes
+1056,3024,4B,Facing right - normal jump transition,yes
+1056,3152,4C,Facing left - normal jump transition,no
+1056,3280,4D,Facing right - normal jump - not aiming - not moving,no
+1056,3408,4E,Facing left - normal jump - not aiming - not moving - gun not extended,no
+1056,3536,4F,Facing left - damage boost,no
+1056,3664,50,Facing right - damage boost,no
+1056,3792,51,Facing right - normal jump - not aiming - moving forward,yes
+1056,3920,52,Facing left - normal jump - not aiming - moving forward,yes
+1056,4048,53,Facing right - knockback,no
+1056,4176,54,Facing left - knockback,no
+2096,16,55,Facing right - normal jump transition - aiming up,yes
+2096,48,F1,Facing right - crouch transition - aiming up,no
+2096,80,F7,Facing right - crouching to standing - aiming up,no
+2096,208,56,Facing left - normal jump transition - aiming up,yes
+2096,240,F2,Facing left - crouch transition - aiming up,no
+2096,272,F8,Facing left - crouching to standing - aiming up-left,no
+2096,400,57,Facing right - normal jump transition - aiming up-right,no
+2096,432,F3,Facing right - crouch transition - aiming up-right,no
+2096,464,F9,Facing right - crouching to standing - aiming up-right,no
+2096,592,58,Facing left - normal jump transition - aiming up-left,no
+2096,624,F4,Facing left - crouch transition - aiming up-left,no
+2096,656,FA,Facing left - crouching to standing - aiming up-left,no
+2096,784,59,Facing right - normal jump transition - aiming down-right,no
+2096,816,F5,Facing right - crouch transition - aiming down-right,no
+2096,848,FB,Facing right - crouching to standing - aiming down-right,no
+2096,976,5A,Facing left - normal jump transition - aiming down-left,no
+2096,1008,F6,Facing left - crouch transition - aiming down-left,no
+2096,1040,FC,Facing left - crouching to standing - aiming down-left,no
+2096,1168,65,"Facing left/right - broken grapple jump (unused, 65 and 66)",no
+2096,1296,67,Facing right - falling - gun extended,yes
+2096,1424,68,Facing left - falling - gun extended,yes
+2096,1552,69,Facing left - normal jump - aiming up-right,yes
+2096,1680,6A,Facing left - normal jump - aiming up-left,yes
+2096,1808,6B,Facing right - normal jump - aiming down-right,yes
+2096,1936,6C,Facing left - normal jump - aiming down-left,yes
+2096,2064,6D,Facing right - falling - aiming up-right,yes
+2096,2192,6E,Facing left - falling - aiming up-left,yes
+2096,2320,6F,Facing right - falling - aiming down-right,yes
+2096,2448,70,Facing left - falling - aiming down-left,yes
+2096,2576,71,Facing right - standing to crouching - aiming up-right,yes
+2096,2704,72,Facing left - standing to crouching - aiming up-left,yes
+2096,2832,73,Facing right - standing to crouching - aiming down-right,yes
+2096,2960,74,Facing left - standing to crouching - aiming down-left,yes
+2096,3088,75,Facing left - moonwalk - aiming up-left,yes
+2096,3216,76,Facing right - moonwalk - aiming up-right,yes
+2096,3344,77,Facing left - moonwalk - aiming down-left,yes
+2096,3472,78,Facing right - moonwalk - aiming down-right,yes
+2096,3600,83,Facing right - wall jump,no
+2096,3728,84,Facing left - wall jump,no
+2096,3856,85,Facing right - crouching - aiming up,yes
+2096,3984,86,Facing left - crouching - aiming up,yes
+2096,4112,89,Facing right - ran into a wall,no
+2096,4240,8A,Facing left - ran into a wall,no
+2752,16,9B,Facing forward - Varia/Gravity Suit - lift/saving,no
+2752,144,A4,Facing right - landing from normal jump,yes
+2752,272,A5,Facing left - landing from normal jump,no
+2752,400,A6,Facing right - landing from spin jump,yes
+2752,528,A7,Facing left - landing from spin jump,no
+2752,656,8B,Facing right - turning - standing - aiming up,no
+2752,688,9C,Facing right - turning - standing - aiming up-right,no
+2752,720,C1,Facing right - moonwalking - turn/jump left - aiming up-right,no
+2752,848,8C,Facing left - turning - standing - aiming up,no
+2752,880,9D,Facing left - turning - standing - aiming up-left,no
+2752,912,C2,Facing left - moonwalking - turn/jump right - aiming up-left,no
+2752,1040,8D,Facing right - turning - standing - aiming down-right,no
+2752,1072,C3,Facing right - moonwalking - turn/jump left - aiming down-right,no
+2752,1200,8E,Facing left - turning - standing - aiming down-left,no
+2752,1232,C4,Facing left - moonwalking - turn/jump right - aiming down-left,no
+2752,1360,91,Facing right - turning - in air - aiming down,no
+2752,1392,95,Facing right - turning - falling - aiming down,no
+2752,1424,99,Facing right - turning - crouching - aiming down,no
+2752,1552,92,Facing left - turning - in air - aiming down,no
+2752,1584,96,Facing left - turning - falling - aiming down,no
+2752,1616,9A,Facing left - turning - crouching - aiming down,no
+2752,1744,8F,Facing right - turning - in air - aiming up,no
+2752,1776,93,Facing right - turning - falling - aiming up,no
+2752,1808,97,Facing right - turning - crouching - aiming up,no
+2752,1840,9E,Facing right - turning - midair - aiming up-right,no
+2752,1872,A0,Facing right - turning - falling - aiming up-right,no
+2752,1904,A2,Facing right - turning - crouching - aiming up-right,no
+2752,2032,90,Facing left - turning - in air - aiming up,no
+2752,2064,94,Facing left - turning - falling - aiming up,no
+2752,2096,98,Facing left - turning - crouching - aiming up,no
+2752,2128,9F,Facing left - turning - midair - aiming up-left,no
+2752,2160,A1,Facing left - turning - falling - aiming up-left,no
+2752,2192,A3,Facing left - turning - crouching - aiming up-left,no
+2752,2320,B8,Facing left - grapple - attached to a wall on right,no
+2752,2448,B9,Facing right - grapple - attached to a wall on left,no
+2752,2576,BA,Facing left - grabbed by Draygon - not moving,no
+2752,2704,BB,Facing left - grabbed by Draygon - aiming up-left - not moving,no
+2752,2832,BC,Facing left - grabbed by Draygon - firing,no
+2752,2960,BD,Facing left - grabbed by Draygon - aiming down-left - not moving,no
+2752,3088,BE,Facing left - grabbed by Draygon - moving,no
+2752,3216,C7,Facing right - vertical shine-spark - windup,no
+2752,3344,C8,Facing left - vertical shine-spark - windup,no
+2752,3472,C9,Facing right - horizontal shine-spark,no
+2752,3504,CD,Facing right - diagonal shinespark,no
+2752,3632,CA,Facing left - horizontal shine-spark,no
+2752,3664,CE,Facing left - diagonal shinespark,no
+2752,3792,CB,Facing right - vertical shine-spark,no
+2752,3920,CC,Facing left - vertical shine-spark,no
+3408,16,CF,Facing right - ran into a wall - aiming up-right,no
+3408,144,D0,Facing left - ran into a wall - aiming up-left,no
+3408,272,D1,Facing right - ran into a wall - aiming down-right,no
+3408,400,D2,Facing left - ran into a wall - aiming down-left,no
+3408,528,D5,Facing right - x-ray - standing,no
+3408,656,D6,Facing left - x-ray - standing,no
+3408,784,D9,Facing right - x-ray - crouching,no
+3408,912,DA,Facing left - x-ray - crouching,no
+3408,1040,E0,Facing right - landing from normal jump - aiming up,no
+3408,1168,E1,Facing left - landing from normal jump - aiming up,no
+3408,1296,E2,Facing right - landing from normal jump - aiming up-right,no
+3408,1424,E3,Facing left - landing from normal jump - aiming up-left,no
+3408,1552,E4,Facing right - landing from normal jump - aiming down-right,no
+3408,1680,E5,Facing left - landing from normal jump - aiming down-left,no
+3408,1808,E6,Facing right - landing from normal jump - firing,no
+3408,1936,E7,Facing left - landing from normal jump - firing,no
+3408,2064,E8,Facing right - Samus drained - crouching,no
+3408,2193,E9,Facing left - Samus drained - crouching,no
+3408,2321,EA,Facing right - exhausted - watching Metroid attack MB,no
+3408,2448,EB,Facing left - exhausted - watching Metroid attack MB,no
+3408,2576,EC,Facing right - grabbed by Draygon - not moving,no
+3408,2704,ED,Facing right - grabbed by Draygon - aiming up-right - not moving,no
+3408,2832,EE,Facing right - grabbed by Draygon - firing,no
+3408,2960,EF,Facing right - grabbed by Draygon - aiming down-right - not moving,no
+3408,3088,F0,Facing right - grabbed by Draygon - moving,no
+3408,3216,,Facing right - low health,no
+3408,3344,,Facing left - low health,no
+3408,3472,,Facing right - crouching - low health,no
+3408,3600,,Facing left - crouching - low health,no
+4048,16,,Facing left - trying to stand after MB attack - index 1,no
+4048,144,,Facing left - trying to stand after MB attack - index 2,no
+4048,272,,Facing left - more exhausted frames during Mother Brain fight,no
+4048,400,,Facing left - spare Mother Brain fight frames,no
+4048,528,,Facing right - spare Metroid draining frames,no
+4048,656,,Facing right - wall jump (extra),no
+4048,784,,Facing left - wall jump (extra),no
+4048,912,,Facing right - wall jump into space jump,no
+4048,1040,,Facing left - wall jump into space jump,no
+4048,1168,,Facing forward - Power armor - loading,no
+4048,1296,,Facing forward - Varia/Gravity suit - loading,no
+4048,1424,,Facing right - wall jump into screw attack,no
+4048,1552,,Facing left - wall jump into screw attack,no
+4048,1680,81,Facing right - screw attack,no
+4048,1808,82,Facing left - screw attack,no
+4048,1936,B2,Facing clockwise - grapple,no
+4048,2256,B3,Facing counter-clockwise - grapple,no
