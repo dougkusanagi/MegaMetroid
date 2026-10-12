@@ -43,7 +43,7 @@ Cada etapa é pequena, testável no emulador e termina em **commit + push** (ver
 | # | Etapa | Entrega | Teste |
 |---|-------|---------|-------|
 | 0.1 ✅ | Ambiente de build documentado | `docs/BUILD.md`: `GDK`, comando de build (`make -f %GDK%\makefile.gen`), emulador usado | `out/rom.bin` gerado a partir de clone limpo |
-| 0.2 | `.gitignore` e limpeza | Ignorar `out/`, `git rm -r --cached out`; remover `src/better-org` e `src/working-v-col` | Build gera `rom.bin`; `git status` limpo após build |
+| 0.2 ✅ | `.gitignore` e limpeza | Ignorar `out/`, `git rm -r --cached out`; remover `src/better-org` e `src/working-v-col` | Build gera `rom.bin`; `git status` limpo após build |
 | 0.3 | Corrigir bugs conhecidos | `stopSoundJump` (recursão), `control` movido para `.c` + `extern`, warnings | Build sem warnings; som de pulo toca e para |
 | 0.4 | Usar `level_def` de verdade | Colisão lida pelo `level_def` (ou `getTileValue()`); remover `src/map.c` duplicado | Colisão igual à atual em Crateria 1 |
 

@@ -1,3 +1,6 @@
 # Copiados do SGDK pelo makefile.gen na primeira build (versão do SGDK instalado)
 src/boot/sega.s
 src/boot/rom_head.c
+
+# Artefatos de build (gerados por make -f %GDK%\makefile.gen)
+out/

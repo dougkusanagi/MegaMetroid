@@ -48,5 +48,5 @@ Neste ambiente não há emulador instalado, então a etapa 0.1 foi validada só 
 
 ## Problemas conhecidos
 
-- `out/` ainda está versionado no git, com arquivos `.d` que apontam para um caminho antigo (`D:/MegaDrive/Projects/MegaMetroid`). Se `out/` existir no clone, a build falha com `No rule to make target ...`. Solução provisória: apague `out/` antes de compilar. Será corrigido na etapa 0.2.
 - Build atual com avisos de `const` em `src/map_crateria_1.c` e `src/map_crateria_2.c`. Serão tratados na etapa 0.3.
+- Se uma build antiga deixou `out/` com arquivos `.d` que apontam para outro caminho (ex.: `D:/MegaDrive/Projects/MegaMetroid`), a build falha com `No rule to make target ...`. Solução: apague `out/` e compile de novo.
