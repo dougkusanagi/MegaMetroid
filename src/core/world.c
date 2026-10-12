@@ -58,6 +58,7 @@ void mm_body_init(MmBody *b, int x, int y, MmRect hitbox)
     b->shoot_frame = 3;
     b->ball = b->crouching = 0;
     b->coyote = 0;
+    b->wall_lock = b->wall_vx = 0;
     b->state = MM_STATE_STAND;
     b->stand_box = hitbox;
 }
@@ -140,7 +141,7 @@ static MmState body_state(const MmBody *b)
 void mm_tick(const MmWorld *w, MmBody *b, MmInput input)
 {
     int direction = input.axis < 0 ? -1 : input.axis > 0 ? 1 : 0;
-    int moving_before_jump = b->vx != 0;
+    int moving_before_jump = b->vx != 0, wall_jump;
     /* Dash builds on the ground; takeoff retains the bonus. Stopping,
        reversing, releasing on ground or hitting a wall cancels it. */
     if (!direction || direction != b->move_direction) b->run_extra = 0;
@@ -153,6 +154,13 @@ void mm_tick(const MmWorld *w, MmBody *b, MmInput input)
     b->move_direction = direction;
     b->jumped = input.jump_pressed && (b->grounded || b->coyote > 0);
     if (b->jumped) { b->spin_jumping = moving_before_jump; b->coyote = 0; }
+    /* Wall jump: airborne and pressing into a wall. The kick goes away from it and locks steering. */
+    wall_jump = input.jump_pressed && !b->jumped && !b->grounded && !b->ball && direction &&
+                mm_blocked(w, b, mm_pixel(b->x) + direction, mm_pixel(b->y));
+    if (wall_jump) {
+        b->jumped = 1; b->spin_jumping = 1;
+        b->wall_lock = MM_WALL_LOCK; b->wall_vx = -direction * MM_SPEED;
+    }
     if (input.shoot_pressed) {
         b->shoot_pose_timer = 10;
         b->spin_jumping = 0;
@@ -168,16 +176,17 @@ void mm_tick(const MmWorld *w, MmBody *b, MmInput input)
         ((input.aim_y > 0 && !direction) || (b->crouching && !fits(w, b, b->stand_box)));
     b->hitbox = b->ball ? ball_box(b->stand_box) :
                 b->crouching ? crouch_box(b->stand_box) : b->stand_box;
-    b->vx = direction * (MM_SPEED + b->run_extra);
+    b->vx = b->wall_lock ? b->wall_vx : direction * (MM_SPEED + b->run_extra);
+    if (b->wall_lock) --b->wall_lock;
     if (input.axis) b->facing_left = input.axis < 0;
-    if (b->jumped) { b->vy = -MM_JUMP; b->grounded = 0; }
+    if (b->jumped) { b->vy = wall_jump ? -MM_WALL_JUMP : -MM_JUMP; b->grounded = 0; }
     /* Releasing jump while rising caps the ascent, so a tap makes a short hop. */
     if (!input.jump_held && b->vy < -MM_JUMP_CUT) b->vy = -MM_JUMP_CUT;
     b->vy += MM_GRAVITY;
     if (b->vy > MM_MAX_FALL) b->vy = MM_MAX_FALL;
     mm_move(w, b);
     if (!b->vx) b->run_extra = 0;
-    if (b->grounded) b->spin_jumping = 0;
+    if (b->grounded) { b->spin_jumping = 0; b->wall_lock = 0; }
     if (b->grounded) b->coyote = MM_COYOTE_TICKS;
     else if (b->coyote) --b->coyote;
     b->state = body_state(b);

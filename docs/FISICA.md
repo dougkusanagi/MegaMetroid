@@ -28,6 +28,8 @@ rótulos `SamusPhysicsConstants_*`. Os valores ainda não foram medidos no jogo 
 | `MM_MAX_FALL` | 1536 | 6,0 px/tick | Acelera de queda até `$0005` → 5 px/frame |
 | `MM_JUMP_CUT` | 768 | 3,0 px/tick | Soltar C na subida corta a velocidade até este valor (decisão do projeto) |
 | `MM_COYOTE_TICKS` | 6 | 5 ticks após sair do chão | Janela para pular depois de cair de uma borda (decisão do projeto) |
+| `MM_WALL_JUMP` | 1184 | 4,625 px/tick | Pulo de parede: `InitialYSpeeds_WallJumping` = `$04A0` → 4,625 px/frame |
+| `MM_WALL_LOCK` | 12 | 12 ticks | Impulso de parede: afasta da parede a 2,75 px/tick, sem direcional (decisão do projeto) |
 
 Diferenças em relação ao SM: a gravidade é o dobro, o pulo é 35% mais rápido e a
 queda vai até 6 px/tick (SM para perto de 5). O projeto mantém esses valores por
@@ -90,6 +92,18 @@ antes de fixar constantes (seção 4 de [PLANO.md](PLANO.md)).
 - Sprites: agachar usa a pose de pé e a bola usa os quadros de giro, até a fase 3.
 - Pular a partir de agachado sob teto baixo não é tratado: o corpo volta à caixa em
   pé já no tick seguinte ao pulo, e a colisão empurra a Samus para baixo do teto.
+
+## Pulo giratório e pulo de parede (2.7)
+
+- **Giratório**: pular enquanto já se anda vira `spin_jumping`. A pose de giro dura o
+  voo e para ao tocar o chão ou ao atirar.
+- **Parede**: no ar, com o direcional apontando para uma parede sólida, apertar C faz
+  um pulo de parede. Ele dá `MM_WALL_JUMP` para cima e um impulso de 2,75 px/tick
+  para longe da parede, sem direcional, por `MM_WALL_LOCK` ticks. Usa o estado SPIN.
+- O teste `wall_climb()` sobe um poço de 40 px de largura, do chão (y 112) até y 39,
+  com 3 impulsos de parede. Ele conta os impulsos e exige pelo menos 2, para que um
+  pulo do chão não baste.
+- Sem deslizar na parede: a queda continua no ritmo normal enquanto encosta.
 
 ## Limites e próximos passos
 

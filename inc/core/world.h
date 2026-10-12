@@ -12,6 +12,8 @@
 #define MM_MAX_FALL 1536 /* 6 px/tick; SM stops accelerating near 5 px/frame ($0005). */
 #define MM_JUMP_CUT 768 /* 3 px/tick: letting go of jump while rising caps the ascent here. */
 #define MM_COYOTE_TICKS 6 /* Refilled while grounded; a jump still starts in the 5 ticks after leaving. */
+#define MM_WALL_JUMP 1184 /* 4.625 px/tick takeoff; SM wall jump is $04A0 (4.625 px/frame). */
+#define MM_WALL_LOCK 12 /* Ticks a wall kick ignores steering and keeps its speed away from the wall. */
 
 typedef struct { int left, top, right, bottom; } MmRect;
 typedef struct { const unsigned char *tiles; int columns, rows; } MmWorld;
@@ -29,6 +31,7 @@ typedef struct {
     int spin_jumping, shoot_pose_timer, shoot_frame;
     int ball, crouching; /* Toggled by down/up presses and the d-pad. */
     int coyote; /* Ticks left in which a grounded jump is still allowed. */
+    int wall_lock, wall_vx; /* Wall kick: ticks left and the fixed speed while locked. */
     MmState state; /* Derived at the end of every mm_tick. */
 } MmBody;
 typedef struct {

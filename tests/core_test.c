@@ -323,8 +323,31 @@ static void tunnels(void) {
     assert(b.crouching && b.hitbox.top == 24 && b.hitbox.bottom == 48 && b.state == MM_STATE_CROUCH);
     puts("PASS ball through a 2-tile tunnel; no standing up or un-morphing under the ceiling");
 }
+/* Climbs a 40 px shaft by alternating wall jumps: the body must rise from y 112 to 40. */
+static void wall_climb(void) {
+    MmBody b;
+    MmRect real = {8, 8, 32, 48};
+    int i, y, side = -1, wall_jumps = 0;
+    reset(); floor_at(20);
+    for (y = 0; y < 20; ++y) { tiles[y * 64 + 12] = 0; tiles[y * 64 + 18] = 0; }
+    mm_body_init(&b, 100, 112, real);
+    for (i = 0; i < 400 && mm_pixel(b.y) > 40; ++i) {
+        MmInput in = {0};
+        int left = mm_blocked(&world, &b, mm_pixel(b.x) - 1, mm_pixel(b.y));
+        int right = mm_blocked(&world, &b, mm_pixel(b.x) + 1, mm_pixel(b.y));
+        in.jump_held = 1;
+        if (b.grounded) { in.axis = side; in.jump_pressed = 1; }
+        else if (left) { in.axis = -1; in.jump_pressed = 1; side = 1; }
+        else if (right) { in.axis = 1; in.jump_pressed = 1; side = -1; }
+        else in.axis = side;
+        mm_tick(&world, &b, in);
+        if (b.wall_lock == MM_WALL_LOCK - 1) ++wall_jumps;
+    }
+    assert(mm_pixel(b.y) <= 40 && wall_jumps >= 2);
+    printf("PASS wall jumps: %d kicks climbed the 40 px shaft to y %d\n", wall_jumps, mm_pixel(b.y));
+}
 int main(void) {
     movement(); collisions(); jump_and_ledge(); states(); physics(); variable_jump(); coyote_jump();
-    slopes(); slope_sweep(); tunnels(); camera_and_input(); real_levels();
+    slopes(); slope_sweep(); tunnels(); wall_climb(); camera_and_input(); real_levels();
     puts("All core regression tests passed."); return 0;
 }
