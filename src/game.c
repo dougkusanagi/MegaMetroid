@@ -9,7 +9,7 @@
 #ifndef MM_DEBUG_OVERLAY
 #define MM_DEBUG_OVERLAY 0
 #endif
-#define OVERLAY_ROWS 3
+#define OVERLAY_ROWS 4
 
 enum { ANIM_STAND, ANIM_WALK, ANIM_JUMP };
 
@@ -34,10 +34,11 @@ static void draw_debug_overlay(const Game *g)
     VDP_drawText(line, 0, 0);
     sprintf(line, "VX %s  VY %s", vx, vy);
     VDP_drawText(line, 0, 1);
-    sprintf(line, "%s  FOOT L %d R %d", g->player.grounded ? "GROUND" : "AIR   ",
-            mm_tile(&g->world, left / MM_TILE, foot_row),
-            mm_tile(&g->world, right / MM_TILE, foot_row));
+    sprintf(line, "%-6s %s", mm_state_name(g->player.state), g->player.grounded ? "GROUND" : "AIR   ");
     VDP_drawText(line, 0, 2);
+    sprintf(line, "FOOT L %d R %d", mm_tile(&g->world, left / MM_TILE, foot_row),
+            mm_tile(&g->world, right / MM_TILE, foot_row));
+    VDP_drawText(line, 0, 3);
 }
 #endif
 
@@ -185,5 +186,7 @@ void game_frame(Game *g)
     input.shoot_held = (buttons & BUTTON_A) != 0;
     input.shoot_pressed = (pressed & BUTTON_A) != 0;
     input.aim_y = ((buttons & BUTTON_DOWN) != 0) - ((buttons & BUTTON_UP) != 0);
+    input.down_pressed = (pressed & BUTTON_DOWN) != 0;
+    input.up_pressed = (pressed & BUTTON_UP) != 0;
     game_update(g, input);
 }

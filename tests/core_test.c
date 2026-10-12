@@ -142,7 +142,42 @@ static void real_levels(void) {
     }
     puts("PASS 40000 simulation ticks on actual Crateria maps");
 }
+/* Ticks with the given input, appending each state change to log ("STAND WALK"). */
+static void run_states(MmBody *b, char *log, MmInput input, int ticks) {
+    int i;
+    for (i = 0; i < ticks; ++i) {
+        MmState before = b->state;
+        mm_tick(&world, b, input);
+        if (b->state != before) { strcat(log, " "); strcat(log, mm_state_name(b->state)); }
+    }
+}
+static void states(void) {
+    MmBody b;
+    char log[256] = "STAND";
+    MmInput right = {.axis = 1}, down = {.aim_y = 1};
+    MmInput jump = {.jump_pressed = 1};
+    MmInput spin = {.axis = 1, .jump_pressed = 1};
+    MmInput down_press = {.aim_y = 1, .down_pressed = 1}, up_press = {.up_pressed = 1};
+    reset(); floor_at(20);
+    mm_body_init(&b, 80, 144, box);
+    run_states(&b, log, idle, 1);
+    run_states(&b, log, right, 20);
+    run_states(&b, log, idle, 2);
+    run_states(&b, log, jump, 1);
+    run_states(&b, log, idle, 100);
+    run_states(&b, log, right, 10);
+    run_states(&b, log, spin, 1);
+    run_states(&b, log, idle, 100);
+    run_states(&b, log, down, 5);
+    run_states(&b, log, idle, 2);
+    run_states(&b, log, jump, 1);
+    run_states(&b, log, down_press, 1);
+    run_states(&b, log, down, 100);
+    run_states(&b, log, up_press, 1);
+    assert(strcmp(log, "STAND WALK STAND JUMP FALL STAND WALK SPIN STAND CROUCH STAND JUMP BALL STAND") == 0);
+    printf("PASS state transitions: %s\n", log);
+}
 int main(void) {
-    movement(); collisions(); jump_and_ledge(); slopes(); camera_and_input(); real_levels();
+    movement(); collisions(); jump_and_ledge(); states(); slopes(); camera_and_input(); real_levels();
     puts("All core regression tests passed."); return 0;
 }

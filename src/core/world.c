@@ -56,6 +56,8 @@ void mm_body_init(MmBody *b, int x, int y, MmRect hitbox)
     b->run_extra = b->move_direction = 0;
     b->spin_jumping = b->shoot_pose_timer = 0;
     b->shoot_frame = 3;
+    b->ball = b->crouching = 0;
+    b->state = MM_STATE_STAND;
 }
 
 void mm_move(const MmWorld *w, MmBody *b)
@@ -102,6 +104,14 @@ void mm_move(const MmWorld *w, MmBody *b)
     }
 }
 
+static MmState body_state(const MmBody *b)
+{
+    if (b->ball) return MM_STATE_BALL;
+    if (b->grounded) return b->crouching ? MM_STATE_CROUCH : b->vx ? MM_STATE_WALK : MM_STATE_STAND;
+    if (b->spin_jumping) return MM_STATE_SPIN;
+    return b->vy < 0 ? MM_STATE_JUMP : MM_STATE_FALL;
+}
+
 void mm_tick(const MmWorld *w, MmBody *b, MmInput input)
 {
     int direction = input.axis < 0 ? -1 : input.axis > 0 ? 1 : 0;
@@ -125,6 +135,9 @@ void mm_tick(const MmWorld *w, MmBody *b, MmInput input)
         else if (input.aim_y > 0 && !b->grounded) b->shoot_frame = input.axis ? 4 : 4;
         else b->shoot_frame = 3;
     } else if (b->shoot_pose_timer) --b->shoot_pose_timer;
+    /* Down morphs in the air; up un-morphs. The ball persists through landing. */
+    if (input.down_pressed && !b->grounded) b->ball = 1;
+    if (input.up_pressed) b->ball = 0;
     b->vx = direction * (MM_SPEED + b->run_extra);
     if (input.axis) b->facing_left = input.axis < 0;
     if (b->jumped) { b->vy = -MM_JUMP; b->grounded = 0; }
@@ -133,4 +146,12 @@ void mm_tick(const MmWorld *w, MmBody *b, MmInput input)
     mm_move(w, b);
     if (!b->vx) b->run_extra = 0;
     if (b->grounded) b->spin_jumping = 0;
+    b->crouching = b->grounded && !b->ball && input.aim_y > 0 && !direction;
+    b->state = body_state(b);
+}
+
+const char *mm_state_name(MmState state)
+{
+    static const char *const names[] = {"STAND", "WALK", "CROUCH", "BALL", "JUMP", "SPIN", "FALL"};
+    return names[state];
 }

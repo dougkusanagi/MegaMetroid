@@ -12,6 +12,10 @@
 
 typedef struct { int left, top, right, bottom; } MmRect;
 typedef struct { const unsigned char *tiles; int columns, rows; } MmWorld;
+typedef enum {
+    MM_STATE_STAND, MM_STATE_WALK, MM_STATE_CROUCH, MM_STATE_BALL,
+    MM_STATE_JUMP, MM_STATE_SPIN, MM_STATE_FALL
+} MmState;
 typedef struct {
     int x, y; /* Q24.8 world position; never discard fractional movement. */
     int vx, vy;
@@ -19,10 +23,13 @@ typedef struct {
     int grounded, facing_left, jumped;
     int run_extra, move_direction;
     int spin_jumping, shoot_pose_timer, shoot_frame;
+    int ball, crouching; /* Toggled by down/up presses and the d-pad. */
+    MmState state; /* Derived at the end of every mm_tick. */
 } MmBody;
 typedef struct {
     int axis, jump_pressed;
     int run_held, shoot_held, shoot_pressed, aim_y;
+    int down_pressed, up_pressed;
 } MmInput;
 typedef struct { unsigned short previous; } MmInputState;
 typedef struct { MmRect trigger, bounds; } MmCameraZone;
@@ -37,6 +44,7 @@ void mm_move(const MmWorld *world, MmBody *body);
 void mm_tick(const MmWorld *world, MmBody *body, MmInput input);
 MmInput mm_input(MmInputState *state, unsigned short buttons,
                  unsigned short left, unsigned short right, unsigned short jump);
+const char *mm_state_name(MmState state);
 MmCamera mm_camera(int x, int y, int width, int height, MmRect bounds);
 MmRect mm_camera_bounds(int x, int y, MmRect fallback,
                         const MmCameraZone *zones, int count);
