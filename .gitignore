@@ -9,3 +9,6 @@ out/
 /tests/out/
 *.pyc
 __pycache__/
+# Referência e sprites extraídos de material original; manter apenas localmente.
+/res/images/original-references/
+/res/images/samus-original-sgdk/
