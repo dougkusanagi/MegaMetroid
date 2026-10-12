@@ -7,7 +7,7 @@
 static unsigned char tiles[64 * 32];
 static MmWorld world = {tiles, 64, 32};
 static MmRect box = {0, 0, 8, 16};
-static MmInput idle = {0, 0};
+static MmInput idle = {0};
 static void reset(void) { memset(tiles, 1, sizeof tiles); }
 static void floor_at(int row) {
     int x, y;
@@ -19,14 +19,14 @@ static void movement(void) {
     reset(); floor_at(30);
     mm_body_init(&left, 256, 224, box); right = left;
     for (i = 0; i < 80; ++i) {
-        MmInput l = {-1, 0}, r = {1, 0};
+        MmInput l = {.axis = -1}, r = {.axis = 1};
         mm_tick(&world, &left, l); mm_tick(&world, &right, r);
         assert(origin - left.x == right.x - origin);
         assert(right.x - origin == (i + 1) * MM_SPEED);
     }
     {
         MmBody b;
-        MmInput l = {-1,0}, r = {1,0};
+        MmInput l = {.axis = -1}, r = {.axis = 1};
         mm_body_init(&b,256,224,box);
         for(i=0;i<50;++i) { mm_tick(&world,&b,r); mm_tick(&world,&b,idle); }
         for(i=0;i<50;++i) { mm_tick(&world,&b,l); mm_tick(&world,&b,idle); }
@@ -58,7 +58,7 @@ static void collisions(void) {
 }
 static void jump_and_ledge(void) {
     MmBody b; int i;
-    MmInput jump = {0, 1}, right = {1, 0};
+    MmInput jump = {.jump_pressed = 1}, right = {.axis = 1};
     reset(); floor_at(20);
     mm_body_init(&b, 80, 144, box); mm_tick(&world, &b, idle);
     assert(b.grounded);
@@ -75,7 +75,7 @@ static void jump_and_ledge(void) {
 static void slopes(void) {
     MmBody b; int x, y, i;
     MmRect tiny = {0,0,4,8};
-    MmInput right = {1,0}, left = {-1,0};
+    MmInput right = {.axis = 1}, left = {.axis = -1};
     reset();
     /* Ascending staircase of slope tiles, with flat approaches. */
     for (x=0; x<64; ++x) {
