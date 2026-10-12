@@ -186,6 +186,7 @@ void game_frame(Game *g)
     input.shoot_held = (buttons & BUTTON_A) != 0;
     input.shoot_pressed = (pressed & BUTTON_A) != 0;
     input.aim_y = ((buttons & BUTTON_DOWN) != 0) - ((buttons & BUTTON_UP) != 0);
+    input.jump_held = (buttons & BUTTON_C) != 0;
     input.down_pressed = (pressed & BUTTON_DOWN) != 0;
     input.up_pressed = (pressed & BUTTON_UP) != 0;
     game_update(g, input);

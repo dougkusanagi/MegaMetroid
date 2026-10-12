@@ -10,6 +10,8 @@
 #define MM_GRAVITY 56 /* 0.22 px/tick^2; SM NTSC is 0.11 (regional $1C00). */
 #define MM_JUMP 1690 /* 6.6 px/tick at takeoff; SM normal jump is 4.875 ($04E0). */
 #define MM_MAX_FALL 1536 /* 6 px/tick; SM stops accelerating near 5 px/frame ($0005). */
+#define MM_JUMP_CUT 768 /* 3 px/tick: letting go of jump while rising caps the ascent here. */
+#define MM_COYOTE_TICKS 6 /* Refilled while grounded; a jump still starts in the 5 ticks after leaving. */
 
 typedef struct { int left, top, right, bottom; } MmRect;
 typedef struct { const unsigned char *tiles; int columns, rows; } MmWorld;
@@ -25,12 +27,13 @@ typedef struct {
     int run_extra, move_direction;
     int spin_jumping, shoot_pose_timer, shoot_frame;
     int ball, crouching; /* Toggled by down/up presses and the d-pad. */
+    int coyote; /* Ticks left in which a grounded jump is still allowed. */
     MmState state; /* Derived at the end of every mm_tick. */
 } MmBody;
 typedef struct {
     int axis, jump_pressed;
     int run_held, shoot_held, shoot_pressed, aim_y;
-    int down_pressed, up_pressed;
+    int jump_held, down_pressed, up_pressed;
 } MmInput;
 typedef struct { unsigned short previous; } MmInputState;
 typedef struct { MmRect trigger, bounds; } MmCameraZone;

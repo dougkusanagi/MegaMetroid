@@ -26,6 +26,8 @@ rótulos `SamusPhysicsConstants_*`. Os valores ainda não foram medidos no jogo 
 | `MM_JUMP` | 1690 | 6,60 px/tick no takeoff | `InitialYSpeeds_Jumping` = `$04E0` → 4,875 px/frame |
 | `MM_GRAVITY` | 56 | 0,219 px/tick² | `YSubAccelerationInAir` = `$1C00` → 0,109 px/frame² |
 | `MM_MAX_FALL` | 1536 | 6,0 px/tick | Acelera de queda até `$0005` → 5 px/frame |
+| `MM_JUMP_CUT` | 768 | 3,0 px/tick | Soltar C na subida corta a velocidade até este valor (decisão do projeto) |
+| `MM_COYOTE_TICKS` | 6 | 5 ticks após sair do chão | Janela para pular depois de cair de uma borda (decisão do projeto) |
 
 Diferenças em relação ao SM: a gravidade é o dobro, o pulo é 35% mais rápido e a
 queda vai até 6 px/tick (SM para perto de 5). O projeto mantém esses valores por
@@ -46,6 +48,11 @@ do repouso ou em corrida com ↓ parado.
 | Tempo no ar | 60 ticks (1,0 s) | 60,3 ticks = 2v/g | Idem, arredondado a ticks |
 | Alcance de pulo corrido | 165 px | 165,8 px = 2,75 × 60,3 | Mesma aproximação discreta |
 | Velocidade de queda | 6 px/tick (teto) | — | O teto `MM_MAX_FALL` é alcançado antes do pouso |
+| Pulo curto (C solto após 1 tick) | 25 px | — | A subida cai para 3 px/tick ao soltar C |
+| Janela de coyote | 5 ticks | — | Pulo começa no 5º tick depois de sair do chão, não no 6º |
+
+Os testes `physics()`, `variable_jump()` e `coyote_jump()` fixam esses valores em
+`tests/core_test.c`.
 
 Cálculo do SM com os valores da tabela, só como estimativa: altura v²/2g ≈ 108 px,
 tempo no ar ≈ 89 ticks. Não foi medido no jogo original. O plano pede essa medida
@@ -55,7 +62,7 @@ antes de fixar constantes (seção 4 de [PLANO.md](PLANO.md)).
 
 - A integração é de Euler por tick: `vy += g` e depois `y += vy`. Isso explica a
   diferença de altura da tabela acima. O teste fixa 95 a 97 px para pegar regressões.
-- Pulo variável (2.3) vai cortar `vy` quando o botão C é solto na subida. A altura
-  medida acima é a do pulo completo, sem corte.
+- O pulo completo, medido acima, exige C segurado durante toda a subida. Soltar C
+  antes corta a subida em `MM_JUMP_CUT` (2.3). Um toque de 1 tick sobe 25 px.
 - Rampas (2.5) e agachar/bola (2.6) mudam a colisão, então as medidas precisam ser
   refeitas depois dessas etapas.

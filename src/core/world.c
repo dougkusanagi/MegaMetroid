@@ -57,6 +57,7 @@ void mm_body_init(MmBody *b, int x, int y, MmRect hitbox)
     b->spin_jumping = b->shoot_pose_timer = 0;
     b->shoot_frame = 3;
     b->ball = b->crouching = 0;
+    b->coyote = 0;
     b->state = MM_STATE_STAND;
 }
 
@@ -126,8 +127,8 @@ void mm_tick(const MmWorld *w, MmBody *b, MmInput input)
         } else b->run_extra = 0;
     }
     b->move_direction = direction;
-    b->jumped = input.jump_pressed && b->grounded;
-    if (b->jumped) b->spin_jumping = moving_before_jump;
+    b->jumped = input.jump_pressed && (b->grounded || b->coyote > 0);
+    if (b->jumped) { b->spin_jumping = moving_before_jump; b->coyote = 0; }
     if (input.shoot_pressed) {
         b->shoot_pose_timer = 10;
         b->spin_jumping = 0;
@@ -141,12 +142,16 @@ void mm_tick(const MmWorld *w, MmBody *b, MmInput input)
     b->vx = direction * (MM_SPEED + b->run_extra);
     if (input.axis) b->facing_left = input.axis < 0;
     if (b->jumped) { b->vy = -MM_JUMP; b->grounded = 0; }
+    /* Releasing jump while rising caps the ascent, so a tap makes a short hop. */
+    if (!input.jump_held && b->vy < -MM_JUMP_CUT) b->vy = -MM_JUMP_CUT;
     b->vy += MM_GRAVITY;
     if (b->vy > MM_MAX_FALL) b->vy = MM_MAX_FALL;
     mm_move(w, b);
     if (!b->vx) b->run_extra = 0;
     if (b->grounded) b->spin_jumping = 0;
     b->crouching = b->grounded && !b->ball && input.aim_y > 0 && !direction;
+    if (b->grounded) b->coyote = MM_COYOTE_TICKS;
+    else if (b->coyote) --b->coyote;
     b->state = body_state(b);
 }
 

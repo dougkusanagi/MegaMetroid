@@ -58,7 +58,7 @@ static void collisions(void) {
 }
 static void jump_and_ledge(void) {
     MmBody b; int i;
-    MmInput jump = {.jump_pressed = 1}, right = {.axis = 1};
+    MmInput jump = {.jump_pressed = 1, .jump_held = 1}, right = {.axis = 1};
     reset(); floor_at(20);
     mm_body_init(&b, 80, 144, box); mm_tick(&world, &b, idle);
     assert(b.grounded);
@@ -155,8 +155,8 @@ static void states(void) {
     MmBody b;
     char log[256] = "STAND";
     MmInput right = {.axis = 1}, down = {.aim_y = 1};
-    MmInput jump = {.jump_pressed = 1};
-    MmInput spin = {.axis = 1, .jump_pressed = 1};
+    MmInput jump = {.jump_pressed = 1, .jump_held = 1};
+    MmInput spin = {.axis = 1, .jump_pressed = 1, .jump_held = 1};
     MmInput down_press = {.aim_y = 1, .down_pressed = 1}, up_press = {.up_pressed = 1};
     reset(); floor_at(20);
     mm_body_init(&b, 80, 144, box);
@@ -180,15 +180,16 @@ static void states(void) {
 /* Measures a standing jump and a running jump; bounds follow docs/FISICA.md. */
 static void physics(void) {
     MmBody b;
-    MmInput jump = {.jump_pressed = 1}, right = {.axis = 1};
-    MmInput right_jump = {.axis = 1, .jump_pressed = 1};
+    MmInput jump = {.jump_pressed = 1, .jump_held = 1}, right = {.axis = 1};
+    MmInput right_jump = {.axis = 1, .jump_pressed = 1, .jump_held = 1};
+    MmInput hold = {.jump_held = 1}, right_hold = {.axis = 1, .jump_held = 1};
     int ground, apex, air, max_fall, height, range, x0;
     reset(); floor_at(20);
     mm_body_init(&b, 80, 144, box); mm_tick(&world, &b, idle);
     ground = b.y;
     mm_tick(&world, &b, jump); air = 1; apex = b.y; max_fall = 0;
     while (!b.grounded && air < 300) {
-        mm_tick(&world, &b, idle); ++air;
+        mm_tick(&world, &b, hold); ++air;
         if (b.y < apex) apex = b.y;
         if (b.vy > max_fall) max_fall = b.vy;
     }
@@ -201,13 +202,55 @@ static void physics(void) {
     for (air = 0; air < 10; ++air) mm_tick(&world, &b, right);
     x0 = b.x;
     mm_tick(&world, &b, right_jump); air = 1;
-    while (!b.grounded && air < 300) { mm_tick(&world, &b, right); ++air; }
+    while (!b.grounded && air < 300) { mm_tick(&world, &b, right_hold); ++air; }
     range = (b.x - x0) / MM_UNIT;
     assert(range >= 160 && range <= 170);
     printf("PASS jump measured: apex %d px, airtime %d ticks, running range %d px, fall cap %d px/tick\n",
            height, air, range, max_fall / MM_UNIT);
 }
+/* Height of a jump whose jump button is held for the first hold_ticks ticks. */
+static int jump_height(int hold_ticks) {
+    MmBody b;
+    MmInput press = {.jump_pressed = 1, .jump_held = 1}, held = {.jump_held = 1};
+    int ground, apex, t;
+    reset(); floor_at(20);
+    mm_body_init(&b, 80, 144, box); mm_tick(&world, &b, idle);
+    ground = b.y;
+    mm_tick(&world, &b, press); apex = b.y;
+    for (t = 1; t < 300 && !b.grounded; ++t) {
+        mm_tick(&world, &b, t < hold_ticks ? held : idle);
+        if (b.y < apex) apex = b.y;
+    }
+    return (ground - apex) / MM_UNIT;
+}
+static void variable_jump(void) {
+    int tap = jump_height(1), full = jump_height(300);
+    assert(full == 96);
+    assert(tap >= 20 && tap <= 30 && tap < full / 3);
+    printf("PASS variable jump: tap %d px, held %d px\n", tap, full);
+}
+/* A grounded jump still starts for 5 ticks after walking off a ledge, then no longer. */
+static void coyote_jump(void) {
+    MmBody a, c;
+    MmInput press = {.jump_pressed = 1, .jump_held = 1}, right = {.axis = 1};
+    int i;
+    reset();
+    for (i = 0; i < 12; ++i) tiles[20 * 64 + i] = 0;
+    mm_body_init(&a, 80, 144, box); mm_tick(&world, &a, idle);
+    for (i = 0; a.grounded && i < 100; ++i) mm_tick(&world, &a, right);
+    assert(!a.grounded);
+    for (i = 0; i < 4; ++i) mm_tick(&world, &a, idle);
+    mm_tick(&world, &a, press);
+    assert(a.jumped && a.vy < 0);
+    mm_body_init(&c, 80, 144, box); mm_tick(&world, &c, idle);
+    for (i = 0; c.grounded && i < 100; ++i) mm_tick(&world, &c, right);
+    for (i = 0; i < 5; ++i) mm_tick(&world, &c, idle);
+    mm_tick(&world, &c, press);
+    assert(!c.jumped && c.vy > 0);
+    puts("PASS coyote time: jump starts within 5 ticks of leaving a ledge, not after");
+}
 int main(void) {
-    movement(); collisions(); jump_and_ledge(); states(); physics(); slopes(); camera_and_input(); real_levels();
+    movement(); collisions(); jump_and_ledge(); states(); physics(); variable_jump(); coyote_jump();
+    slopes(); camera_and_input(); real_levels();
     puts("All core regression tests passed."); return 0;
 }
