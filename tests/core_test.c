@@ -290,8 +290,41 @@ static void slope_sweep(void) {
     printf("PASS 45-degree slopes of Crateria 1: %d surfaces walked both ways, %d too narrow for the hitbox\n",
            walked, too_narrow);
 }
+/* A ball crosses a 2-tile tunnel and cannot un-morph inside it. Crouch under a 3-tile ceiling holds. */
+static void tunnels(void) {
+    MmBody b;
+    MmRect real = {8, 8, 32, 48};
+    MmInput idle_in = {0}, jump = {.jump_pressed = 1, .jump_held = 1}, right = {.axis = 1};
+    MmInput down_press = {.aim_y = 1, .down_pressed = 1}, up_press = {.up_pressed = 1};
+    int x, y, i, stuck = 0;
+    reset(); floor_at(20);
+    for (y = 0; y <= 17; ++y) for (x = 20; x <= 40; ++x) tiles[y * 64 + x] = 0;
+    mm_body_init(&b, 40, 112, real);
+    mm_tick(&world, &b, idle_in);
+    assert(b.grounded);
+    mm_tick(&world, &b, jump);
+    mm_tick(&world, &b, down_press);
+    assert(b.ball && b.state == MM_STATE_BALL);
+    for (i = 0; i < 80; ++i) mm_tick(&world, &b, idle_in);
+    assert(b.grounded && b.ball);
+    for (i = 0; i < 60; ++i) { mm_tick(&world, &b, right); if (!b.vx) ++stuck; }
+    assert(stuck == 0 && mm_pixel(b.x) >= 160 && mm_pixel(b.x) < 320);
+    mm_tick(&world, &b, up_press);
+    assert(b.ball);
+    for (i = 0; i < 60; ++i) { mm_tick(&world, &b, right); if (!b.vx) ++stuck; }
+    assert(stuck == 0 && mm_pixel(b.x) > 330);
+    mm_tick(&world, &b, up_press);
+    assert(!b.ball && b.state == MM_STATE_STAND);
+    reset(); floor_at(20);
+    for (y = 0; y <= 16; ++y) for (x = 20; x <= 40; ++x) tiles[y * 64 + x] = 0;
+    mm_body_init(&b, 200, 112, real);
+    b.grounded = 1; b.crouching = 1;
+    for (i = 0; i < 11; ++i) mm_tick(&world, &b, idle_in);
+    assert(b.crouching && b.hitbox.top == 24 && b.hitbox.bottom == 48 && b.state == MM_STATE_CROUCH);
+    puts("PASS ball through a 2-tile tunnel; no standing up or un-morphing under the ceiling");
+}
 int main(void) {
     movement(); collisions(); jump_and_ledge(); states(); physics(); variable_jump(); coyote_jump();
-    slopes(); slope_sweep(); camera_and_input(); real_levels();
+    slopes(); slope_sweep(); tunnels(); camera_and_input(); real_levels();
     puts("All core regression tests passed."); return 0;
 }

@@ -75,6 +75,22 @@ antes de fixar constantes (seção 4 de [PLANO.md](PLANO.md)).
 - Rampas de 22,5° não existem no mapa de Crateria 1 e não foram implementadas. Vão
   entrar com um tipo de tile novo.
 
+## Hitboxes (2.6)
+
+| Estado | Caixa (px, relativa ao corpo) | Regra |
+|---|---|---|
+| Em pé | 24 x 40 (`stand_box`) | Padrão |
+| Agachada | 24 x 24 (topo desce 2/5 da altura, pés ficam) | No chão, ↓ segurado sem direção; continua agachada enquanto a caixa em pé não cabe |
+| Bola | 16 x 16 (2/3 da largura, centrada, apoiada nos pés) | ↓ apertado no ar; ↑ sai só onde a caixa em pé cabe |
+
+- O teste `tunnels()` faz a bola atravessar um túnel de 2 tiles (16 px) sem parar e
+  mostra que ↑ não sai dentro dele. A caixa em pé não cabe ali.
+- O plano pede um túnel de 1 tile (8 px). Uma bola de 16 px não passa por 8 px, então
+  o túnel de teste tem 2 tiles. Se a bola precisar ser menor, esse número muda junto.
+- Sprites: agachar usa a pose de pé e a bola usa os quadros de giro, até a fase 3.
+- Pular a partir de agachado sob teto baixo não é tratado: o corpo volta à caixa em
+  pé já no tick seguinte ao pulo, e a colisão empurra a Samus para baixo do teto.
+
 ## Limites e próximos passos
 
 - A integração é de Euler por tick: `vy += g` e depois `y += vy`. Isso explica a

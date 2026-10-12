@@ -59,6 +59,30 @@ void mm_body_init(MmBody *b, int x, int y, MmRect hitbox)
     b->ball = b->crouching = 0;
     b->coyote = 0;
     b->state = MM_STATE_STAND;
+    b->stand_box = hitbox;
+}
+
+/* Crouch keeps the feet and drops the top by 2/5 of the standing height (40 -> 24 px). */
+static MmRect crouch_box(MmRect s)
+{
+    s.top += (s.bottom - s.top) * 2 / 5;
+    return s;
+}
+
+/* Ball is a square of 2/3 the standing width (24 -> 16 px), centred on the feet. */
+static MmRect ball_box(MmRect s)
+{
+    int side = (s.right - s.left) * 2 / 3, cx = (s.left + s.right) / 2;
+    MmRect r = {cx - side / 2, s.bottom - side, cx - side / 2 + side, s.bottom};
+    return r;
+}
+
+/* True if the body at its current position fits inside box. */
+static int fits(const MmWorld *w, const MmBody *b, MmRect box)
+{
+    MmBody probe = *b;
+    probe.hitbox = box;
+    return !mm_blocked(w, &probe, mm_pixel(b->x), mm_pixel(b->y));
 }
 
 void mm_move(const MmWorld *w, MmBody *b)
@@ -136,9 +160,14 @@ void mm_tick(const MmWorld *w, MmBody *b, MmInput input)
         else if (input.aim_y > 0 && !b->grounded) b->shoot_frame = input.axis ? 4 : 4;
         else b->shoot_frame = 3;
     } else if (b->shoot_pose_timer) --b->shoot_pose_timer;
-    /* Down morphs in the air; up un-morphs. The ball persists through landing. */
+    /* Down morphs in the air; up un-morphs only where the standing box fits. */
     if (input.down_pressed && !b->grounded) b->ball = 1;
-    if (input.up_pressed) b->ball = 0;
+    if (input.up_pressed && fits(w, b, b->stand_box)) b->ball = 0;
+    /* Crouch needs no direction and holds while a standing box would hit a ceiling. */
+    b->crouching = b->grounded && !b->ball &&
+        ((input.aim_y > 0 && !direction) || (b->crouching && !fits(w, b, b->stand_box)));
+    b->hitbox = b->ball ? ball_box(b->stand_box) :
+                b->crouching ? crouch_box(b->stand_box) : b->stand_box;
     b->vx = direction * (MM_SPEED + b->run_extra);
     if (input.axis) b->facing_left = input.axis < 0;
     if (b->jumped) { b->vy = -MM_JUMP; b->grounded = 0; }
@@ -149,7 +178,6 @@ void mm_tick(const MmWorld *w, MmBody *b, MmInput input)
     mm_move(w, b);
     if (!b->vx) b->run_extra = 0;
     if (b->grounded) b->spin_jumping = 0;
-    b->crouching = b->grounded && !b->ball && input.aim_y > 0 && !direction;
     if (b->grounded) b->coyote = MM_COYOTE_TICKS;
     else if (b->coyote) --b->coyote;
     b->state = body_state(b);

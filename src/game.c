@@ -50,7 +50,9 @@ static void render(Game *g)
     MmRect bounds = mm_camera_bounds(x + 20, y + 28, world_bounds,
         g->level->camera_zones, g->level->camera_zone_count);
     bool shooting_pose = g->player.shoot_pose_timer != 0;
-    bool spin = !g->player.grounded && g->player.spin_jumping && !shooting_pose;
+    /* Ball has no sprite yet; it borrows the spin frames until phase 3. */
+    bool ball = g->player.state == MM_STATE_BALL && !shooting_pose;
+    bool spin = ball || (!g->player.grounded && g->player.spin_jumping && !shooting_pose);
     u16 animation = spin ? ANIM_JUMP :
                     (!g->player.grounded || shooting_pose) ? ANIM_STAND :
                     g->player.vx ? ANIM_WALK : ANIM_STAND;

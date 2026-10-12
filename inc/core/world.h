@@ -22,7 +22,8 @@ typedef enum {
 typedef struct {
     int x, y; /* Q24.8 world position; never discard fractional movement. */
     int vx, vy;
-    MmRect hitbox; /* Half-open local pixel bounds. */
+    MmRect hitbox; /* Half-open local pixel bounds; crouch and ball shrink it. */
+    MmRect stand_box; /* Standing hitbox, the base for the crouch and ball boxes. */
     int grounded, facing_left, jumped;
     int run_extra, move_direction;
     int spin_jumping, shoot_pose_timer, shoot_frame;

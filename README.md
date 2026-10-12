@@ -13,8 +13,9 @@ para correr, **C** para pular (soltar C na subida faz um pulo curto) e **A** par
 do Fusion configurado nesta máquina: A = tecla A, B = tecla S, C = tecla D.
 Segure cima ao atirar para mirar acima; cima + esquerda/direita mira na diagonal.
 No ar também é possível mirar para baixo. Tocar A dispara; segurar repete.
-Segurar ↓ no chão agacha e apertar ↓ no ar entra no estado de bola; ↑ sai dele.
-Esses estados ainda não têm pose própria: o sprite continua o mesmo.
+Segurar ↓ no chão agacha: a hitbox fica menor, mas o sprite ainda é o de pé.
+Apertar ↓ no ar entra em bola (hitbox de 16 px, sprite de giro enquanto não há pose
+própria); ↑ sai da bola só onde a Samus cabe em pé, então não sai dentro de túnel baixo.
 
 A caminhada usa 2,75 px/tick. A corrida acrescenta 0,03125 px/tick a cada tick
 no chão, até +2 após 64 ticks (4,75 px/tick no total). O salto conserva o bônus;
