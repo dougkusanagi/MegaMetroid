@@ -151,6 +151,7 @@ Para a 3.2: o tamanho de quadro é 64×64 (8×8 tiles); com a Samus em pé, os p
 - **VRAM**: cada sala precisa de tiles únicos suficientes junto com sprites; planejar tileset compartilhado por região.
 - **Propriedade intelectual**: Super Metroid é da Nintendo. O projeto é de estudo/fã e não distribui ROMs. As pranchas originais ficam fora do Git; os recortes convertidos para o SGDK (`res/images/*-original-sgdk/`) são versionados por decisão do mantenedor.
 - **Fidelidade da física**: medir o jogo original (frames de pulo, velocidades) antes de fixar constantes.
+- **Sprite da Samus por partes** (medido em 2026-10-12): o `rescomp` só reaproveita quadros inteiros (iguais ou espelhados), e cada quadro guarda os próprios tiles na ROM. Com isso, as 165 poses ocupam cerca de 286 KB, e um banco de tiles compartilhado cairia para cerca de 78 KB. Separar tronco e pernas na linha 40 do quadro (como o Super Metroid faz) economiza 34% na corrida com mira: as pernas são iguais nas 4 miras. Na VRAM não muda nada, porque só o quadro atual é carregado. Decisão: usar quadros inteiros na 3.2 e reavaliar na 3.5 se a ROM apertar.
 - **ROM > 4 MB**: exigiria mapper SSF.
 
 ## 5. Definição de "pronto" de uma etapa
