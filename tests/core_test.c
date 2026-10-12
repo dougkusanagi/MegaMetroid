@@ -177,7 +177,37 @@ static void states(void) {
     assert(strcmp(log, "STAND WALK STAND JUMP FALL STAND WALK SPIN STAND CROUCH STAND JUMP BALL STAND") == 0);
     printf("PASS state transitions: %s\n", log);
 }
+/* Measures a standing jump and a running jump; bounds follow docs/FISICA.md. */
+static void physics(void) {
+    MmBody b;
+    MmInput jump = {.jump_pressed = 1}, right = {.axis = 1};
+    MmInput right_jump = {.axis = 1, .jump_pressed = 1};
+    int ground, apex, air, max_fall, height, range, x0;
+    reset(); floor_at(20);
+    mm_body_init(&b, 80, 144, box); mm_tick(&world, &b, idle);
+    ground = b.y;
+    mm_tick(&world, &b, jump); air = 1; apex = b.y; max_fall = 0;
+    while (!b.grounded && air < 300) {
+        mm_tick(&world, &b, idle); ++air;
+        if (b.y < apex) apex = b.y;
+        if (b.vy > max_fall) max_fall = b.vy;
+    }
+    height = (ground - apex) / MM_UNIT;
+    /* Discrete ticks give 96 px; the continuous v^2/2g value, 99.6 px, overstates it. */
+    assert(height >= 95 && height <= 97);
+    assert(air >= 58 && air <= 62);
+    assert(max_fall == MM_MAX_FALL);
+    mm_body_init(&b, 80, 144, box); mm_tick(&world, &b, idle);
+    for (air = 0; air < 10; ++air) mm_tick(&world, &b, right);
+    x0 = b.x;
+    mm_tick(&world, &b, right_jump); air = 1;
+    while (!b.grounded && air < 300) { mm_tick(&world, &b, right); ++air; }
+    range = (b.x - x0) / MM_UNIT;
+    assert(range >= 160 && range <= 170);
+    printf("PASS jump measured: apex %d px, airtime %d ticks, running range %d px, fall cap %d px/tick\n",
+           height, air, range, max_fall / MM_UNIT);
+}
 int main(void) {
-    movement(); collisions(); jump_and_ledge(); states(); slopes(); camera_and_input(); real_levels();
+    movement(); collisions(); jump_and_ledge(); states(); physics(); slopes(); camera_and_input(); real_levels();
     puts("All core regression tests passed."); return 0;
 }

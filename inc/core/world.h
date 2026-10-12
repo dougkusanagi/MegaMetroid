@@ -6,9 +6,10 @@
 #define MM_SPEED 704 /* 2.75 pixels/tick, the SNES ground speed cap. */
 #define MM_RUN_ACCEL 8 /* +1/32 pixel/tick; +2 after 64 ticks. */
 #define MM_RUN_EXTRA_MAX 512
-#define MM_GRAVITY 56
-#define MM_JUMP 1690
-#define MM_MAX_FALL 1536
+/* Units and references in docs/FISICA.md. Speeds are Q24.8 px per tick. */
+#define MM_GRAVITY 56 /* 0.22 px/tick^2; SM NTSC is 0.11 (regional $1C00). */
+#define MM_JUMP 1690 /* 6.6 px/tick at takeoff; SM normal jump is 4.875 ($04E0). */
+#define MM_MAX_FALL 1536 /* 6 px/tick; SM stops accelerating near 5 px/frame ($0005). */
 
 typedef struct { int left, top, right, bottom; } MmRect;
 typedef struct { const unsigned char *tiles; int columns, rows; } MmWorld;

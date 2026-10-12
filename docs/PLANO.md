@@ -63,7 +63,7 @@ Cada etapa é pequena, testável no emulador e termina em **commit + push** (ver
 | # | Etapa | Entrega | Teste |
 |---|-------|---------|-------|
 | 2.1 ✅ | Máquina de estados | Parada, andando, pulando, caindo, agachada, bola, spin | Transições corretas em log |
-| 2.2 | Física tabelada | Gravidade/aceleração/velocidades em subpixel (`fix16`); medidas em `docs/FISICA.md` | Altura e alcance do pulo medidos |
+| 2.2 ✅ | Física tabelada | Gravidade/aceleração/velocidades em subpixel (`fix16`); medidas em `docs/FISICA.md` | Altura e alcance do pulo medidos |
 | 2.3 | Pulo variável | Soltar o botão corta o pulo; coyote time curto | Pulo curto vs. longo |
 | 2.4 ✅ | Remover voo por d-pad | ↑/↓ passam a mirar / agachar | Samus não "voa" mais |
 | 2.5 | Rampas robustas | Altura por coluna (45°, depois 22,5°); subir/descer sem quicar | Percorrer todas as rampas de Crateria 1 sem travar ou flutuar |
