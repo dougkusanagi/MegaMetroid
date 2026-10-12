@@ -164,6 +164,11 @@ const u8 map_collision_crateria_1[156][288] = {
   {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}
 };
 
+/* The western passages are rooms inside the larger map image. */
+static const MmCameraZone camera_zones[] = {
+    {{0, 960, 608, 1248}, {0, 1024, 768, 1248}},
+    {{0, 480, 608, 736}, {0, 512, 768, 736}}
+};
 const level_def level_crateria_1 = {
 	.tileset_fg = &crateria_1_fg_tileset,
 	.tileset_bg = &crateria_1_bg_tileset,
@@ -179,18 +184,15 @@ const level_def level_crateria_1 = {
 
 	.map_width = 2304,
   .map_height = 1248,
-	.map_collision = &map_collision_crateria_1,
-  .room_size = {
-    { 0, 2304 },
-    { 0, 1248 }
-  },
+	.map_collision = &map_collision_crateria_1[0][0],
 
 	.player_initial_pos = {
     32 << 3,
-    1248 - (48 << 3) - 24,
+    1248 - 48 - 24,
   },
 
-	// .room_size,
+    .camera_zones = camera_zones,
+    .camera_zone_count = sizeof(camera_zones) / sizeof(camera_zones[0]),
 	// .level_limits,
 };
 

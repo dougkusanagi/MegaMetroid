@@ -4,3 +4,8 @@ src/boot/rom_head.c
 
 # Artefatos de build (gerados por make -f %GDK%\makefile.gen)
 out/
+/build/
+/build.bin
+/tests/out/
+*.pyc
+__pycache__/

@@ -44,7 +44,7 @@ Teste das ROMs em:
 - **BlastEm** (preciso, recomendado para validar comportamento).
 - **Gens KMod** (permite depuração com GDB na porta `6868`, ver `.vscode/launch.json`).
 
-Neste ambiente não há emulador instalado, então a etapa 0.1 foi validada só até `out/rom.bin`, sem rodar a ROM.
+Neste ambiente o BlastEm 1.0.0 está em `C:\Users\dl_ag\Tools\blastem\blastem-win64-1.0.0\blastem.exe`. Abra com `blastem.exe out\rom.bin`. O FPS aparece no título da janela.
 
 ## Problemas conhecidos
 
