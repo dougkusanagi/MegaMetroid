@@ -69,3 +69,31 @@ Algumas regiões saem inteiras, como referência e sem `SPRITE` (`sgdk_ready = n
 - `death_sequence`: o corpo sem traje desenhado junto com as partículas, com duas paletas. No jogo são sprites separados: use `death_suitless_*` com as partículas de `death_shattering_suit`.
 - `death_shattering_suit`: as partículas se sobrepõem entre quadros, então os quadros são recortados quando a morte for implementada.
 
+
+## Outras pranchas
+
+```powershell
+python scripts/extract_sheet_sprites.py            # todas
+python scripts/extract_sheet_sprites.py weapons    # só uma
+```
+
+Cada prancha vira `res/images/<prancha>-original-sgdk/`, com um `.res` (catálogo) e um `manifest.csv`. As regiões de cada prancha ficam em `SHEETS`, no início do script. Os nomes seguem a posição na prancha (`_rNN` é a linha, `_N` é o pedaço de uma linha). Os nomes definitivos ficam para a etapa que usar cada recurso.
+
+| Prancha | Pasta | Conteúdo |
+|---------|-------|----------|
+| Weapons | `weapons-original-sgdk` | Míssil e super míssil em 8 direções; tiro laranja em 8 direções (provavelmente o Power Beam sem carga, conferir no jogo); bomba, segunda bomba e fumaça; feixes fino e grosso (3 quadros por direção); impactos e explosões; grapple beam |
+| Objects, Items & Doors | `objects-original-sgdk` | Tampas de porta por cor (vertical e horizontal, como tiles); itens e upgrades; estátuas Chozo, estações, elevador e portas grandes |
+| Doors | `doors-original-sgdk` | Portas com batente e abertura da tampa (azul, rosa, verde, laranja, cinza) e portas de Ceres |
+| Samus's Starship | `starship-original-sgdk` | Nave como `IMAGE` (192×80): luzes como uma imagem e 8 paletas (`starship_lights_pal_NN`), escotilha abrindo em 10 imagens |
+| Status Bar | `status-bar-original-sgdk` | Tiles do HUD: texto ENERGY, ícones de item (apagado/aceso), AUTO, dígitos e tiles do minimapa em 3 cores. O preto vira o índice 0 |
+| Enemies | `enemies-original-sgdk` | Uma tira por linha de inimigo nas três colunas da prancha. A linha de cada inimigo de Crateria (Zoomer, Skree, Ripper, Geemer) é identificada na etapa 5.2 |
+
+Como na Samus, as cores são as originais e o índice 0 é transparente. Cada tira usa uma paleta só. Quando uma linha precisa de mais de 15 cores (quadros de dano piscando, por exemplo), ela é dividida em tiras consecutivas.
+
+Ficam como referência em RGB, sem entrada no `.res` (`sgdk_ready = no` no manifesto):
+
+- Recortes com mais de 15 cores, como as portas de Ceres em `doors` e alguns itens. No SNES esses gráficos são tiles de fundo com uma paleta por tile; no Mega Drive, as cores precisam ser separadas por tile entre as paletas disponíveis quando o recurso for usado.
+- Quadros maiores que 128×128, que o SGDK não monta como sprite (limite de 16 sprites de hardware por quadro).
+- `starship_tiles_and_palettes`: amostras de paleta e tiles da escotilha da prancha da nave.
+
+Ainda não extraídas: tilesets e mapas das salas (fase 6), chefes, cenas, título e fontes. Cada uma entra em `SHEETS` quando a etapa correspondente começar.

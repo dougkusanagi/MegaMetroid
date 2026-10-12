@@ -74,8 +74,8 @@ Cada etapa é pequena, testável no emulador e termina em **commit + push** (ver
 
 | # | Etapa | Entrega | Teste |
 |---|-------|---------|-------|
-| 3.1 | Pipeline de sprite | Aseprite → PNG → `resources.res`, convenções de nome/animação documentadas | Sprite novo carrega seguindo o doc |
-| 3.2 ⏭️ | Animações atuais com os sprites originais | Trocar a folha Dread (`player_sprite`) pelos quadros de `res/images/samus-original-sgdk/frames` nas animações que já existem (parada, andando, pulo/spin, pose de tiro). Antes, ajustar o extrator conforme a análise abaixo | Andar, pular, girar e atirar para os dois lados com os quadros originais, sem tremer nem trocar de cor |
+| 3.1 | Pipeline de sprite | Pranchas originais → PNG indexado → `.res` (`scripts/extract_*.py`), convenções em `docs/SPRITES.md` | Sprite novo carrega seguindo o doc |
+| 3.2 ⏭️ | Animações atuais com os sprites originais | Trocar a folha Dread (`player_sprite`) pelas poses de `res/images/samus-original-sgdk/poses` nas animações que já existem (parada, andando, pulo/spin, pose de tiro), com arte própria para cada lado | Andar, pular, girar e atirar para os dois lados com os quadros originais, sem tremer nem trocar de cor |
 | 3.3 | Animações completas | Virar, mirar (cima/baixo/diagonal), agachar, bola, spin | Todas visíveis em sequência |
 | 3.4 | Hitbox por estado | `collision_size` varia por estado | Sem prender na parede ao trocar de estado |
 | 3.5 | Orçamento de VRAM | Alocação automática de VRAM / streaming de tiles do sprite | `SPR_showVRAMUsage` dentro do orçamento |
@@ -83,21 +83,18 @@ Cada etapa é pequena, testável no emulador e termina em **commit + push** (ver
 
 > **Prioridade (2026-10-12)**: a 3.2 vem antes de qualquer outra implementação.
 
-#### Análise da extração (`scripts/extract_original_samus_sprites.py`)
+#### Extração (revisão de 2026-10-12)
 
-Comparação entre `samus-original-sgdk/frames` (983 PNGs: 877 em caixas, 106 avulsos) e a prancha `SNES - Super Metroid - Playable Characters - Samus Aran.png`:
+A primeira extração gerava uma paleta por PNG (365 paletas em 983 quadros), cortava o pivô, declarava um `SPRITE` por quadro, numerava os quadros sem a pose, descartava as paletas e quantizava recortes com várias paletas. O extrator foi refeito (ver `docs/SPRITES.md`):
 
-1. **Paleta inconsistente entre quadros (bloqueia a 3.2).** Cada PNG ordena as cores pela ordem em que aparecem, e há 365 paletas diferentes em 983 quadros. No Mega Drive, todos os quadros de uma animação usam a mesma paleta de hardware, então as cores trocariam a cada quadro, e a troca de paleta (Varia, Gravity, ciclos) fica impossível. A prancha traz a paleta canônica: a amostra "Power Suit" tem exatamente as 15 cores usadas pelos quadros. O extrator deve mapear todo quadro para essa ordem fixa, com índice 0 transparente.
-2. **Ponto de origem descartado.** O recorte vai até a borda do desenho e cada quadro arredonda o tamanho para tiles de forma independente (de 2×2 a 8×8 tiles; os pés ficam em alturas diferentes). O pivô existe na caixa 80×80, já que os quadros de corrida mantêm os pés na mesma linha, e o `manifest.csv` guarda `sprite_x`/`sprite_y`, mas o PNG perde essa informação. Cada animação deve ser recortada pela caixa que envolve todos os seus quadros, com o pivô salvo no manifesto.
-3. **Um `SPRITE` por quadro.** O `sprites.res` declara 983 sprites de 1 quadro. O SGDK anima por linhas de uma folha (`SPR_setAnim`/`SPR_setFrame`), com o mesmo tamanho de quadro na folha toda. É preciso montar uma folha por animação (ou por grupo de tamanho) em vez de quadros soltos.
-4. **Nomes sem a pose.** Os nomes são sequenciais (`samus_ref_0001`…) e seguem a ordem de linha da prancha inteira, misturando as seis colunas: `samus_ref_0001` está em x=18 e `samus_ref_0002` em x=2754. As faixas azuis trazem o número e o nome da pose do jogo ("09: Moving right - not aiming"). O manifesto deve registrar a pose e o índice do quadro dentro dela.
-5. **Redundância.** 294 quadros são cópias idênticas de outros (183 grupos), e 86 quadros em caixa são as demonstrações de paleta (Power/Varia/Gravity × ciclos), que repetem a mesma pose recolorida. Essas cores devem virar paletas, não tiles.
-6. **Paletas não extraídas.** As amostras de cor foram descartadas como "marcas pequenas": Power/Varia/Gravity Suit, ciclos amarelo, verde, azul, branco e branco longo de cada traje, Hyper Beam, Flashback, paleta de morte (com degradê) e paletas do Crystal Flash. Devem sair como dados (`PALETTE` ou `const u16[]` já em 9 bits) para a 3.6.
-7. **Quantização destrutiva.** Sete recortes foram reduzidos para 15 cores (`samus_ref_0706`, `0711`, `0764` e `samus_loose_0001`, `0015`, `0020`, `0021`). São composições do Crystal Flash e da morte, que no jogo usam mais de uma paleta ou partes separadas. Devem ser separados por paleta, não quantizados.
-8. **Peças pequenas descartadas.** O filtro de avulsos (mínimo 10×20 px e 60 px opacos) descarta os tiles das *missile fins* por direção, os tiles da morte e as partículas do traje se partindo. Esses itens entram depois como sprites próprios.
-9. **Esquerda e direita.** A prancha tem arte própria para cada lado (o canhão fica no braço direito), então `SPR_setHFlip` distorce a pose. Manter as duas direções dobra a ROM das animações; usar flip economiza, mas perde fidelidade. A decisão fica para a 3.2.
-10. **Conversão de cor.** As 509 cores distintas do SNES (15 bits) viram 236 no Mega Drive (9 bits). A paleta da Samus deve ser conferida depois da conversão para que nenhuma cor importante se funda com outra.
-11. **Assets fora do Git.** `res/images/samus-original-sgdk/` é ignorado (§4). Se o build passar a depender dele, um clone limpo não compila. A 3.2 precisa manter uma alternativa (a folha atual) ou documentar que o extrator roda antes do build.
+- Uma tira por pose do jogo (165 poses, 792 quadros), com o número e o nome da pose transcritos das faixas da prancha (`scripts/data/samus_pose_labels.csv`).
+- Quadros de 64×64 com pivô comum e esquerda/direita com arte própria (sem `SPR_setHFlip` na Samus).
+- Paleta indexada fixa (Power Suit) com as cores originais do SNES; o `rescomp` converte no build. Trajes e ciclos são troca de paleta: 101 paletas extraídas.
+- Morte, Crystal Flash e *missile fins* como efeitos com a paleta correspondente. Composições com várias paletas ficam como referência.
+- `res/images/*-original-sgdk/` é versionado; só as pranchas originais ficam fora do Git.
+- `scripts/extract_sheet_sprites.py` extrai armas, objetos/itens, portas, nave, HUD e inimigos.
+
+Para a 3.2: o tamanho de quadro é 64×64 (8×8 tiles); com a Samus em pé, os pés ficam na linha 59. Se a hitbox atual (`collision_size`) assumir o sprite 40×48 da folha Dread, o deslocamento do sprite em relação à hitbox muda.
 
 ### Fase 4 — Tiros e armas
 
@@ -152,7 +149,7 @@ Comparação entre `samus-original-sgdk/frames` (983 PNGs: 877 em caixas, 106 av
 
 - **Tamanho dos mapas**: Crateria 1 tem 288x156 tiles de 8 px (2304x1248). Avaliar tiles de colisão 16x16 (4x menos dados) ou RLE para o restante do jogo.
 - **VRAM**: cada sala precisa de tiles únicos suficientes junto com sprites; planejar tileset compartilhado por região.
-- **Propriedade intelectual**: Super Metroid é da Nintendo. O projeto é de estudo/fã e não deve distribuir ROMs ou assets extraídos do jogo original.
+- **Propriedade intelectual**: Super Metroid é da Nintendo. O projeto é de estudo/fã e não distribui ROMs. As pranchas originais ficam fora do Git; os recortes convertidos para o SGDK (`res/images/*-original-sgdk/`) são versionados por decisão do mantenedor.
 - **Fidelidade da física**: medir o jogo original (frames de pulo, velocidades) antes de fixar constantes.
 - **ROM > 4 MB**: exigiria mapper SSF.
 
