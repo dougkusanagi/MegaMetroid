@@ -104,6 +104,15 @@ static int stand_up(const MmWorld *w, MmBody *b)
     return 0;
 }
 
+/* True if a wall is within MM_WALL_REACH px on the side opposite to direction. */
+static int wall_behind(const MmWorld *w, const MmBody *b, int direction)
+{
+    int d, x = mm_pixel(b->x), y = mm_pixel(b->y);
+    for (d = 1; d <= MM_WALL_REACH; ++d)
+        if (mm_blocked(w, b, x - direction * d, y)) return 1;
+    return 0;
+}
+
 void mm_move(const MmWorld *w, MmBody *b)
 {
     int target, p, step, lift, x = mm_pixel(b->x), y = mm_pixel(b->y);
@@ -208,12 +217,13 @@ void mm_tick(const MmWorld *w, MmBody *b, MmInput input)
     b->move_direction = direction;
     b->jumped = input.jump_pressed && (b->grounded || b->coyote > 0);
     if (b->jumped) { b->spin_jumping = moving_before_jump; b->coyote = 0; }
-    /* Wall jump: airborne and pressing into a wall. The kick goes away from it and locks steering. */
-    wall_jump = input.jump_pressed && !b->jumped && !b->grounded && !b->ball && direction &&
-                mm_blocked(w, b, mm_pixel(b->x) + direction, mm_pixel(b->y));
+    /* Wall jump, as in Super Metroid: only in a spin jump, touching a wall and pressing away from it.
+       The kick goes the pressed way and locks steering. */
+    wall_jump = input.jump_pressed && !b->jumped && !b->grounded && !b->ball && b->spin_jumping &&
+                direction && wall_behind(w, b, direction);
     if (wall_jump) {
         b->jumped = 1; b->spin_jumping = 1;
-        b->wall_lock = MM_WALL_LOCK; b->wall_vx = -direction * MM_SPEED;
+        b->wall_lock = MM_WALL_LOCK; b->wall_vx = direction * MM_SPEED;
     }
     if (input.shoot_pressed) {
         b->shoot_pose_timer = 10;

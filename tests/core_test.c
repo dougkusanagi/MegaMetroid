@@ -325,22 +325,23 @@ static void tunnels(void) {
     assert(b.crouching && b.hitbox.top == 24 && b.hitbox.bottom == 48 && b.state == MM_STATE_CROUCH);
     puts("PASS ball through a 2-tile tunnel; no standing up or un-morphing under the ceiling");
 }
-/* Climbs a 40 px shaft by alternating wall jumps: the body must rise from y 112 to 40. */
+/* Climbs a 40 px shaft by alternating wall jumps: the body must rise from y 112 to 40. Each kick
+   presses away from the wall it touches; the first jump spins because the body walks before it. */
 static void wall_climb(void) {
     MmBody b;
     MmRect real = {8, 8, 32, 48};
     int i, y, side = -1, wall_jumps = 0;
     reset(); floor_at(20);
     for (y = 0; y < 20; ++y) { tiles[y * 64 + 12] = 0; tiles[y * 64 + 18] = 0; }
-    mm_body_init(&b, 100, 112, real);
+    mm_body_init(&b, 104, 112, real);
     for (i = 0; i < 400 && mm_pixel(b.y) > 40; ++i) {
         MmInput in = {0};
         int left = mm_blocked(&world, &b, mm_pixel(b.x) - 1, mm_pixel(b.y));
         int right = mm_blocked(&world, &b, mm_pixel(b.x) + 1, mm_pixel(b.y));
         in.jump_held = 1;
-        if (b.grounded) { in.axis = side; in.jump_pressed = 1; }
-        else if (left) { in.axis = -1; in.jump_pressed = 1; side = 1; }
-        else if (right) { in.axis = 1; in.jump_pressed = 1; side = -1; }
+        if (b.grounded) { in.axis = side; in.jump_pressed = b.vx != 0; }
+        else if (left) { in.axis = 1; in.jump_pressed = 1; side = 1; }
+        else if (right) { in.axis = -1; in.jump_pressed = 1; side = -1; }
         else in.axis = side;
         mm_tick(&world, &b, in);
         if (b.wall_lock == MM_WALL_LOCK - 1) ++wall_jumps;
@@ -401,18 +402,22 @@ static void poses(void) {
     run_poses(&b, log, right_held, 200);
     assert(strcmp(log, "GROUND SPIN SPIN_LAND GROUND") == 0);
 
+    /* A spin jump into a wall at x 96, then a kick pressing away from it (left). */
     reset(); floor_at(20);
     for (i = 0; i < 20; ++i) tiles[i * 64 + 12] = 0;
-    mm_body_init(&b, 88, 100, box);
+    mm_body_init(&b, 72, 144, box);
     strcpy(log, "GROUND");
     run_poses(&b, log, idle, 1);
+    run_poses(&b, log, right, 1);
     run_poses(&b, log, right_jump, 1);
-    assert(b.jumped && b.spin_jumping && b.pose == MM_POSE_WALL_KICK);
+    run_poses(&b, log, right_held, 6);
+    assert(!b.grounded && mm_pixel(b.x) == 88);
+    run_poses(&b, log, (MmInput){.axis = -1, .jump_pressed = 1, .jump_held = 1}, 1);
+    assert(b.jumped && b.spin_jumping && b.pose == MM_POSE_WALL_KICK && b.vx < 0);
+    /* hold_ticks does not log, so the spin after the kick is checked here instead of in the log. */
+    assert(hold_ticks(&b, idle, MM_POSE_WALL_KICK) == MM_WALL_KICK_TICKS && b.pose == MM_POSE_SPIN);
     run_poses(&b, log, idle, 200);
-    assert(strcmp(log, "GROUND FALL WALL_KICK SPIN SPIN_LAND GROUND") == 0);
-    mm_body_init(&b, 88, 100, box); mm_tick(&world, &b, idle);
-    mm_tick(&world, &b, right_jump);
-    assert(hold_ticks(&b, idle, MM_POSE_WALL_KICK) == MM_WALL_KICK_TICKS);
+    assert(strcmp(log, "GROUND SPIN WALL_KICK SPIN_LAND GROUND") == 0);
 
     reset(); floor_at(20);
     mm_body_init(&b, 80, 144, box);
@@ -557,7 +562,7 @@ static void morph_rules(void) {
     MmRect real = {8, 8, 32, 48};
     MmInput idle_in = {0}, aim_down = {.aim_y = 1, .down_pressed = 1, .shoot_held = 1, .shoot_pressed = 1};
     MmInput down_press = {.aim_y = 1, .down_pressed = 1};
-    MmInput kick = {.axis = 1, .jump_pressed = 1, .jump_held = 1}, right = {.axis = 1};
+    MmInput kick = {.axis = -1, .jump_pressed = 1, .jump_held = 1}, right = {.axis = 1};
     int y, t;
     reset(); floor_at(20);
     mm_body_init(&b, 80, 100, real); mm_tick(&world, &b, idle_in);
@@ -575,9 +580,11 @@ static void morph_rules(void) {
     mm_tick(&world, &b, down_press); mm_tick(&world, &b, idle_in); mm_tick(&world, &b, down_press);
     for (t = 0; t < 8; ++t) mm_tick(&world, &b, right);
     assert(b.ball && mm_pixel(b.x) == 68);
+    b.spin_jumping = 1;
     mm_tick(&world, &b, kick);
-    assert(b.ball && !b.jumped && !b.spin_jumping);
+    assert(b.ball && !b.jumped);
     mm_body_init(&b, 64, 20, real); mm_tick(&world, &b, idle_in);
+    b.spin_jumping = 1;
     mm_tick(&world, &b, kick);
     assert(!b.ball && b.jumped && b.spin_jumping && b.wall_lock);
     puts("PASS morph: shot aims down in the air without morphing; a ball does not wall jump");
@@ -666,9 +673,39 @@ static void ball_poses(void) {
     assert(strcmp(log, "GROUND CROUCH_DOWN CROUCH MORPH BALL UNMORPH GROUND") == 0);
     puts("PASS ball poses: morph (also from a crouch), rolling loop through a jump and a landing, unmorph");
 }
+/* A wall jump needs all three: a spin jump, a wall touched (up to MM_WALL_REACH px behind) and the
+   d-pad pressed away from it. Pressing into the wall, no direction or a jump without spin do nothing. */
+static void wall_jump_rules(void) {
+    MmBody b;
+    MmRect real = {8, 8, 32, 48};
+    MmInput away = {.axis = -1, .jump_pressed = 1, .jump_held = 1};
+    MmInput into = {.axis = 1, .jump_pressed = 1, .jump_held = 1};
+    MmInput none = {.jump_pressed = 1, .jump_held = 1};
+    int y, gap;
+    reset(); floor_at(20);
+    for (y = 0; y < 20; ++y) tiles[y * 64 + 12] = 0;
+    /* In the air with the standing box flush against the wall at x 96 (body x 64). */
+#define AIRBORNE(x, spin) (mm_body_init(&b, (x), 40, real), b.spin_jumping = (spin), b.vy = -MM_UNIT)
+    AIRBORNE(64, 1); mm_tick(&world, &b, away);
+    assert(b.jumped && b.wall_lock && b.vx == -MM_SPEED && b.pose == MM_POSE_WALL_KICK);
+    AIRBORNE(64, 0); mm_tick(&world, &b, away);
+    assert(!b.jumped && !b.wall_lock);
+    AIRBORNE(64, 1); mm_tick(&world, &b, into);
+    assert(!b.jumped && !b.wall_lock);
+    AIRBORNE(64, 1); mm_tick(&world, &b, none);
+    assert(!b.jumped && !b.wall_lock);
+    for (gap = 1; gap < MM_WALL_REACH; ++gap) {
+        AIRBORNE(64 - gap, 1); mm_tick(&world, &b, away);
+        assert(b.jumped && b.wall_lock);
+    }
+    AIRBORNE(64 - MM_WALL_REACH, 1); mm_tick(&world, &b, away);
+    assert(!b.jumped && !b.wall_lock);
+#undef AIRBORNE
+    puts("PASS wall jump rules: only in a spin, touching a wall and pressing away from it");
+}
 int main(void) {
     movement(); collisions(); jump_and_ledge(); states(); physics(); variable_jump(); coyote_jump();
-    slopes(); slope_sweep(); tunnels(); wall_climb(); poses(); crouch_poses(); crouch_tap(); double_tap(); ball_poses(); morph_rules(); ball_stands_on_slope();
+    slopes(); slope_sweep(); tunnels(); wall_climb(); wall_jump_rules(); poses(); crouch_poses(); crouch_tap(); double_tap(); ball_poses(); morph_rules(); ball_stands_on_slope();
     ball_stand_real(); camera_and_input(); real_levels();
     puts("All core regression tests passed."); return 0;
 }

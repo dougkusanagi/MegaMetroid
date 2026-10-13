@@ -14,6 +14,7 @@
 #define MM_COYOTE_TICKS 6 /* Refilled while grounded; a jump still starts in the 5 ticks after leaving. */
 #define MM_WALL_JUMP 1184 /* 4.625 px/tick takeoff; SM wall jump is $04A0 (4.625 px/frame). */
 #define MM_WALL_LOCK 12 /* Ticks a wall kick ignores steering and keeps its speed away from the wall. */
+#define MM_WALL_REACH 8 /* A wall up to 8 px behind still counts as touched: pressing away moves 2.75 px a tick. */
 /* One-shot poses last whole frames of the sheet, which play 5 ticks each (SPRITE ... 5 in res/resources.res). */
 #define MM_TAKEOFF_TICKS 5 /* 4B: one frame. */
 #define MM_WALL_KICK_TICKS 10 /* 83/84: two frames, then the spin. */
