@@ -45,6 +45,25 @@ static void draw_debug_overlay(const Game *g)
 }
 #endif
 
+/* Right-facing row of the body's pose; the render adds 1 for the left row. */
+static u16 pose_row(const Game *g, bool shooting_pose)
+{
+    /* Ball has no sprite yet; it borrows the spin frames until phase 3. */
+    if (g->player.state == MM_STATE_BALL && !shooting_pose) return PLAYER_ANIM_SPIN_R;
+    /* Aiming frames come in 3.2.5; until then a shot freezes on the standing frame. */
+    if (shooting_pose) return PLAYER_ANIM_STAND_R;
+    switch (g->player.pose) {
+    case MM_POSE_TAKEOFF: return PLAYER_ANIM_TAKEOFF_R;
+    case MM_POSE_JUMP_UP: return PLAYER_ANIM_JUMP_UP_R;
+    case MM_POSE_FALL: return PLAYER_ANIM_FALL_R;
+    case MM_POSE_SPIN: return PLAYER_ANIM_SPIN_R;
+    case MM_POSE_WALL_KICK: return PLAYER_ANIM_WALL_KICK_R;
+    case MM_POSE_LAND: return PLAYER_ANIM_LAND_R;
+    case MM_POSE_SPIN_LAND: return PLAYER_ANIM_SPIN_LAND_R;
+    default: return g->player.vx ? PLAYER_ANIM_WALK_R : PLAYER_ANIM_STAND_R;
+    }
+}
+
 static void render(Game *g)
 {
     int i;
@@ -53,14 +72,9 @@ static void render(Game *g)
     MmRect bounds = mm_camera_bounds(x + 20, y + 28, world_bounds,
         g->level->camera_zones, g->level->camera_zone_count);
     bool shooting_pose = g->player.shoot_pose_timer != 0;
-    /* Ball has no sprite yet; it borrows the spin frames until phase 3. */
-    bool ball = g->player.state == MM_STATE_BALL && !shooting_pose;
-    bool spin = ball || (!g->player.grounded && g->player.spin_jumping && !shooting_pose);
     /* Left is its own row, not a flip: the facing picks the row of the action. */
     u16 side = g->player.facing_left ? 1 : 0;
-    u16 animation = spin ? PLAYER_ANIM_JUMP_R + side :
-                    (!g->player.grounded || shooting_pose) ? PLAYER_ANIM_STAND_R + side :
-                    g->player.vx ? PLAYER_ANIM_WALK_R + side : PLAYER_ANIM_STAND_R + side;
+    u16 animation = pose_row(g, shooting_pose) + side;
     g->camera = mm_camera(x + 20, y + 28, VIEW_WIDTH, VIEW_HEIGHT, bounds);
     MAP_scrollTo(g->foreground, g->camera.x, g->camera.y);
     MAP_scrollTo(g->background, 0, 0);
@@ -70,12 +84,6 @@ static void render(Game *g)
         g->animation = animation;
     }
     if (shooting_pose) {
-        /* Aiming frames come in 3.2.5; until then a shot freezes on the standing frame. */
-        SPR_setAutoAnimation(g->sprite, FALSE);
-        SPR_setFrame(g->sprite, 0);
-    } else if (!g->player.grounded && !spin) {
-        /* A neutral jump keeps the standing pose even if direction is
-           pressed after takeoff. Only jumping while already moving spins. */
         SPR_setAutoAnimation(g->sprite, FALSE);
         SPR_setFrame(g->sprite, 0);
     } else {
@@ -174,7 +182,8 @@ void game_update(Game *g, MmInput input)
             PSG_setTone(0, 25 + (8 - g->beam_sound_timer) * 22);
             PSG_setEnvelope(0, g->beam_sound_timer ? 3 + (8 - g->beam_sound_timer) : PSG_ENVELOPE_MIN);
         }
-        if (g->player.jumped)
+        /* Only the spin and the wall kick make the spin sound; a standing jump is silent. */
+        if (g->player.jumped && g->player.spin_jumping)
             XGM2_playPCMEx(jump_sfx, sizeof(jump_sfx), SOUND_PCM_CH2, 15, FALSE, TRUE);
         input.jump_pressed = 0;
         input.shoot_pressed = 0;

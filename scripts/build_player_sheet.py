@@ -26,7 +26,13 @@ CELL = 64
 ANIMATIONS = [
     ('STAND', '01', '02'),
     ('WALK', '09', '0A'),
-    ('JUMP', '19', '1A'),
+    ('SPIN', '19', '1A'),
+    ('TAKEOFF', '4B', '4C'),
+    ('JUMP_UP', '4D', '4E'),
+    ('FALL', '29', '2A'),
+    ('LAND', 'A4', 'A5'),
+    ('SPIN_LAND', 'A6', 'A7'),
+    ('WALL_KICK', '83', '84'),
 ]
 
 

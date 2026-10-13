@@ -115,7 +115,7 @@ Feito: `scripts/build_player_sheet.py` gera `res/images/player/samus_sheet.png` 
 
 Teste: `tests/rom_smoke.c` (`-SmokeTest`, entrada roteirizada) passa com a folha nova, e as capturas do BlastEm mostram a Samus andando para os dois lados, sem troca de cor. Parada à direita também conferida; parada à esquerda só pela captura final.
 
-**3.2.2 Pulos.** Separar o pulo parado (sem giro, sem som) do giratório e do de parede, com transição de saída, queda e pouso.
+**3.2.2 Pulos** ✅. O pulo parado tem pose própria em cada fase: saída (`4B`/`4C`, 5 ticks), subida (`4D`/`4E`), queda (`29`/`2A`) e pouso (`A4`/`A5`, 10 ticks, que termina ao começar a andar). O giratório gira em `19`/`1A` e pousa em `A6`/`A7` (15 ticks). O chute de parede mostra `83`/`84` (10 ticks) e depois gira. O som de giro toca só nos pulos que giram. As poses são calculadas no núcleo (`MmPose` e `pose_timer` em `src/core/world.c`), e o `render` só escolhe a linha da folha. O tiro no ar continua congelado no quadro parado até a 3.2.5. Teste: `poses()` em `tests/core_test.c`; `tests/rom_smoke.c` confere os dois pulos na ROM, e as capturas do BlastEm mostram o pulo parado e o giratório.
 
 **3.2.3 Agachar.** Transições de abaixar e levantar, inclusive quando o teto mantém a Samus agachada.
 

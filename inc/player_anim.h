@@ -9,8 +9,20 @@ enum {
     PLAYER_ANIM_STAND_L, /* pose 02 */
     PLAYER_ANIM_WALK_R, /* pose 09 */
     PLAYER_ANIM_WALK_L, /* pose 0A */
-    PLAYER_ANIM_JUMP_R, /* pose 19 */
-    PLAYER_ANIM_JUMP_L, /* pose 1A */
+    PLAYER_ANIM_SPIN_R, /* pose 19 */
+    PLAYER_ANIM_SPIN_L, /* pose 1A */
+    PLAYER_ANIM_TAKEOFF_R, /* pose 4B */
+    PLAYER_ANIM_TAKEOFF_L, /* pose 4C */
+    PLAYER_ANIM_JUMP_UP_R, /* pose 4D */
+    PLAYER_ANIM_JUMP_UP_L, /* pose 4E */
+    PLAYER_ANIM_FALL_R, /* pose 29 */
+    PLAYER_ANIM_FALL_L, /* pose 2A */
+    PLAYER_ANIM_LAND_R, /* pose A4 */
+    PLAYER_ANIM_LAND_L, /* pose A5 */
+    PLAYER_ANIM_SPIN_LAND_R, /* pose A6 */
+    PLAYER_ANIM_SPIN_LAND_L, /* pose A7 */
+    PLAYER_ANIM_WALL_KICK_R, /* pose 83 */
+    PLAYER_ANIM_WALL_KICK_L, /* pose 84 */
     PLAYER_ANIM_COUNT
 };
 

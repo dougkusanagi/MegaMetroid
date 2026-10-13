@@ -60,6 +60,7 @@ void mm_body_init(MmBody *b, int x, int y, MmRect hitbox)
     b->coyote = 0;
     b->wall_lock = b->wall_vx = 0;
     b->state = MM_STATE_STAND;
+    b->pose = MM_POSE_GROUND; b->pose_timer = 0;
     b->stand_box = hitbox;
 }
 
@@ -138,10 +139,33 @@ static MmState body_state(const MmBody *b)
     return b->vy < 0 ? MM_STATE_JUMP : MM_STATE_FALL;
 }
 
+/* The pose once no one-shot pose is running. */
+static MmPose looping_pose(const MmBody *b)
+{
+    if (b->grounded) return MM_POSE_GROUND;
+    if (b->spin_jumping) return MM_POSE_SPIN;
+    return b->vy < 0 ? MM_POSE_JUMP_UP : MM_POSE_FALL;
+}
+
+/* A landing holds its pose for a while. The hold also ends when the body leaves the
+   ground or, for the standing landing, when it starts walking. */
+static void update_pose(MmBody *b, int was_grounded)
+{
+    /* A body from mm_body_init has GROUND as its pose, so its first tick is not a landing. */
+    if (b->grounded && !was_grounded && b->pose != MM_POSE_GROUND) {
+        b->pose = b->spin_jumping ? MM_POSE_SPIN_LAND : MM_POSE_LAND;
+        b->pose_timer = b->spin_jumping ? MM_SPIN_LAND_TICKS : MM_LAND_TICKS;
+    }
+    if (b->pose == MM_POSE_LAND && b->vx) b->pose_timer = 0;
+    if (!b->grounded && (b->pose == MM_POSE_LAND || b->pose == MM_POSE_SPIN_LAND)) b->pose_timer = 0;
+    if (!b->pose_timer) b->pose = looping_pose(b);
+}
+
 void mm_tick(const MmWorld *w, MmBody *b, MmInput input)
 {
     int direction = input.axis < 0 ? -1 : input.axis > 0 ? 1 : 0;
-    int moving_before_jump = b->vx != 0, wall_jump;
+    int moving_before_jump = b->vx != 0, wall_jump, was_grounded = b->grounded;
+    if (b->pose_timer) --b->pose_timer;
     /* Dash builds on the ground; takeoff retains the bonus. Stopping,
        reversing, releasing on ground or hitting a wall cancels it. */
     if (!direction || direction != b->move_direction) b->run_extra = 0;
@@ -179,13 +203,20 @@ void mm_tick(const MmWorld *w, MmBody *b, MmInput input)
     b->vx = b->wall_lock ? b->wall_vx : direction * (MM_SPEED + b->run_extra);
     if (b->wall_lock) --b->wall_lock;
     if (input.axis) b->facing_left = input.axis < 0;
-    if (b->jumped) { b->vy = wall_jump ? -MM_WALL_JUMP : -MM_JUMP; b->grounded = 0; }
+    if (b->jumped) {
+        b->vy = wall_jump ? -MM_WALL_JUMP : -MM_JUMP; b->grounded = 0;
+        /* A kick shows its own pose first, a spin goes straight into the spin, a standing jump shows its takeoff. */
+        b->pose = wall_jump ? MM_POSE_WALL_KICK : b->spin_jumping ? MM_POSE_SPIN : MM_POSE_TAKEOFF;
+        b->pose_timer = wall_jump ? MM_WALL_KICK_TICKS : b->spin_jumping ? 0 : MM_TAKEOFF_TICKS;
+    }
     /* Releasing jump while rising caps the ascent, so a tap makes a short hop. */
     if (!input.jump_held && b->vy < -MM_JUMP_CUT) b->vy = -MM_JUMP_CUT;
     b->vy += MM_GRAVITY;
     if (b->vy > MM_MAX_FALL) b->vy = MM_MAX_FALL;
     mm_move(w, b);
     if (!b->vx) b->run_extra = 0;
+    /* Before the spin flag is cleared: a landing needs to know whether it came from a spin. */
+    update_pose(b, was_grounded);
     if (b->grounded) { b->spin_jumping = 0; b->wall_lock = 0; }
     if (b->grounded) b->coyote = MM_COYOTE_TICKS;
     else if (b->coyote) --b->coyote;

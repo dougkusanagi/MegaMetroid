@@ -346,8 +346,83 @@ static void wall_climb(void) {
     assert(mm_pixel(b.y) <= 40 && wall_jumps >= 2);
     printf("PASS wall jumps: %d kicks climbed the 40 px shaft to y %d\n", wall_jumps, mm_pixel(b.y));
 }
+static const char *pose_name(MmPose pose) {
+    static const char *const names[] = {"GROUND", "TAKEOFF", "JUMP_UP", "FALL", "SPIN", "WALL_KICK", "LAND", "SPIN_LAND"};
+    return names[pose];
+}
+/* Ticks with the given input, appending each pose change to log ("GROUND TAKEOFF"). */
+static void run_poses(MmBody *b, char *log, MmInput input, int ticks) {
+    int i;
+    for (i = 0; i < ticks; ++i) {
+        MmPose before = b->pose;
+        mm_tick(&world, b, input);
+        if (b->pose != before) { strcat(log, " "); strcat(log, pose_name(b->pose)); }
+    }
+}
+/* Ticks the pose stays on screen, counting the tick that set it. Input is held for all of them. */
+static int hold_ticks(MmBody *b, MmInput input, MmPose pose) {
+    int n = 0;
+    while (b->pose == pose && n < 1000) { mm_tick(&world, b, input); ++n; }
+    return n;
+}
+/* Standing jump, spin jump, wall kick and a standing landing that ends when walking starts.
+   The spin sound is only for the jumps that spin: a standing jump is silent. */
+static void poses(void) {
+    MmBody b;
+    char log[256];
+    MmInput jump = {.jump_pressed = 1, .jump_held = 1}, held = {.jump_held = 1};
+    MmInput right = {.axis = 1}, right_jump = {.axis = 1, .jump_pressed = 1, .jump_held = 1};
+    MmInput right_held = {.axis = 1, .jump_held = 1};
+    int i;
+    reset(); floor_at(20);
+    mm_body_init(&b, 80, 144, box);
+    strcpy(log, "GROUND");
+    run_poses(&b, log, idle, 1);
+    run_poses(&b, log, jump, 1);
+    assert(b.jumped && !b.spin_jumping);
+    run_poses(&b, log, held, 200);
+    assert(strcmp(log, "GROUND TAKEOFF JUMP_UP FALL LAND GROUND") == 0);
+    mm_body_init(&b, 80, 144, box); mm_tick(&world, &b, idle);
+    mm_tick(&world, &b, jump);
+    assert(hold_ticks(&b, held, MM_POSE_TAKEOFF) == MM_TAKEOFF_TICKS);
+    while (!b.grounded) mm_tick(&world, &b, held);
+    assert(b.pose == MM_POSE_LAND && hold_ticks(&b, idle, MM_POSE_LAND) == MM_LAND_TICKS);
+
+    reset(); floor_at(20);
+    mm_body_init(&b, 80, 144, box);
+    strcpy(log, "GROUND");
+    run_poses(&b, log, idle, 1);
+    run_poses(&b, log, right, 10);
+    run_poses(&b, log, right_jump, 1);
+    assert(b.jumped && b.spin_jumping);
+    run_poses(&b, log, right_held, 200);
+    assert(strcmp(log, "GROUND SPIN SPIN_LAND GROUND") == 0);
+
+    reset(); floor_at(20);
+    for (i = 0; i < 20; ++i) tiles[i * 64 + 12] = 0;
+    mm_body_init(&b, 88, 100, box);
+    strcpy(log, "GROUND");
+    run_poses(&b, log, idle, 1);
+    run_poses(&b, log, right_jump, 1);
+    assert(b.jumped && b.spin_jumping && b.pose == MM_POSE_WALL_KICK);
+    run_poses(&b, log, idle, 200);
+    assert(strcmp(log, "GROUND FALL WALL_KICK SPIN SPIN_LAND GROUND") == 0);
+    mm_body_init(&b, 88, 100, box); mm_tick(&world, &b, idle);
+    mm_tick(&world, &b, right_jump);
+    assert(hold_ticks(&b, idle, MM_POSE_WALL_KICK) == MM_WALL_KICK_TICKS);
+
+    reset(); floor_at(20);
+    mm_body_init(&b, 80, 144, box);
+    strcpy(log, "GROUND");
+    run_poses(&b, log, idle, 1);
+    run_poses(&b, log, jump, 1);
+    run_poses(&b, log, held, 40);
+    run_poses(&b, log, right_held, 100);
+    assert(strcmp(log, "GROUND TAKEOFF JUMP_UP FALL GROUND") == 0);
+    puts("PASS poses: standing jump, spin jump, wall kick, landings and hold durations; spin sound only when spinning");
+}
 int main(void) {
     movement(); collisions(); jump_and_ledge(); states(); physics(); variable_jump(); coyote_jump();
-    slopes(); slope_sweep(); tunnels(); wall_climb(); camera_and_input(); real_levels();
+    slopes(); slope_sweep(); tunnels(); wall_climb(); poses(); camera_and_input(); real_levels();
     puts("All core regression tests passed."); return 0;
 }

@@ -14,6 +14,11 @@
 #define MM_COYOTE_TICKS 6 /* Refilled while grounded; a jump still starts in the 5 ticks after leaving. */
 #define MM_WALL_JUMP 1184 /* 4.625 px/tick takeoff; SM wall jump is $04A0 (4.625 px/frame). */
 #define MM_WALL_LOCK 12 /* Ticks a wall kick ignores steering and keeps its speed away from the wall. */
+/* One-shot poses last whole frames of the sheet, which play 5 ticks each (SPRITE ... 5 in res/resources.res). */
+#define MM_TAKEOFF_TICKS 5 /* 4B: one frame. */
+#define MM_WALL_KICK_TICKS 10 /* 83/84: two frames, then the spin. */
+#define MM_LAND_TICKS 10 /* A4/A5, standing landing: two frames; ends at once when the body starts walking. */
+#define MM_SPIN_LAND_TICKS 15 /* A6/A7, landing from a spin jump: three frames. */
 
 typedef struct { int left, top, right, bottom; } MmRect;
 typedef struct { const unsigned char *tiles; int columns, rows; } MmWorld;
@@ -21,6 +26,11 @@ typedef enum {
     MM_STATE_STAND, MM_STATE_WALK, MM_STATE_CROUCH, MM_STATE_BALL,
     MM_STATE_JUMP, MM_STATE_SPIN, MM_STATE_FALL
 } MmState;
+/* Sprite pose. GROUND covers stand and walk, which the SGDK layer tells apart by vx. */
+typedef enum {
+    MM_POSE_GROUND, MM_POSE_TAKEOFF, MM_POSE_JUMP_UP, MM_POSE_FALL,
+    MM_POSE_SPIN, MM_POSE_WALL_KICK, MM_POSE_LAND, MM_POSE_SPIN_LAND
+} MmPose;
 typedef struct {
     int x, y; /* Q24.8 world position; never discard fractional movement. */
     int vx, vy;
@@ -33,6 +43,8 @@ typedef struct {
     int coyote; /* Ticks left in which a grounded jump is still allowed. */
     int wall_lock, wall_vx; /* Wall kick: ticks left and the fixed speed while locked. */
     MmState state; /* Derived at the end of every mm_tick. */
+    MmPose pose; /* Derived at the end of every mm_tick, like state. */
+    int pose_timer; /* Ticks left in a one-shot pose (takeoff, wall kick, landing); 0 for looping poses. */
 } MmBody;
 typedef struct {
     int axis, jump_pressed;
