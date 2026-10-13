@@ -23,6 +23,8 @@
 #define MM_STAND_UP_TICKS 5 /* 3B/3C, standing up from a crouch: one frame. */
 #define MM_TAP_TICKS 12 /* Down held for up to 12 ticks (0.2 s) is a tap: the crouch stays after release. */
 #define MM_DOUBLE_TAP_TICKS 20 /* Two presses of down less than this (1/3 s) apart morph into the ball. */
+#define MM_MORPH_TICKS 10 /* 37/38, curling into the ball: two frames. */
+#define MM_UNMORPH_TICKS 10 /* 3D/3E, uncurling from the ball: two frames. */
 
 typedef struct { int left, top, right, bottom; } MmRect;
 typedef struct { const unsigned char *tiles; int columns, rows; } MmWorld;
@@ -34,7 +36,8 @@ typedef enum {
 typedef enum {
     MM_POSE_GROUND, MM_POSE_TAKEOFF, MM_POSE_JUMP_UP, MM_POSE_FALL,
     MM_POSE_SPIN, MM_POSE_WALL_KICK, MM_POSE_LAND, MM_POSE_SPIN_LAND,
-    MM_POSE_CROUCH_DOWN, MM_POSE_CROUCH, MM_POSE_STAND_UP
+    MM_POSE_CROUCH_DOWN, MM_POSE_CROUCH, MM_POSE_STAND_UP,
+    MM_POSE_MORPH, MM_POSE_BALL, MM_POSE_UNMORPH
 } MmPose;
 typedef struct {
     int x, y; /* Q24.8 world position; never discard fractional movement. */

@@ -48,8 +48,6 @@ static void draw_debug_overlay(const Game *g)
 /* Right-facing row of the body's pose; the render adds 1 for the left row. */
 static u16 pose_row(const Game *g, bool shooting_pose)
 {
-    /* Ball has no sprite yet; it borrows the spin frames until phase 3. */
-    if (g->player.state == MM_STATE_BALL && !shooting_pose) return PLAYER_ANIM_SPIN_R;
     /* Aiming frames come in 3.2.5; until then a shot freezes on the standing frame. */
     if (shooting_pose) return PLAYER_ANIM_STAND_R;
     switch (g->player.pose) {
@@ -63,6 +61,9 @@ static u16 pose_row(const Game *g, bool shooting_pose)
     case MM_POSE_CROUCH_DOWN: return PLAYER_ANIM_CROUCH_DOWN_R;
     case MM_POSE_CROUCH: return PLAYER_ANIM_CROUCH_R;
     case MM_POSE_STAND_UP: return PLAYER_ANIM_STAND_UP_R;
+    case MM_POSE_MORPH: return PLAYER_ANIM_MORPH_R;
+    case MM_POSE_BALL: return PLAYER_ANIM_BALL_R;
+    case MM_POSE_UNMORPH: return PLAYER_ANIM_UNMORPH_R;
     default: return g->player.vx ? PLAYER_ANIM_WALK_R : PLAYER_ANIM_STAND_R;
     }
 }
@@ -74,10 +75,13 @@ static void render(Game *g)
     MmRect world_bounds = {0, 0, g->level->map_width, g->level->map_height};
     MmRect bounds = mm_camera_bounds(x + 20, y + 28, world_bounds,
         g->level->camera_zones, g->level->camera_zone_count);
-    bool shooting_pose = g->player.shoot_pose_timer != 0;
+    /* A ball does not shoot, so it never takes the shooting pose. */
+    bool shooting_pose = g->player.shoot_pose_timer != 0 && !g->player.ball;
+    bool rolling;
     /* Left is its own row, not a flip: the facing picks the row of the action. */
     u16 side = g->player.facing_left ? 1 : 0;
     u16 animation = pose_row(g, shooting_pose) + side;
+    rolling = animation == PLAYER_ANIM_BALL_R + side;
     g->camera = mm_camera(x + 20, y + 28, VIEW_WIDTH, VIEW_HEIGHT, bounds);
     MAP_scrollTo(g->foreground, g->camera.x, g->camera.y);
     MAP_scrollTo(g->background, 0, 0);
@@ -89,6 +93,11 @@ static void render(Game *g)
     if (shooting_pose) {
         SPR_setAutoAnimation(g->sprite, FALSE);
         SPR_setFrame(g->sprite, 0);
+    } else if (rolling) {
+        /* The ball only turns while it moves, and a turn takes about the time it rolls its own
+           circumference (16 px * pi at 2.75 px/tick): 2 ticks a frame. */
+        SPR_setAutoAnimation(g->sprite, g->player.vx != 0);
+        if (g->sprite->timer > 2) g->sprite->timer = 2;
     } else {
         SPR_setAutoAnimation(g->sprite, TRUE);
     }

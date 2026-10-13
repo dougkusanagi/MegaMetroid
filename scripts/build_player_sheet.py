@@ -27,7 +27,12 @@ GROUND_ROW = 58
 # Actions whose feet touch the floor. The original art draws the crouch frames 11 px higher in
 # their box than the standing ones (and the crouch-down and stand-up frames 3 px higher), so
 # without this Samus floats while crouched.
-GROUNDED = {'STAND', 'WALK', 'LAND', 'SPIN_LAND', 'CROUCH_DOWN', 'CROUCH', 'STAND_UP'}
+# The ball and its transitions sit on the same row: the ball box keeps the standing feet, in the air too.
+GROUNDED = {'STAND', 'WALK', 'LAND', 'SPIN_LAND', 'CROUCH_DOWN', 'CROUCH', 'STAND_UP',
+            'MORPH', 'BALL', 'UNMORPH'}
+# Actions aligned frame by frame instead of as a whole. The extracted ball frames drift up and down by
+# a pixel from the sheet grid; a rolling ball must not bounce.
+ALIGN_EACH_FRAME = {'BALL'}
 # (action, pose facing right, pose facing left), in row order. To add an action,
 # add its entry here and rebuild; the game then uses PLAYER_ANIM_<action>_R / _L.
 ANIMATIONS = [
@@ -43,6 +48,10 @@ ANIMATIONS = [
     ('CROUCH_DOWN', '35', '36'),
     ('CROUCH', '27', '28'),
     ('STAND_UP', '3B', '3C'),
+    ('MORPH', '37', '38'),
+    # 1D faces right; 1F is the left roll (the sheet has no separate 1E/41 drawings).
+    ('BALL', '1D', '1F'),
+    ('UNMORPH', '3D', '3E'),
 ]
 
 
@@ -96,7 +105,9 @@ def main() -> None:
             elif pose.getpalette()[:48] != palette[:48]:
                 raise SystemExit(f'pose {number} does not use the shared palette')
             frames = [pose.crop((x, 0, x + CELL, CELL)) for x in range(0, pose.width, CELL)]
-            if action in GROUNDED:
+            if action in ALIGN_EACH_FRAME:
+                frames = [align_feet([frame])[0] for frame in frames]
+            elif action in GROUNDED:
                 frames = align_feet(frames)
             rows.append((number, frames))
 

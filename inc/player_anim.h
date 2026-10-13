@@ -29,6 +29,12 @@ enum {
     PLAYER_ANIM_CROUCH_L, /* pose 28 */
     PLAYER_ANIM_STAND_UP_R, /* pose 3B */
     PLAYER_ANIM_STAND_UP_L, /* pose 3C */
+    PLAYER_ANIM_MORPH_R, /* pose 37 */
+    PLAYER_ANIM_MORPH_L, /* pose 38 */
+    PLAYER_ANIM_BALL_R, /* pose 1D */
+    PLAYER_ANIM_BALL_L, /* pose 1F */
+    PLAYER_ANIM_UNMORPH_R, /* pose 3D */
+    PLAYER_ANIM_UNMORPH_L, /* pose 3E */
     PLAYER_ANIM_COUNT
 };
 

@@ -22,9 +22,9 @@ No ar também é possível mirar para baixo. Tocar A dispara; segurar repete.
 Segurar ↓ no chão agacha: a hitbox fica menor e a Samus abaixa (pose de agachada); tiro agachado ainda usa o quadro de pé.
 Um toque rápido de ↓ (até 0,2 s) mantém a Samus agachada depois de soltar. Para levantar, aperte ↑ ou um direcional, ou pule.
 Segurar ↓ por mais tempo levanta ao soltar.
-Dois toques de ↓ em até 1/3 de segundo, sem atirar, entram em bola, no chão ou no ar (hitbox de 16 px,
-sprite de giro enquanto não há pose própria). Um toque no ar não faz nada. ↑ sai da bola só onde a
-Samus cabe em pé, então não sai dentro de túnel baixo.
+Dois toques de ↓ em até 1/3 de segundo, sem atirar, entram em bola, no chão ou no ar (hitbox de 16 px).
+Agachada, um novo toque de ↓ também entra em bola, sem pressa. Um toque no ar não faz nada. A bola não
+atira e só gira enquanto se move. ↑ sai da bola só onde a Samus cabe em pé, então não sai dentro de túnel baixo.
 
 A caminhada usa 2,75 px/tick. A corrida acrescenta 0,03125 px/tick a cada tick
 no chão, até +2 após 64 ticks (4,75 px/tick no total). O salto conserva o bônus;
@@ -38,7 +38,7 @@ O Power Beam não consome munição, não carrega e mantém até três projétei
 Há colisão com paredes e rampas, descarte ao sair da tela e som sintetizado.
 As fases atuais ainda não têm entidades de inimigos ou portas destrutíveis;
 o valor de dano está preparado no projétil para essa integração futura.
-O sprite da Samus usa as poses originais do jogo (parada, andando e girando, cada uma com desenho próprio para a esquerda). Mira, agachar e bola ainda são provisórios; ver a etapa 3.2 em `docs/PLANO.md`.
+O sprite da Samus usa as poses originais do jogo (parada, andando, pulando, girando, agachando e em bola, cada uma com desenho próprio para a esquerda). A mira ainda é provisória; ver a etapa 3.2 em `docs/PLANO.md`.
 
 O salto giratório só começa quando C é pressionado enquanto Samus já estava em
 movimento. Direcionar depois de um salto parado move no ar sem iniciar o giro.

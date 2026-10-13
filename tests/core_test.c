@@ -350,7 +350,7 @@ static void wall_climb(void) {
 }
 static const char *pose_name(MmPose pose) {
     static const char *const names[] = {"GROUND", "TAKEOFF", "JUMP_UP", "FALL", "SPIN", "WALL_KICK", "LAND", "SPIN_LAND",
-                                        "CROUCH_DOWN", "CROUCH", "STAND_UP"};
+                                        "CROUCH_DOWN", "CROUCH", "STAND_UP", "MORPH", "BALL", "UNMORPH"};
     return names[pose];
 }
 /* Ticks with the given input, appending each pose change to log ("GROUND TAKEOFF"). */
@@ -498,8 +498,9 @@ static void crouch_tap(void) {
     assert(!b.crouching && !b.crouch_latch);
     puts("PASS crouch tap: a tap keeps the crouch, one tick more is a hold; up, a direction or a jump ends it");
 }
-/* Two presses of down less than MM_DOUBLE_TAP_TICKS apart morph, on the ground or in the air. One press
-   does nothing, a second press that comes too late starts a new count, and a shot aiming down is no press. */
+/* Two presses of down less than MM_DOUBLE_TAP_TICKS apart morph, on the ground or in the air, and so does
+   a press while crouched. One press does nothing, a late second press after standing up starts a new
+   count, and a shot aiming down is no press. */
 static void double_tap(void) {
     MmBody b;
     MmRect real = {8, 8, 32, 48};
@@ -518,8 +519,11 @@ static void double_tap(void) {
     for (t = 0; t < 30; ++t) { mm_tick(&world, &b, idle_in); assert(!b.ball && !b.crouching); }
 
     mm_body_init(&b, 80, 112, real); mm_tick(&world, &b, idle_in);
+    /* A hold stands up on release, so a late second press finds the body standing: no morph. */
     mm_tick(&world, &b, down_press);
-    for (t = 1; t < MM_DOUBLE_TAP_TICKS; ++t) mm_tick(&world, &b, idle_in);
+    for (t = 1; t < MM_DOUBLE_TAP_TICKS; ++t) mm_tick(&world, &b, (MmInput){.aim_y = 1});
+    mm_tick(&world, &b, idle_in);
+    assert(!b.crouching);
     mm_tick(&world, &b, down_press);
     assert(!b.ball);
     mm_tick(&world, &b, idle_in); mm_tick(&world, &b, down_press);
@@ -536,6 +540,14 @@ static void double_tap(void) {
     assert(b.ball && !b.grounded && b.state == MM_STATE_BALL);
     for (t = 0; t < 200; ++t) mm_tick(&world, &b, idle_in);
     assert(b.ball && b.grounded);
+
+    /* A kept crouch morphs on the next press of down, long after the window closed. */
+    mm_body_init(&b, 80, 112, real); mm_tick(&world, &b, idle_in);
+    mm_tick(&world, &b, down_press); mm_tick(&world, &b, idle_in);
+    for (t = 0; t < 120; ++t) mm_tick(&world, &b, idle_in);
+    assert(b.crouching && !b.ball);
+    mm_tick(&world, &b, down_press);
+    assert(b.ball && b.state == MM_STATE_BALL);
     puts("PASS double tap: two presses of down morph on the ground or in the air; one press, a shot or a late second press do not");
 }
 /* Morph rules. Down morphs in the air, but not while aiming down with the shot. A morphed body
@@ -619,9 +631,44 @@ static void ball_stand_real(void) {
     assert(slopes >= 100 && stuck * 10 <= slopes);
     printf("PASS ball stands up on Crateria 1 slopes: %d of %d landings still ball (narrow spots)\n", stuck, slopes);
 }
+/* Ball poses: curling up (also straight from a crouch), the rolling loop, uncurling. Landing as a
+   ball and jumping as a ball keep the ball pose. */
+static void ball_poses(void) {
+    MmBody b;
+    char log[256];
+    MmRect real = {8, 8, 32, 48};
+    MmInput down_press = {.aim_y = 1, .down_pressed = 1}, up_press = {.aim_y = -1, .up_pressed = 1};
+    MmInput idle_in = {0}, jump = {.jump_pressed = 1, .jump_held = 1};
+    reset(); floor_at(20);
+    mm_body_init(&b, 80, 112, real);
+    strcpy(log, "GROUND");
+    run_poses(&b, log, idle_in, 1);
+    run_poses(&b, log, down_press, 1);
+    run_poses(&b, log, idle_in, 10);
+    run_poses(&b, log, down_press, 1);
+    assert(b.pose == MM_POSE_MORPH && hold_ticks(&b, idle_in, MM_POSE_MORPH) == MM_MORPH_TICKS);
+    run_poses(&b, log, jump, 1);
+    run_poses(&b, log, idle_in, 100);
+    assert(b.ball && b.grounded && b.pose == MM_POSE_BALL);
+    run_poses(&b, log, up_press, 1);
+    assert(b.pose == MM_POSE_UNMORPH && hold_ticks(&b, idle_in, MM_POSE_UNMORPH) == MM_UNMORPH_TICKS);
+    mm_body_init(&b, 80, 112, real);
+    strcpy(log, "GROUND");
+    run_poses(&b, log, idle_in, 1);
+    run_poses(&b, log, down_press, 1);
+    run_poses(&b, log, idle_in, 10);
+    run_poses(&b, log, down_press, 1);
+    run_poses(&b, log, idle_in, 20);
+    run_poses(&b, log, jump, 1);
+    run_poses(&b, log, idle_in, 100);
+    run_poses(&b, log, up_press, 1);
+    run_poses(&b, log, idle_in, 20);
+    assert(strcmp(log, "GROUND CROUCH_DOWN CROUCH MORPH BALL UNMORPH GROUND") == 0);
+    puts("PASS ball poses: morph (also from a crouch), rolling loop through a jump and a landing, unmorph");
+}
 int main(void) {
     movement(); collisions(); jump_and_ledge(); states(); physics(); variable_jump(); coyote_jump();
-    slopes(); slope_sweep(); tunnels(); wall_climb(); poses(); crouch_poses(); crouch_tap(); double_tap(); morph_rules(); ball_stands_on_slope();
+    slopes(); slope_sweep(); tunnels(); wall_climb(); poses(); crouch_poses(); crouch_tap(); double_tap(); ball_poses(); morph_rules(); ball_stands_on_slope();
     ball_stand_real(); camera_and_input(); real_levels();
     puts("All core regression tests passed."); return 0;
 }

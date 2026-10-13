@@ -40,7 +40,8 @@ void mm_weapon_tick(MmWeapon *w, const MmWorld *world,
     if (!input.shoot_held || input.shoot_pressed) w->repeating = 0;
     for (i = 0; i < MM_BEAM_COUNT; ++i)
         if (w->beams[i].active) advance(&w->beams[i], world, camera);
-    if (!input.shoot_held || w->cooldown) return;
+    /* The morph ball has no beam. */
+    if (!input.shoot_held || w->cooldown || player->ball) return;
     for (i = 0; i < MM_BEAM_COUNT; ++i) {
         if (!w->beams[i].active) {
             MmBeam *b = &w->beams[i];
