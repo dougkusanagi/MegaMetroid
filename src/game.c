@@ -1,17 +1,20 @@
 #include "game.h"
 #include "resources.h"
 #include "beam_sprite.h"
+#include "player_anim.h"
 
 #define VIEW_WIDTH 256
 #define VIEW_HEIGHT 224
+/* The 64x64 frame has the body on column 32 and the feet on row 58. These offsets put
+   the body on the hitbox centre (x + 20) and the feet on its bottom row (y + 47). */
+#define SAMUS_DRAW_X 12
+#define SAMUS_DRAW_Y 11
 
 /* Build with -DMM_DEBUG_OVERLAY=1 to draw position, velocity, floor and foot tiles. */
 #ifndef MM_DEBUG_OVERLAY
 #define MM_DEBUG_OVERLAY 0
 #endif
 #define OVERLAY_ROWS 4
-
-enum { ANIM_STAND, ANIM_WALK, ANIM_JUMP };
 
 #if MM_DEBUG_OVERLAY
 /* Q24.8 as fixed-width signed text with two decimals, e.g. "+ 2.75". */
@@ -53,21 +56,23 @@ static void render(Game *g)
     /* Ball has no sprite yet; it borrows the spin frames until phase 3. */
     bool ball = g->player.state == MM_STATE_BALL && !shooting_pose;
     bool spin = ball || (!g->player.grounded && g->player.spin_jumping && !shooting_pose);
-    u16 animation = spin ? ANIM_JUMP :
-                    (!g->player.grounded || shooting_pose) ? ANIM_STAND :
-                    g->player.vx ? ANIM_WALK : ANIM_STAND;
+    /* Left is its own row, not a flip: the facing picks the row of the action. */
+    u16 side = g->player.facing_left ? 1 : 0;
+    u16 animation = spin ? PLAYER_ANIM_JUMP_R + side :
+                    (!g->player.grounded || shooting_pose) ? PLAYER_ANIM_STAND_R + side :
+                    g->player.vx ? PLAYER_ANIM_WALK_R + side : PLAYER_ANIM_STAND_R + side;
     g->camera = mm_camera(x + 20, y + 28, VIEW_WIDTH, VIEW_HEIGHT, bounds);
     MAP_scrollTo(g->foreground, g->camera.x, g->camera.y);
     MAP_scrollTo(g->background, 0, 0);
-    SPR_setPosition(g->sprite, x - g->camera.x, y - g->camera.y);
-    SPR_setHFlip(g->sprite, g->player.facing_left);
+    SPR_setPosition(g->sprite, x - g->camera.x - SAMUS_DRAW_X, y - g->camera.y - SAMUS_DRAW_Y);
     if (animation != g->animation) {
         SPR_setAnim(g->sprite, animation);
         g->animation = animation;
     }
     if (shooting_pose) {
+        /* Aiming frames come in 3.2.5; until then a shot freezes on the standing frame. */
         SPR_setAutoAnimation(g->sprite, FALSE);
-        SPR_setFrame(g->sprite, g->player.shoot_frame);
+        SPR_setFrame(g->sprite, 0);
     } else if (!g->player.grounded && !spin) {
         /* A neutral jump keeps the standing pose even if direction is
            pressed after takeoff. Only jumping while already moving spins. */
@@ -77,7 +82,7 @@ static void render(Game *g)
         SPR_setAutoAnimation(g->sprite, TRUE);
     }
     /* Shorten the walk cycle as dash momentum builds. */
-    if (animation == ANIM_WALK && g->player.run_extra && g->sprite->timer > 3)
+    if (animation == PLAYER_ANIM_WALK_R + side && g->player.run_extra && g->sprite->timer > 3)
         g->sprite->timer = 3;
     for (i = 0; i < MM_BEAM_COUNT; ++i) {
         const MmBeam *beam = &g->weapon.beams[i];
@@ -121,7 +126,7 @@ bool game_init(Game *g, u16 level_index)
     PAL_setPalette(PAL1, g->level->palette_bg->data, CPU);
     VDP_loadTileSet(g->level->tileset_bg, tile, CPU);
     g->background = MAP_create(g->level->map_bg, BG_B, TILE_ATTR_FULL(PAL1, FALSE, FALSE, FALSE, tile));
-    PAL_setPalette(PAL2, player_sprite.palette->data, CPU);
+    PAL_setPalette(PAL2, pal_samus_power_suit.data, CPU);
     g->sprite = SPR_addSprite(&player_sprite, 0, 0, TILE_ATTR(PAL2, TRUE, FALSE, FALSE));
     if (!g->foreground || !g->background || !g->sprite) {
         if (g->foreground) MEM_free(g->foreground);

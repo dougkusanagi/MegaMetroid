@@ -74,7 +74,7 @@ Cada etapa é pequena, testável no emulador e termina em **commit + push** (ver
 
 | # | Etapa | Entrega | Teste |
 |---|-------|---------|-------|
-| 3.1 | Pipeline de sprite | Pranchas originais → PNG indexado → `.res` (`scripts/extract_*.py`), convenções em `docs/SPRITES.md`. Extração feita e todos os `.res` compilam no `rescomp`; falta carregar no jogo, o que acontece na 3.2.1 | Sprite novo carrega seguindo o doc |
+| 3.1 ✅ | Pipeline de sprite | Pranchas originais → PNG indexado → `.res` (`scripts/extract_*.py`), convenções em `docs/SPRITES.md`. Extração feita e todos os `.res` compilam no `rescomp`; a Samus carrega no jogo desde a 3.2.1 | Sprite novo carrega seguindo o doc |
 | 3.2 ⏭️ | Animações atuais com os sprites originais | Trocar a folha Dread (`player_sprite`) pelas poses de `res/images/samus-original-sgdk/poses` em tudo o que o código já faz. Dividida nas sub-etapas 3.2.1–3.2.7 abaixo, cada uma com commit próprio | Ver a tabela da 3.2 |
 | 3.3 | Animações completas | Virar, mirar (cima/baixo/diagonal), agachar, bola, spin | Todas visíveis em sequência |
 | 3.4 | Hitbox por estado | `collision_size` varia por estado | Sem prender na parede ao trocar de estado |
@@ -83,7 +83,7 @@ Cada etapa é pequena, testável no emulador e termina em **commit + push** (ver
 
 #### Detalhe da 3.2: o que o código já faz e que pose usar
 
-Levantamento de `src/game.c` (`render`) e `src/core/world.c` / `weapon.c` em 2026-10-12. Hoje existem 3 animações (`ANIM_STAND`, `ANIM_WALK`, `ANIM_JUMP`) da folha Dread 40×48, com `SPR_setHFlip` para a esquerda. O tiro congela a Samus no quadro `shoot_frame` de `ANIM_STAND` por 10 ticks. Poses no formato direita/esquerda; os números são os do jogo (`manifest_poses.csv`).
+Levantamento de `src/game.c` (`render`) e `src/core/world.c` / `weapon.c` em 2026-10-12. Antes da 3.2.1 existiam 3 animações (`ANIM_STAND`, `ANIM_WALK`, `ANIM_JUMP`) da folha Dread 40×48, com `SPR_setHFlip` para a esquerda. O tiro congelava a Samus no quadro `shoot_frame` de `ANIM_STAND` por 10 ticks. Poses no formato direita/esquerda; os números são os do jogo (`manifest_poses.csv`).
 
 | Situação no código | Como está hoje | Poses novas (dir./esq.) | Sub-etapa |
 |---|---|---|---|
@@ -106,12 +106,14 @@ Levantamento de `src/game.c` (`render`) e `src/core/world.c` / `weapon.c` em 202
 | Sprite do tiro | tile 8×8 desenhado à mão (`src/beam_sprite.c`) | `weapons_power_beam` (8 direções; conferir no jogo que é o Power Beam) e `weapons_impact_*` ao bater na parede | 3.2.6 |
 | Virar de lado | flip instantâneo | `25`/`26` parado; `2F`/`30` no ar (as faixas `43`/`44` agachado e `87`/`88` caindo usam os mesmos quadros) | 3.2.7 |
 
-**3.2.1 Base.** Um script monta uma folha única do jogador a partir de uma lista de poses (todas têm 64×64, então cada linha da folha é uma animação) e gera o enum das animações. Também:
+**3.2.1 Base** ✅. Um script monta uma folha única do jogador a partir de uma lista de poses (todas têm 64×64, então cada linha da folha é uma animação) e gera o enum das animações. Também:
 - A paleta passa a ser `pal_samus_power_suit` e sai o `SPR_setHFlip`.
-- O sprite é desenhado em `(x − 12, y − 11)`, para que os pés (linha 59 do quadro) caiam no fundo da hitbox `{8, 8, 32, 48}`. Ajustar no emulador. Câmera, hitbox e física não mudam.
+- O sprite é desenhado em `(x − 12, y − 11)`, para que os pés (linha 58, a última com pixel, cai na linha `y + 47`, a última da hitbox `{8, 8, 32, 48}`). Câmera, hitbox e física não mudam.
 - O `player_sprite` (folha Dread) sai do `resources.res`.
 
-Teste: parado e andando para os dois lados, sem tremer nem trocar de cor.
+Feito: `scripts/build_player_sheet.py` gera `res/images/player/samus_sheet.png` e `inc/player_anim.h` (ver `docs/SPRITES.md`). Ficam provisórios até as sub-etapas seguintes: tiro e mira congelam no quadro parado (a 3.2.5 traz as poses de mira), e o pulo parado usa a pose parada (a 3.2.2 separa o pulo).
+
+Teste: `tests/rom_smoke.c` (`-SmokeTest`, entrada roteirizada) passa com a folha nova, e as capturas do BlastEm mostram a Samus andando para os dois lados, sem troca de cor. Parada à direita também conferida; parada à esquerda só pela captura final.
 
 **3.2.2 Pulos.** Separar o pulo parado (sem giro, sem som) do giratório e do de parede, com transição de saída, queda e pouso.
 

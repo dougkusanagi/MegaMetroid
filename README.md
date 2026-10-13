@@ -32,7 +32,7 @@ O Power Beam não consome munição, não carrega e mantém até três projétei
 Há colisão com paredes e rampas, descarte ao sair da tela e som sintetizado.
 As fases atuais ainda não têm entidades de inimigos ou portas destrutíveis;
 o valor de dano está preparado no projétil para essa integração futura.
-O sprite atual da Samus é preservado, sem novas poses de mira.
+O sprite da Samus usa as poses originais do jogo (parada, andando e girando, cada uma com desenho próprio para a esquerda). Mira, agachar e bola ainda são provisórios; ver a etapa 3.2 em `docs/PLANO.md`.
 
 O salto giratório só começa quando C é pressionado enquanto Samus já estava em
 movimento. Direcionar depois de um salto parado move no ar sem iniciar o giro.

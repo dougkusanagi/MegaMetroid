@@ -70,6 +70,22 @@ Algumas regiões saem inteiras, como referência e sem `SPRITE` (`sgdk_ready = n
 - `death_shattering_suit`: as partículas se sobrepõem entre quadros, então os quadros são recortados quando a morte for implementada.
 
 
+### Folha de animação do jogo
+
+O jogo não carrega as poses avulsas. `scripts/build_player_sheet.py` monta `res/images/player/samus_sheet.png` a partir delas, e gera `inc/player_anim.h` com o enum `PLAYER_ANIM_*`:
+
+- Cada linha é uma animação e cada célula é um quadro de 64×64, lido da esquerda para a direita.
+- A lista `ANIMATIONS` do script diz quais poses entram, em ordem: ação, pose para a direita, pose para a esquerda. Para incluir uma pose nova, acrescente uma entrada e rode o script de novo.
+- A esquerda é sempre uma linha própria (`PLAYER_ANIM_<ação>_L` vem logo depois de `_R`). O código soma 1 à linha da direita; não use `SPR_setHFlip`.
+- Linhas podem ter quantidades diferentes de quadros. O `rescomp` descarta as células vazias no fim de cada linha.
+- O `.res` usa tempo 5 por quadro, como a folha antiga. Tempo 0 deixa a animação parada.
+
+```powershell
+python scripts/build_player_sheet.py
+```
+
+A paleta é `pal_samus_power_suit` (um `PALETTE` no `res/resources.res`). A folha é versionada, porque o build do SGDK não roda Python.
+
 ## Outras pranchas
 
 ```powershell
