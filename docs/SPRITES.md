@@ -78,6 +78,7 @@ O jogo não carrega as poses avulsas. `scripts/build_player_sheet.py` monta `res
 - A lista `ANIMATIONS` do script diz quais poses entram, em ordem: ação, pose para a direita, pose para a esquerda. Para incluir uma pose nova, acrescente uma entrada e rode o script de novo.
 - A esquerda é sempre uma linha própria (`PLAYER_ANIM_<ação>_L` vem logo depois de `_R`). O código soma 1 à linha da direita; não use `SPR_setHFlip`.
 - Linhas podem ter quantidades diferentes de quadros. O `rescomp` descarta as células vazias no fim de cada linha.
+- Os pés das poses de chão (`GROUNDED`: parado, andando, pouso, agachar, abaixar e levantar) ficam todos na linha 58 da célula, a última do retângulo de colisão (`y + 47`). Cada pose anda inteira para isso, sem mudar a posição relativa entre os quadros da mesma pose. Sem isso a agachada da prancha original ficava 11 px acima do chão. As poses do ar não são alinhadas.
 - O `.res` usa tempo 5 por quadro, como a folha antiga. Tempo 0 deixa a animação parada.
 
 ```powershell

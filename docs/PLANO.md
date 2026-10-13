@@ -119,6 +119,8 @@ Teste: `tests/rom_smoke.c` (`-SmokeTest`, entrada roteirizada) passa com a folha
 
 **3.2.3 Agachar** ✅. Pose de abaixar (`35`/`36`, 5 ticks), agachada em loop (`27`/`28`) e levantar (`3B`/`3C`, 5 ticks, que termina ao começar a andar). O teto que mantém a Samus agachada continua valendo. Tiro agachado segue no quadro parado até a 3.2.5. Teste: `crouch_poses()` em `tests/core_test.c`; `tests/rom_smoke.c` agacha e levanta na ROM, e a captura do BlastEm mostra as três poses.
 
+Correção depois do teste no emulador: a agachada flutuava 11 px (e abaixar/levantar 3 px), porque a prancha original põe essas poses mais altas na caixa. `scripts/build_player_sheet.py` agora alinha os pés de todas as poses de chão na linha 58 (`GROUND_ROW`). Um toque de ↓ mantém a Samus agachada depois de soltar (`MM_TAP_TICKS`, 12 ticks); segurar mais que isso levanta ao soltar. Teste: `crouch_tap()` em `tests/core_test.c` e o trecho de agachar em `tests/rom_smoke.c`.
+
 **3.2.4 Bola.** Transições de entrar e sair; rolamento só em movimento.
 
 **3.2.5 Mira e tiro.** Escolher a pose pela combinação de estado, mira (`aim_y`, direção) e tiro. A mira passa a valer enquanto o botão estiver segurado, não só no tiro, e a pose de tiro mantém o ciclo das pernas ao andar. Uma tabela por pose dá a posição da boca do canhão, e `mm_weapon_tick` passa a usá-la no lugar de `(20, 22)`. Teste: tiro sai do canhão em todas as poses.

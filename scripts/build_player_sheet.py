@@ -21,6 +21,13 @@ POSES = ROOT / 'res/images/samus-original-sgdk/poses'
 SHEET = ROOT / 'res/images/player/samus_sheet.png'
 HEADER = ROOT / 'inc/player_anim.h'
 CELL = 64
+# The game draws a cell at (x - 12, y - 11), so the feet of a standing Samus land on row 58 of the
+# cell, which is the last row of her hitbox (y + 47). Grounded poses are moved to that row.
+GROUND_ROW = 58
+# Actions whose feet touch the floor. The original art draws the crouch frames 11 px higher in
+# their box than the standing ones (and the crouch-down and stand-up frames 3 px higher), so
+# without this Samus floats while crouched.
+GROUNDED = {'STAND', 'WALK', 'LAND', 'SPIN_LAND', 'CROUCH_DOWN', 'CROUCH', 'STAND_UP'}
 # (action, pose facing right, pose facing left), in row order. To add an action,
 # add its entry here and rebuild; the game then uses PLAYER_ANIM_<action>_R / _L.
 ANIMATIONS = [
@@ -49,6 +56,35 @@ def load_pose(number: str) -> Image.Image:
     return pose
 
 
+def lowest_row(frame: Image.Image) -> int | None:
+    """Last row with a visible pixel (index 0 is transparent), or None for an empty frame."""
+    box = frame.point(lambda p: 255 if p else 0).getbbox()
+    return None if box is None else box[3] - 1
+
+
+def visible_pixels(frame: Image.Image) -> int:
+    data = frame.tobytes()
+    return len(data) - data.count(0)
+
+
+def align_feet(frames: list[Image.Image]) -> list[Image.Image]:
+    """Move a whole pose so its lowest foot row is GROUND_ROW. Every frame moves by the same
+    amount, so a walk cycle keeps its lifted feet above the planted one."""
+    feet = max(row for row in map(lowest_row, frames) if row is not None)
+    shift = GROUND_ROW - feet
+    if not shift:
+        return frames
+    shifted = []
+    for frame in frames:
+        cell = Image.new('P', (CELL, CELL), 0)
+        cell.paste(frame, (0, shift))
+        # A shift that pushes pixels out of the cell would silently cut Samus; refuse it.
+        if visible_pixels(cell) != visible_pixels(frame):
+            raise SystemExit(f'aligning the feet by {shift} px would crop the pose')
+        shifted.append(cell)
+    return shifted
+
+
 def main() -> None:
     rows = []
     palette = None
@@ -60,6 +96,8 @@ def main() -> None:
             elif pose.getpalette()[:48] != palette[:48]:
                 raise SystemExit(f'pose {number} does not use the shared palette')
             frames = [pose.crop((x, 0, x + CELL, CELL)) for x in range(0, pose.width, CELL)]
+            if action in GROUNDED:
+                frames = align_feet(frames)
             rows.append((number, frames))
 
     widest = max(len(frames) for _, frames in rows)

@@ -57,6 +57,7 @@ void mm_body_init(MmBody *b, int x, int y, MmRect hitbox)
     b->spin_jumping = b->shoot_pose_timer = 0;
     b->shoot_frame = 3;
     b->ball = b->crouching = 0;
+    b->down_ticks = b->crouch_latch = 0;
     b->coyote = 0;
     b->wall_lock = b->wall_vx = 0;
     b->state = MM_STATE_STAND;
@@ -216,12 +217,22 @@ void mm_tick(const MmWorld *w, MmBody *b, MmInput input)
         else if (input.aim_y > 0 && !b->grounded) b->shoot_frame = input.axis ? 4 : 4;
         else b->shoot_frame = 3;
     } else if (b->shoot_pose_timer) --b->shoot_pose_timer;
+    /* A tap of down (held up to MM_TAP_TICKS, and never while aiming with the shot) keeps the crouch
+       after release on the ground. A longer hold stands the body up when it is released. */
+    if (input.aim_y > 0) {
+        if (b->down_ticks <= MM_TAP_TICKS) ++b->down_ticks;
+        if (input.shoot_held) b->down_ticks = MM_TAP_TICKS + 1;
+    } else if (b->down_ticks) {
+        b->crouch_latch = b->grounded && !b->ball && b->down_ticks <= MM_TAP_TICKS;
+        b->down_ticks = 0;
+    }
+    if (b->jumped || !b->grounded || direction || input.aim_y < 0) b->crouch_latch = 0;
     /* Down morphs in the air, unless it aims down (down + shoot). Up stands the body up where stand_up finds room. */
     if (input.down_pressed && !b->grounded && !input.shoot_held) b->ball = 1;
     if (input.up_pressed && stand_up(w, b)) b->ball = 0;
-    /* Crouch needs no direction and holds while a standing box would hit a ceiling. */
+    /* Crouch needs no direction for a hold, and holds while a standing box would hit a ceiling. */
     b->crouching = b->grounded && !b->ball &&
-        ((input.aim_y > 0 && !direction) || (b->crouching && !fits(w, b, b->stand_box)));
+        ((input.aim_y > 0 && !direction) || b->crouch_latch || (b->crouching && !fits(w, b, b->stand_box)));
     b->hitbox = b->ball ? ball_box(b->stand_box) :
                 b->crouching ? crouch_box(b->stand_box) : b->stand_box;
     b->vx = b->wall_lock ? b->wall_vx : direction * (MM_SPEED + b->run_extra);

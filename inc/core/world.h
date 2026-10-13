@@ -21,6 +21,7 @@
 #define MM_SPIN_LAND_TICKS 15 /* A6/A7, landing from a spin jump: three frames. */
 #define MM_CROUCH_DOWN_TICKS 5 /* 35/36, crouching: one frame. */
 #define MM_STAND_UP_TICKS 5 /* 3B/3C, standing up from a crouch: one frame. */
+#define MM_TAP_TICKS 12 /* Down held for up to 12 ticks (0.2 s) is a tap: the crouch stays after release. */
 
 typedef struct { int left, top, right, bottom; } MmRect;
 typedef struct { const unsigned char *tiles; int columns, rows; } MmWorld;
@@ -43,6 +44,8 @@ typedef struct {
     int run_extra, move_direction;
     int spin_jumping, shoot_pose_timer, shoot_frame;
     int ball, crouching; /* Toggled by down/up presses and the d-pad. */
+    int down_ticks; /* Ticks down has been held, capped just past MM_TAP_TICKS. */
+    int crouch_latch; /* Crouch kept after a tap on the ground; a jump, a direction or up ends it. */
     int coyote; /* Ticks left in which a grounded jump is still allowed. */
     int wall_lock, wall_vx; /* Wall kick: ticks left and the fixed speed while locked. */
     MmState state; /* Derived at the end of every mm_tick. */

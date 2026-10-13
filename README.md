@@ -20,6 +20,8 @@ remap do RetroArch descrito em `docs/BUILD.md`.
 Segure cima ao atirar para mirar acima; cima + esquerda/direita mira na diagonal.
 No ar também é possível mirar para baixo. Tocar A dispara; segurar repete.
 Segurar ↓ no chão agacha: a hitbox fica menor e a Samus abaixa (pose de agachada); tiro agachado ainda usa o quadro de pé.
+Um toque rápido de ↓ (até 0,2 s) mantém a Samus agachada depois de soltar. Para levantar, aperte ↑ ou um direcional, ou pule.
+Segurar ↓ por mais tempo levanta ao soltar.
 Apertar ↓ no ar, sem atirar, entra em bola (hitbox de 16 px, sprite de giro enquanto não há pose
 própria); ↑ sai da bola só onde a Samus cabe em pé, então não sai dentro de túnel baixo.
 

@@ -168,7 +168,7 @@ static void states(void) {
     run_states(&b, log, right, 10);
     run_states(&b, log, spin, 1);
     run_states(&b, log, idle, 100);
-    run_states(&b, log, down, 5);
+    run_states(&b, log, down, MM_TAP_TICKS + 1);
     run_states(&b, log, idle, 2);
     run_states(&b, log, jump, 1);
     run_states(&b, log, down_press, 1);
@@ -428,7 +428,7 @@ static void crouch_poses(void) {
     MmBody b;
     char log[256];
     MmRect real = {8, 8, 32, 48};
-    MmInput down = {.aim_y = 1}, right = {.axis = 1}, idle_in = {0};
+    MmInput down = {.aim_y = 1}, up = {.aim_y = -1}, right = {.axis = 1}, idle_in = {0};
     /* The standing box is 48 px tall: y 112 puts its feet on the floor at y 160. */
     reset(); floor_at(20);
     mm_body_init(&b, 80, 112, real);
@@ -441,7 +441,7 @@ static void crouch_poses(void) {
     mm_tick(&world, &b, down);
     assert(b.pose == MM_POSE_CROUCH_DOWN && hold_ticks(&b, down, MM_POSE_CROUCH_DOWN) == MM_CROUCH_DOWN_TICKS);
     assert(b.pose == MM_POSE_CROUCH);
-    mm_tick(&world, &b, idle_in);
+    mm_tick(&world, &b, up);
     assert(b.pose == MM_POSE_STAND_UP && hold_ticks(&b, idle_in, MM_POSE_STAND_UP) == MM_STAND_UP_TICKS);
     mm_body_init(&b, 80, 112, real); mm_tick(&world, &b, idle_in);
     strcpy(log, "GROUND");
@@ -449,6 +449,52 @@ static void crouch_poses(void) {
     run_poses(&b, log, right, 20);
     assert(strcmp(log, "GROUND CROUCH_DOWN CROUCH GROUND") == 0);
     puts("PASS crouch: crouch-down, crouched loop and stand-up hold their frames; walking out ends the stand-up");
+}
+/* A tap of down keeps the crouch after release (up to MM_TAP_TICKS held); one tick more is a hold
+   that stands up on release. Up, a direction or a jump ends a kept crouch, and aiming down with the
+   shot is never a tap. */
+static void crouch_tap(void) {
+    MmBody b;
+    MmRect real = {8, 8, 32, 48};
+    MmInput down_press = {.aim_y = 1, .down_pressed = 1}, down_held = {.aim_y = 1}, idle_in = {0};
+    MmInput up_press = {.aim_y = -1, .up_pressed = 1}, right = {.axis = 1};
+    MmInput jump = {.jump_pressed = 1, .jump_held = 1}, aim_down = {.aim_y = 1, .shoot_held = 1};
+    int t;
+    reset(); floor_at(20);
+    mm_body_init(&b, 80, 112, real); mm_tick(&world, &b, idle_in);
+    mm_tick(&world, &b, down_press);
+    for (t = 1; t < MM_TAP_TICKS; ++t) mm_tick(&world, &b, down_held);
+    mm_tick(&world, &b, idle_in);
+    assert(b.crouching && b.crouch_latch && b.hitbox.top == 24 && b.state == MM_STATE_CROUCH);
+    for (t = 0; t < 60; ++t) { mm_tick(&world, &b, idle_in); assert(b.crouching); }
+    mm_tick(&world, &b, up_press);
+    assert(!b.crouching && !b.crouch_latch && b.state == MM_STATE_STAND);
+
+    mm_body_init(&b, 80, 112, real); mm_tick(&world, &b, idle_in);
+    mm_tick(&world, &b, down_press);
+    for (t = 1; t <= MM_TAP_TICKS; ++t) mm_tick(&world, &b, down_held);
+    mm_tick(&world, &b, idle_in);
+    assert(!b.crouching && !b.crouch_latch && b.state == MM_STATE_STAND);
+
+    mm_body_init(&b, 80, 112, real); mm_tick(&world, &b, idle_in);
+    mm_tick(&world, &b, down_press); mm_tick(&world, &b, idle_in);
+    for (t = 0; t < 20; ++t) mm_tick(&world, &b, idle_in);
+    assert(b.crouching);
+    mm_tick(&world, &b, right);
+    assert(!b.crouching && !b.crouch_latch && b.state == MM_STATE_WALK);
+
+    mm_body_init(&b, 80, 112, real); mm_tick(&world, &b, idle_in);
+    mm_tick(&world, &b, down_press); mm_tick(&world, &b, idle_in);
+    mm_tick(&world, &b, jump);
+    assert(b.jumped && !b.crouch_latch);
+    for (t = 0; t < 100; ++t) mm_tick(&world, &b, idle_in);
+    assert(b.grounded && !b.crouching && b.state == MM_STATE_STAND);
+
+    mm_body_init(&b, 80, 112, real); mm_tick(&world, &b, idle_in);
+    mm_tick(&world, &b, aim_down); mm_tick(&world, &b, aim_down);
+    mm_tick(&world, &b, idle_in);
+    assert(!b.crouching && !b.crouch_latch);
+    puts("PASS crouch tap: a tap keeps the crouch, one tick more is a hold; up, a direction or a jump ends it");
 }
 /* Morph rules. Down morphs in the air, but not while aiming down with the shot. A morphed body
    does not wall jump; it can stand up again in the air where the standing box fits. */
@@ -531,7 +577,7 @@ static void ball_stand_real(void) {
 }
 int main(void) {
     movement(); collisions(); jump_and_ledge(); states(); physics(); variable_jump(); coyote_jump();
-    slopes(); slope_sweep(); tunnels(); wall_climb(); poses(); crouch_poses(); morph_rules(); ball_stands_on_slope();
+    slopes(); slope_sweep(); tunnels(); wall_climb(); poses(); crouch_poses(); crouch_tap(); morph_rules(); ball_stands_on_slope();
     ball_stand_real(); camera_and_input(); real_levels();
     puts("All core regression tests passed."); return 0;
 }
