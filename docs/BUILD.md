@@ -44,7 +44,29 @@ Teste das ROMs em:
 - **BlastEm** (preciso, recomendado para validar comportamento).
 - **Gens KMod** (permite depuração com GDB na porta `6868`, ver `.vscode/launch.json`).
 
-Neste ambiente o BlastEm 1.0.0 está em `C:\Users\dl_ag\Tools\blastem\blastem-win64-1.0.0\blastem.exe`. Abra com `blastem.exe out\rom.bin`. O FPS aparece no título da janela.
+Neste ambiente o BlastEm 1.0.0 está em `D:\emuladores\blastem\blastem-win64-1.0.0\blastem.exe`. Abra com `blastem.exe out\rom.bin`. O FPS aparece no título da janela.
+
+## Medidas do Super Metroid original (Mesen 2)
+
+`scripts/sm_reference.ps1` roda o Super Metroid no Mesen 2 sem janela (`--testrunner`), com
+`scripts/sm_reference.lua`. Cada cenário carrega o save state, aperta uma sequência fixa de botões e
+grava posição, velocidade, pose e hitbox da Samus a cada quadro em `tests/out/sm_reference.csv`.
+`python scripts/sm_reference_report.py` resume o CSV; os números estão em `docs/FISICA.md`.
+
+```powershell
+./scripts/sm_reference.ps1                      # todos os cenários (~1,5 min)
+./scripts/sm_reference.ps1 -Scenario jump_stand # só um
+python scripts/sm_reference_report.py
+```
+
+- Padrões: Mesen 2.1.1 em `D:\emuladores\Mesen_2.1.1_Windows\Mesen.exe`, ROM em
+  `D:\roms\snes\Super Metroid (Japan, USA) (En,Ja).zip` e save state do slot 1
+  (`Documentos\Mesen2\SaveStates\Super Metroid (Japan, USA) (En,Ja)_1.mss`). Troque com `-Mesen`, `-Rom` e `-State`.
+- O save state é a Samus em pé sobre a nave no Landing Site, com os controles padrão (X tiro, A pulo,
+  B corrida). Os cenários dependem desse ponto de partida.
+- O `--testrunner` não abre ROM dentro de `.zip`: o script extrai para uma pasta temporária.
+- O script Lua precisa de `io`/`os` (ler o state e gravar o CSV). O `.ps1` liga a opção só nesta
+  execução, por linha de comando, sem mudar as configurações do Mesen.
 
 ## Controle Xbox no layout do SNES (RetroArch, core BlastEm)
 

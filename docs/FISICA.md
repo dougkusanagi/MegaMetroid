@@ -16,7 +16,8 @@ Etapa 2.2 do [plano](PLANO.md).
 
 Referência SM: valores NTSC em `bank_90.asm` do
 [disassembly de Super Metroid](https://github.com/InsaneFirebat/sm_disassembly),
-rótulos `SamusPhysicsConstants_*`. Os valores ainda não foram medidos no jogo original.
+rótulos `SamusPhysicsConstants_*`. As medidas no jogo original estão em
+[Medidas no Super Metroid original](#medidas-no-super-metroid-original-mesen-2).
 
 | Constante | Valor no projeto | Equivale a | Referência SM (NTSC) |
 |---|---|---|---|
@@ -58,8 +59,49 @@ Os testes `physics()`, `variable_jump()` e `coyote_jump()` fixam esses valores e
 `tests/core_test.c`.
 
 Cálculo do SM com os valores da tabela, só como estimativa: altura v²/2g ≈ 108 px,
-tempo no ar ≈ 89 ticks. Não foi medido no jogo original. O plano pede essa medida
-antes de fixar constantes (seção 4 de [PLANO.md](PLANO.md)).
+tempo no ar ≈ 89 ticks. A medida no jogo original está na seção seguinte.
+
+## Medidas no Super Metroid original (Mesen 2)
+
+Medido em 2026-10-13 com `scripts/sm_reference.ps1` (ver [BUILD.md](BUILD.md)), lendo a RAM da
+Samus a cada quadro. Chão plano à direita da nave no Landing Site, sem itens além da Morph Ball
+(dada pelo script nos cenários de bola). O SNES roda a 60 quadros por segundo, o mesmo ritmo do tick,
+então px/quadro e px/tick são comparáveis. `python scripts/sm_reference_report.py` reproduz os números.
+
+| Medida | Super Metroid | Port | Bate? |
+|---|---|---|---|
+| Caminhada, velocidade máxima | 2,75 px/quadro | 2,75 | sim |
+| Caminhada, aceleração | +0,1875 por quadro; 2,75 no 11º quadro (~10 px) | instantânea | não |
+| Soltar o direcional | −0,5 por quadro; desliza ~16 px em 7 quadros | para na hora | não |
+| Virar no chão | 6 quadros virando (pose 25/26), depois acelera do zero | instantâneo | não |
+| Corrida (B) | +1/16 por quadro, +2 em 32 quadros (4,75 no total) | +1/32, +2 em 64 ticks | não (decisão no README) |
+| Pulo, velocidade de saída | 4,875 px/quadro | 6,6 | não |
+| Gravidade | 0,109375 px/quadro² | 0,219 | não |
+| Pulo parado, altura e tempo no ar | 111 px, pico no 46º quadro, 92 quadros no ar | 96 px, 60 ticks | não |
+| Primeiro quadro do pulo | parado (pose 4B), sobe no quadro seguinte | já sobe | não |
+| Queda máxima | 5,03 px/quadro, a partir de ~46 quadros caindo | 6,0 | não |
+| Soltar o pulo na subida | velocidade vertical vai a 0 na hora | limita a 3 px/tick | não |
+| Pulo mais curto | ~5 px (segurando 3 quadros; 1–2 quadros não saem do chão) | 25 px (1 tick) | não |
+| Velocidade no ar: pulo normal / giro / queda | 1,25 / 1,375 / 1,0 px/quadro (+ bônus da corrida) | 2,75 (+ bônus) em todos | não |
+| Pulo correndo, no ar | 3,375 (1,375 + 2) | 4,75 | não |
+| Quando gira | só se já andava ao pular; direção + pulo parado é pulo normal (pose 51) | igual | sim |
+| Pulo de parede, subida | 4,625 px/quadro | 4,625 | sim |
+| Pulo de parede, lado | 1,375 px/quadro, direcional livre | 2,75 travado por 12 ticks | não |
+| Pouso | pulo normal: 7 quadros (A4); giro: 1 quadro (A6/A7) | 10 / 15 ticks | não |
+| Agachar (↓) | transição de 3 quadros; fica agachada ao soltar, mesmo segurando ↓ por muito tempo | 5 ticks; segurar ↓ mais de 12 ticks levanta ao soltar | não |
+| ↓ agachada | vira bola, transição de 6 quadros | igual, 10 ticks | lógica sim, tempo não |
+| ↓ no ar | o 1º mira para baixo, o 2º vira bola | dois toques em até 20 ticks | sim |
+| ↑ na bola | volta para agachada (6 quadros); outro ↑ levanta (3 quadros) | levanta direto (10 ticks) | não |
+| Bola rolando | 3,25 px/quadro, acelera +0,75 por quadro | 2,75 (+ bônus), sem aceleração | não |
+| Hitbox (largura × altura) | em pé 10×42, pulo 10×38, giro 10×24, agachada 10×32, bola 10×14 | 24×40, 24×24 agachada, 16×16 bola; giro usa a de pé | não |
+| Feixe (Power Beam) | sai a 4 px/quadro e acelera até ~6 em ~28 quadros | 12 px/tick constante | não |
+| Intervalo de tiro | 15 quadros apertando; segurado dispara de novo a cada 25 | 15 / 25 | sim |
+| Feixes ao mesmo tempo | ao menos 3 (o limite não apareceu nos cenários) | 3 | — |
+
+Os quadros de pose (`4B`, `A4`, …) são os números de pose do Super Metroid (`$0A1C`), os mesmos da
+folha de sprites. As velocidades batem com `SamusXSpeedTable_Normal` em `bank_90.asm`: aceleração
+`$0030`, máxima 2,75 no chão, 1,25 no pulo normal, 1,375 no giro e no pulo de parede, 1,0 na queda
+e 3,25 na bola; desaceleração 0,5.
 
 ## Rampas (45°)
 

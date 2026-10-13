@@ -212,7 +212,7 @@ Para a 3.2: o tamanho de quadro é 64×64 (8×8 tiles); com a Samus em pé, os p
 - **Tamanho dos mapas**: Crateria 1 tem 288x156 tiles de 8 px (2304x1248). Avaliar tiles de colisão 16x16 (4x menos dados) ou RLE para o restante do jogo.
 - **VRAM**: cada sala precisa de tiles únicos suficientes junto com sprites; planejar tileset compartilhado por região.
 - **Propriedade intelectual**: Super Metroid é da Nintendo. O projeto é de estudo/fã e não distribui ROMs. As pranchas originais ficam fora do Git; os recortes convertidos para o SGDK (`res/images/*-original-sgdk/`) são versionados por decisão do mantenedor.
-- **Fidelidade da física**: medir o jogo original (frames de pulo, velocidades) antes de fixar constantes.
+- **Fidelidade da física**: medido no jogo original em 2026-10-13 (`scripts/sm_reference.ps1`, Mesen 2). A tabela de [FISICA.md](FISICA.md#medidas-no-super-metroid-original-mesen-2) lista o que bate e o que difere; falta decidir quais diferenças corrigir.
 - **Sprite da Samus por partes** (medido em 2026-10-12): o `rescomp` só reaproveita quadros inteiros (iguais ou espelhados), e cada quadro guarda os próprios tiles na ROM. Com isso, as 165 poses ocupam cerca de 286 KB, e um banco de tiles compartilhado cairia para cerca de 78 KB. Separar tronco e pernas na linha 40 do quadro (como o Super Metroid faz) economiza 34% na corrida com mira: as pernas são iguais nas 4 miras. Na VRAM não muda nada, porque só o quadro atual é carregado. Decisão: usar quadros inteiros na 3.2 e reavaliar na 3.5 se a ROM apertar.
 - **ROM > 4 MB**: exigiria mapper SSF.
 
