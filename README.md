@@ -22,8 +22,9 @@ No ar também é possível mirar para baixo. Tocar A dispara; segurar repete.
 Segurar ↓ no chão agacha: a hitbox fica menor e a Samus abaixa (pose de agachada); tiro agachado ainda usa o quadro de pé.
 Um toque rápido de ↓ (até 0,2 s) mantém a Samus agachada depois de soltar. Para levantar, aperte ↑ ou um direcional, ou pule.
 Segurar ↓ por mais tempo levanta ao soltar.
-Apertar ↓ no ar, sem atirar, entra em bola (hitbox de 16 px, sprite de giro enquanto não há pose
-própria); ↑ sai da bola só onde a Samus cabe em pé, então não sai dentro de túnel baixo.
+Dois toques de ↓ em até 1/3 de segundo, sem atirar, entram em bola, no chão ou no ar (hitbox de 16 px,
+sprite de giro enquanto não há pose própria). Um toque no ar não faz nada. ↑ sai da bola só onde a
+Samus cabe em pé, então não sai dentro de túnel baixo.
 
 A caminhada usa 2,75 px/tick. A corrida acrescenta 0,03125 px/tick a cada tick
 no chão, até +2 após 64 ticks (4,75 px/tick no total). O salto conserva o bônus;

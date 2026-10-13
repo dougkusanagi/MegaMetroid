@@ -57,7 +57,7 @@ void mm_body_init(MmBody *b, int x, int y, MmRect hitbox)
     b->spin_jumping = b->shoot_pose_timer = 0;
     b->shoot_frame = 3;
     b->ball = b->crouching = 0;
-    b->down_ticks = b->crouch_latch = 0;
+    b->down_ticks = b->crouch_latch = b->down_window = 0;
     b->coyote = 0;
     b->wall_lock = b->wall_vx = 0;
     b->state = MM_STATE_STAND;
@@ -227,8 +227,13 @@ void mm_tick(const MmWorld *w, MmBody *b, MmInput input)
         b->down_ticks = 0;
     }
     if (b->jumped || !b->grounded || direction || input.aim_y < 0) b->crouch_latch = 0;
-    /* Down morphs in the air, unless it aims down (down + shoot). Up stands the body up where stand_up finds room. */
-    if (input.down_pressed && !b->grounded && !input.shoot_held) b->ball = 1;
+    /* Two presses of down, less than MM_DOUBLE_TAP_TICKS apart, morph on the ground or in the air. A shot
+       that aims down is not a press. Up stands the body up where stand_up finds room. */
+    if (b->down_window) --b->down_window;
+    if (input.down_pressed && !input.shoot_held) {
+        if (b->down_window) { b->ball = 1; b->down_window = b->crouch_latch = 0; }
+        else b->down_window = MM_DOUBLE_TAP_TICKS;
+    }
     if (input.up_pressed && stand_up(w, b)) b->ball = 0;
     /* Crouch needs no direction for a hold, and holds while a standing box would hit a ceiling. */
     b->crouching = b->grounded && !b->ball &&

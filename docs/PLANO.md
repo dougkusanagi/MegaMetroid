@@ -123,6 +123,8 @@ Correção depois do teste no emulador: a agachada flutuava 11 px (e abaixar/lev
 
 **3.2.4 Bola.** Transições de entrar e sair; rolamento só em movimento.
 
+Feito até aqui: entrada por dois toques de ↓, no chão ou no ar (`MM_DOUBLE_TAP_TICKS`, 20 ticks entre os toques; um toque não morfa e apontar para baixo com o tiro não conta). A regra vive no núcleo, com `double_tap()` em `tests/core_test.c` e o trecho de bola em `tests/rom_smoke.c`. Ainda faltam os sprites de entrar, sair e rolar, então a etapa não está concluída.
+
 **3.2.5 Mira e tiro.** Escolher a pose pela combinação de estado, mira (`aim_y`, direção) e tiro. A mira passa a valer enquanto o botão estiver segurado, não só no tiro, e a pose de tiro mantém o ciclo das pernas ao andar. Uma tabela por pose dá a posição da boca do canhão, e `mm_weapon_tick` passa a usá-la no lugar de `(20, 22)`. Teste: tiro sai do canhão em todas as poses.
 
 **3.2.6 Sprite do tiro.** Trocar o tile do `beam_sprite.c` pela tira de 8 direções e mostrar o impacto ao bater na parede.

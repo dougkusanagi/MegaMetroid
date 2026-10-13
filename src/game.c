@@ -188,8 +188,11 @@ void game_update(Game *g, MmInput input)
         /* Only the spin and the wall kick make the spin sound; a standing jump is silent. */
         if (g->player.jumped && g->player.spin_jumping)
             XGM2_playPCMEx(jump_sfx, sizeof(jump_sfx), SOUND_PCM_CH2, 15, FALSE, TRUE);
+        /* Presses count once, even when a PAL frame runs two ticks. */
         input.jump_pressed = 0;
         input.shoot_pressed = 0;
+        input.down_pressed = 0;
+        input.up_pressed = 0;
     }
     if (g->player.grounded && XGM2_isPlayingPCM(SOUND_PCM_CH2_MSK))
         XGM2_stopPCM(SOUND_PCM_CH2);
