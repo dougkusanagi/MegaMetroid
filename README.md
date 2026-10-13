@@ -14,6 +14,9 @@ Controles da build atual (Mega Drive): direcional para andar, **B segurado**
 para correr, **C** para pular (soltar C na subida faz um pulo curto), **C** no ar
 encostado numa parede, empurrando contra ela, faz pulo de parede, e **A** para o Power Beam básico. No teclado
 do Fusion configurado nesta máquina: A = tecla A, B = tecla S, C = tecla D.
+No controle de 6 botões, a mira de L/R do SNES fica em Z (baixo) e Y (cima); X fica livre para
+cancelar item. Ainda não implementado. Para jogar com um controle Xbox no layout do SNES, veja o
+remap do RetroArch descrito em `docs/BUILD.md`.
 Segure cima ao atirar para mirar acima; cima + esquerda/direita mira na diagonal.
 No ar também é possível mirar para baixo. Tocar A dispara; segurar repete.
 Segurar ↓ no chão agacha: a hitbox fica menor e a Samus abaixa (pose de agachada); tiro agachado ainda usa o quadro de pé.

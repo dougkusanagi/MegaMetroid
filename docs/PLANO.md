@@ -128,7 +128,7 @@ Teste: `tests/rom_smoke.c` (`-SmokeTest`, entrada roteirizada) passa com a folha
 **3.2.7 Virar.** Animação curta de virada antes de trocar a pose de lado.
 
 **Fora da 3.2.** Ficam para a 3.3:
-- Mira diagonal parado (`05`–`08`) e agachado (`71`–`74`): no SNES vem de L/R, e o controle de 3 botões não tem botões livres. Decidir entre X/Y/Z do controle de 6 botões ou outra combinação.
+- Mira diagonal parado (`05`–`08`) e agachado (`71`–`74`): no SNES vem de L/R, e o controle de 3 botões não tem botões livres. **Decidido:** no controle de 6 botões, L = Z (mirar para baixo) e R = Y (mirar para cima); X fica livre para cancelar item. Ainda não implementado no código.
 - Moonwalk, pouso atirando (`E6`/`E7`), pouco HP, space jump e screw attack.
 
 **Lacunas da prancha.**

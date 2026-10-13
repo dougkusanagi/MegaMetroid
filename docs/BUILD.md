@@ -46,6 +46,21 @@ Teste das ROMs em:
 
 Neste ambiente o BlastEm 1.0.0 está em `C:\Users\dl_ag\Tools\blastem\blastem-win64-1.0.0\blastem.exe`. Abra com `blastem.exe out\rom.bin`. O FPS aparece no título da janela.
 
+## Controle Xbox no layout do SNES (RetroArch, core BlastEm)
+
+O core BlastEm do RetroArch liga o RetroPad ao Mega Drive de outro jeito que o jogo espera. Para ter correr = Xbox A (baixo), pular = Xbox B (direita) e atirar = Xbox Y (cima), crie `config\remaps\BlastEm\BlastEm.rmp` na pasta do RetroArch com:
+
+```
+input_player1_btn_b = "8"
+input_player1_btn_a = "11"
+input_player1_btn_x = "0"
+input_player1_btn_y = "1"
+input_player1_btn_l = "10"
+input_player1_btn_r = "9"
+```
+
+L e R chegam ao jogo como Z e Y do controle de 6 botões (ainda sem uso).
+
 ## Problemas conhecidos
 
 - Build atual com avisos de `const` em `src/map_crateria_1.c` e `src/map_crateria_2.c`. Serão tratados na etapa 0.3.
