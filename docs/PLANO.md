@@ -125,7 +125,7 @@ Correção depois do teste no emulador: a agachada flutuava 11 px (e abaixar/lev
 
 **Correção do pulo de parede (2026-10-13).** Depois do teste no emulador: o pulo de parede saía com o direcional *contra* a parede e em qualquer pulo. Agora exige, como no Super Metroid, pulo giratório, parede encostada (até `MM_WALL_REACH` = 8 px) e direcional para o lado oposto; o impulso vai para o lado apertado, e a pose `83`/`84` passa a olhar para onde a Samus vai. Teste: `wall_jump_rules()`, `wall_climb()` e `poses()` em `tests/core_test.c`.
 
-**3.2.5 Mira e tiro.** Escolher a pose pela combinação de estado, mira (`aim_y`, direção) e tiro. A mira passa a valer enquanto o botão estiver segurado, não só no tiro, e a pose de tiro mantém o ciclo das pernas ao andar. Uma tabela por pose dá a posição da boca do canhão, e `mm_weapon_tick` passa a usá-la no lugar de `(20, 22)`. Teste: tiro sai do canhão em todas as poses.
+**3.2.5 Mira e tiro** ✅. O núcleo calcula `MmAim` a cada tick (frente, cima, diagonal acima, baixo no ar, diagonal abaixo), enquanto o direcional estiver segurado, com ou sem tiro. ↓ + direção no chão anda mirando na diagonal abaixo; ↓ sozinho no chão continua agachando. A pose de tiro (`shoot_pose_timer`) fica enquanto A estiver segurado e 10 ticks depois. `player_row()` em `src/game.c` escolhe a linha pela pose, mira, tiro e movimento: 15 ações novas (30 linhas), da tabela acima. Mirar ou atirar substitui as poses curtas (pouso, levantar), mas não a bola, o giro e o chute de parede. As linhas de andar compartilham o ciclo das pernas: trocar entre elas mantém o quadro. As tiras de mira da prancha começam com um quadro de transição, então a folha usa só o quadro mantido (`'03:1'` em `ANIMATIONS`); a pose `16` são os quadros 2–3 da tira `15`. `scripts/build_player_sheet.py` acha a boca do canhão em cada linha (o pixel cinza-verde mais distante na direção da mira) e gera `player_muzzle[]` em `inc/player_anim.h`; `mm_weapon_tick` recebe essa posição e traça do centro do corpo até ela, sem nascer dentro de parede. Teste: `aiming()` e `beam_from_muzzle()` em `tests/core_test.c` (que agora compila `weapon.c`); `tests/rom_smoke.c` passa pelas linhas de mira para cima, tiro andando, diagonal andando e diagonal no pulo, e as capturas do BlastEm mostram essas poses.
 
 **3.2.6 Sprite do tiro.** Trocar o tile do `beam_sprite.c` pela tira de 8 direções e mostrar o impacto ao bater na parede.
 
@@ -136,7 +136,7 @@ Correção depois do teste no emulador: a agachada flutuava 11 px (e abaixar/lev
 - Moonwalk, pouso atirando (`E6`/`E7`), pouco HP, space jump e screw attack.
 
 **Lacunas da prancha.**
-- Falta a pose `16` (pulo parado, esquerda, mirando para cima): usar `2C` ou desenhar a partir de `15`.
+- A pose `16` (pulo parado, esquerda, mirando para cima) não tem faixa própria: são os quadros 2–3 da tira `15`.
 - A faixa da `69` diz "Facing left - aiming up-right", provável erro de digitação ("Facing right").
 
 > **Prioridade (2026-10-12)**: a 3.2 vem antes de qualquer outra implementação.

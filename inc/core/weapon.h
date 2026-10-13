@@ -18,6 +18,8 @@ typedef struct {
 } MmWeapon;
 
 void mm_weapon_init(MmWeapon *weapon);
-void mm_weapon_tick(MmWeapon *weapon, const MmWorld *world,
-                    const MmBody *player, MmInput input, MmCamera camera);
+/* Fires along player->aim from the cannon tip, given in pixels from the body position
+   (player_muzzle[] in player_anim.h for the pose on screen). */
+void mm_weapon_tick(MmWeapon *weapon, const MmWorld *world, const MmBody *player,
+                    MmInput input, MmCamera camera, int muzzle_x, int muzzle_y);
 #endif

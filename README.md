@@ -17,8 +17,9 @@ do Fusion configurado nesta máquina: A = tecla A, B = tecla S, C = tecla D.
 No controle de 6 botões, a mira de L/R do SNES fica em Z (baixo) e Y (cima); X fica livre para
 cancelar item. Ainda não implementado. Para jogar com um controle Xbox no layout do SNES, veja o
 remap do RetroArch descrito em `docs/BUILD.md`.
-Segure cima ao atirar para mirar acima; cima + esquerda/direita mira na diagonal.
-No ar também é possível mirar para baixo. Tocar A dispara; segurar repete.
+Segure cima para mirar acima; cima + esquerda/direita mira na diagonal, parado ou andando, e a pose
+de mira aparece mesmo sem atirar. Baixo + esquerda/direita anda mirando na diagonal abaixo. No ar,
+baixo mira para baixo. Tocar A dispara; segurar repete. O tiro sai da boca do canhão da pose.
 Segurar ↓ no chão agacha: a hitbox fica menor e a Samus abaixa (pose de agachada); tiro agachado ainda usa o quadro de pé.
 Um toque rápido de ↓ (até 0,2 s) mantém a Samus agachada depois de soltar. Para levantar, aperte ↑ ou um direcional, ou pule.
 Segurar ↓ por mais tempo levanta ao soltar.
@@ -41,7 +42,7 @@ enquanto a Samus gira) e o pouso já tocam. A música do Landing Site ("Arrival 
 PCM, convertida dos MP3 de `res/sound/musics/` por `scripts/convert_music.py` (ver a 8.1 em `docs/PLANO.md`).
 As fases atuais ainda não têm entidades de inimigos ou portas destrutíveis;
 o valor de dano está preparado no projétil para essa integração futura.
-O sprite da Samus usa as poses originais do jogo (parada, andando, pulando, girando, agachando e em bola, cada uma com desenho próprio para a esquerda). A mira ainda é provisória; ver a etapa 3.2 em `docs/PLANO.md`.
+O sprite da Samus usa as poses originais do jogo (parada, andando, pulando, girando, agachando, em bola, mirando e atirando, cada uma com desenho próprio para a esquerda). Ver a etapa 3.2 em `docs/PLANO.md`.
 
 O salto giratório só começa quando C é pressionado enquanto Samus já estava em
 movimento. Direcionar depois de um salto parado move no ar sem iniciar o giro.

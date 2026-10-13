@@ -35,7 +35,101 @@ enum {
     PLAYER_ANIM_BALL_L, /* pose 1F */
     PLAYER_ANIM_UNMORPH_R, /* pose 3D */
     PLAYER_ANIM_UNMORPH_L, /* pose 3E */
+    PLAYER_ANIM_AIM_UP_R, /* pose 03:1 */
+    PLAYER_ANIM_AIM_UP_L, /* pose 04:1 */
+    PLAYER_ANIM_WALK_SHOOT_R, /* pose 0B */
+    PLAYER_ANIM_WALK_SHOOT_L, /* pose 0C */
+    PLAYER_ANIM_WALK_AIM_UP_R, /* pose 0F */
+    PLAYER_ANIM_WALK_AIM_UP_L, /* pose 10 */
+    PLAYER_ANIM_WALK_AIM_DOWN_R, /* pose 11 */
+    PLAYER_ANIM_WALK_AIM_DOWN_L, /* pose 12 */
+    PLAYER_ANIM_CROUCH_AIM_UP_R, /* pose 85:1 */
+    PLAYER_ANIM_CROUCH_AIM_UP_L, /* pose 86:1 */
+    PLAYER_ANIM_JUMP_SHOOT_R, /* pose 13:0 */
+    PLAYER_ANIM_JUMP_SHOOT_L, /* pose 14:0 */
+    PLAYER_ANIM_JUMP_AIM_UP_R, /* pose 15:1 */
+    PLAYER_ANIM_JUMP_AIM_UP_L, /* pose 15:3 */
+    PLAYER_ANIM_JUMP_AIM_DOWN_R, /* pose 17:1 */
+    PLAYER_ANIM_JUMP_AIM_DOWN_L, /* pose 18:1 */
+    PLAYER_ANIM_JUMP_AIM_DIAG_UP_R, /* pose 69:0 */
+    PLAYER_ANIM_JUMP_AIM_DIAG_UP_L, /* pose 6A:0 */
+    PLAYER_ANIM_JUMP_AIM_DIAG_DOWN_R, /* pose 6B:0 */
+    PLAYER_ANIM_JUMP_AIM_DIAG_DOWN_L, /* pose 6C:0 */
+    PLAYER_ANIM_FALL_SHOOT_R, /* pose 67:0 */
+    PLAYER_ANIM_FALL_SHOOT_L, /* pose 68:0 */
+    PLAYER_ANIM_FALL_AIM_UP_R, /* pose 2B:1 */
+    PLAYER_ANIM_FALL_AIM_UP_L, /* pose 2C:1 */
+    PLAYER_ANIM_FALL_AIM_DOWN_R, /* pose 2D:1 */
+    PLAYER_ANIM_FALL_AIM_DOWN_L, /* pose 2E:1 */
+    PLAYER_ANIM_FALL_AIM_DIAG_UP_R, /* pose 6D */
+    PLAYER_ANIM_FALL_AIM_DIAG_UP_L, /* pose 6E */
+    PLAYER_ANIM_FALL_AIM_DIAG_DOWN_R, /* pose 6F */
+    PLAYER_ANIM_FALL_AIM_DIAG_DOWN_L, /* pose 70 */
     PLAYER_ANIM_COUNT
+};
+
+/* Cannon tip in each row's first frame, {x, y} in pixels from the body position. */
+static const signed char player_muzzle[PLAYER_ANIM_COUNT][2] = {
+    {32, 21}, /* 01 */
+    {7, 21}, /* 02 */
+    {29, 23}, /* 09 */
+    {14, 12}, /* 0A */
+    {25, 11}, /* 19 */
+    {14, 11}, /* 1A */
+    {25, 20}, /* 4B */
+    {14, 11}, /* 4C */
+    {25, 21}, /* 4D */
+    {11, 19}, /* 4E */
+    {25, 11}, /* 29 */
+    {14, 11}, /* 2A */
+    {25, 20}, /* A4 */
+    {14, 11}, /* A5 */
+    {25, 11}, /* A6 */
+    {14, 11}, /* A7 */
+    {34, 25}, /* 83 */
+    {7, 18}, /* 84 */
+    {32, 25}, /* 35 */
+    {7, 25}, /* 36 */
+    {32, 33}, /* 27 */
+    {7, 33}, /* 28 */
+    {32, 25}, /* 3B */
+    {7, 25}, /* 3C */
+    {23, 30}, /* 37 */
+    {16, 30}, /* 38 */
+    {27, 39}, /* 1D */
+    {12, 39}, /* 1F */
+    {27, 36}, /* 3D */
+    {12, 36}, /* 3E */
+    {22, -5}, /* 03:1 */
+    {18, -5}, /* 04:1 */
+    {39, 19}, /* 0B */
+    {0, 19}, /* 0C */
+    {36, 1}, /* 0F */
+    {2, 1}, /* 10 */
+    {36, 27}, /* 11 */
+    {4, 27}, /* 12 */
+    {22, 6}, /* 85:1 */
+    {18, 6}, /* 86:1 */
+    {32, 21}, /* 13:0 */
+    {7, 21}, /* 14:0 */
+    {22, -5}, /* 15:1 */
+    {18, -5}, /* 15:3 */
+    {22, 36}, /* 17:1 */
+    {16, 36}, /* 18:1 */
+    {36, 1}, /* 69:0 */
+    {2, 1}, /* 6A:0 */
+    {36, 27}, /* 6B:0 */
+    {4, 27}, /* 6C:0 */
+    {32, 21}, /* 67:0 */
+    {7, 21}, /* 68:0 */
+    {22, -5}, /* 2B:1 */
+    {18, -5}, /* 2C:1 */
+    {22, 36}, /* 2D:1 */
+    {16, 36}, /* 2E:1 */
+    {36, 1}, /* 6D */
+    {2, 1}, /* 6E */
+    {36, 27}, /* 6F */
+    {4, 27}, /* 70 */
 };
 
 #endif /* MM_PLAYER_ANIM_H */

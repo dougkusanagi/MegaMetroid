@@ -55,7 +55,7 @@ void mm_body_init(MmBody *b, int x, int y, MmRect hitbox)
     b->grounded = b->facing_left = b->jumped = 0;
     b->run_extra = b->move_direction = 0;
     b->spin_jumping = b->shoot_pose_timer = 0;
-    b->shoot_frame = 3;
+    b->aim = MM_AIM_FORWARD;
     b->ball = b->crouching = 0;
     b->down_ticks = b->crouch_latch = b->down_window = 0;
     b->coyote = 0;
@@ -165,6 +165,19 @@ static MmState body_state(const MmBody *b)
     return b->vy < 0 ? MM_STATE_JUMP : MM_STATE_FALL;
 }
 
+/* Up aims up, or up and forward with a direction. Down aims down in the air; on the ground it
+   crouches instead, unless a direction makes it aim down and forward while walking. */
+static MmAim body_aim(const MmBody *b, MmInput input)
+{
+    if (b->ball) return MM_AIM_FORWARD;
+    if (input.aim_y < 0) return input.axis ? MM_AIM_DIAG_UP : MM_AIM_UP;
+    if (input.aim_y > 0) {
+        if (input.axis) return MM_AIM_DIAG_DOWN;
+        if (!b->grounded) return MM_AIM_DOWN;
+    }
+    return MM_AIM_FORWARD;
+}
+
 /* The pose once no one-shot pose is running. */
 static MmPose looping_pose(const MmBody *b)
 {
@@ -225,13 +238,10 @@ void mm_tick(const MmWorld *w, MmBody *b, MmInput input)
         b->jumped = 1; b->spin_jumping = 1;
         b->wall_lock = MM_WALL_LOCK; b->wall_vx = direction * MM_SPEED;
     }
-    if (input.shoot_pressed) {
-        b->shoot_pose_timer = 10;
-        b->spin_jumping = 0;
-        if (input.aim_y < 0) b->shoot_frame = input.axis ? 2 : 1;
-        else if (input.aim_y > 0 && !b->grounded) b->shoot_frame = input.axis ? 4 : 4;
-        else b->shoot_frame = 3;
-    } else if (b->shoot_pose_timer) --b->shoot_pose_timer;
+    /* Shooting stops a spin; the cannon stays out while the shot is held and a moment after. */
+    if (input.shoot_pressed) b->spin_jumping = 0;
+    if (input.shoot_held && !b->ball) b->shoot_pose_timer = MM_SHOOT_POSE_TICKS;
+    else if (b->shoot_pose_timer) --b->shoot_pose_timer;
     /* A tap of down (held up to MM_TAP_TICKS, and never while aiming with the shot) keeps the crouch
        after release on the ground. A longer hold stands the body up when it is released. */
     if (input.aim_y > 0) {
@@ -279,6 +289,7 @@ void mm_tick(const MmWorld *w, MmBody *b, MmInput input)
     if (b->grounded) b->coyote = MM_COYOTE_TICKS;
     else if (b->coyote) --b->coyote;
     b->state = body_state(b);
+    b->aim = body_aim(b, input);
 }
 
 const char *mm_state_name(MmState state)

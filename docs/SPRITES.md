@@ -75,7 +75,9 @@ Algumas regiões saem inteiras, como referência e sem `SPRITE` (`sgdk_ready = n
 O jogo não carrega as poses avulsas. `scripts/build_player_sheet.py` monta `res/images/player/samus_sheet.png` a partir delas, e gera `inc/player_anim.h` com o enum `PLAYER_ANIM_*`:
 
 - Cada linha é uma animação e cada célula é um quadro de 64×64, lido da esquerda para a direita.
-- A lista `ANIMATIONS` do script diz quais poses entram, em ordem: ação, pose para a direita, pose para a esquerda. Para incluir uma pose nova, acrescente uma entrada e rode o script de novo.
+- A lista `ANIMATIONS` do script diz quais poses entram, em ordem: ação, pose para a direita, pose para a esquerda e, opcionalmente, a mira (`U`, `DU`, `D`, `DD`; frente se omitida). Para incluir uma pose nova, acrescente uma entrada e rode o script de novo.
+- Uma pose pode ser `'NN'` (a tira inteira) ou `'NN:i'` / `'NN:i-j'` (só esses quadros). As tiras de mira começam com um quadro de transição; a folha usa só o quadro mantido.
+- O script também gera `player_muzzle[]`: a boca do canhão no primeiro quadro de cada linha, em pixels a partir da posição do corpo. É o pixel das cores do canhão (índices 5, 7, 8 e 13 da paleta Power Suit) mais distante na direção da mira. O tiro sai desse ponto.
 - A esquerda é sempre uma linha própria (`PLAYER_ANIM_<ação>_L` vem logo depois de `_R`). O código soma 1 à linha da direita; não use `SPR_setHFlip`.
 - Linhas podem ter quantidades diferentes de quadros. O `rescomp` descarta as células vazias no fim de cada linha.
 - Os pés das poses de chão (`GROUNDED`: parado, andando, pouso, agachar, abaixar e levantar) ficam todos na linha 58 da célula, a última do retângulo de colisão (`y + 47`). Cada pose anda inteira para isso, sem mudar a posição relativa entre os quadros da mesma pose. Sem isso a agachada da prancha original ficava 11 px acima do chão. As poses do ar não são alinhadas.

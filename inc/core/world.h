@@ -26,6 +26,7 @@
 #define MM_DOUBLE_TAP_TICKS 20 /* Two presses of down less than this (1/3 s) apart morph into the ball. */
 #define MM_MORPH_TICKS 10 /* 37/38, curling into the ball: two frames. */
 #define MM_UNMORPH_TICKS 10 /* 3D/3E, uncurling from the ball: two frames. */
+#define MM_SHOOT_POSE_TICKS 10 /* The cannon stays out this long after the shot button is let go. */
 
 typedef struct { int left, top, right, bottom; } MmRect;
 typedef struct { const unsigned char *tiles; int columns, rows; } MmWorld;
@@ -40,6 +41,10 @@ typedef enum {
     MM_POSE_CROUCH_DOWN, MM_POSE_CROUCH, MM_POSE_STAND_UP,
     MM_POSE_MORPH, MM_POSE_BALL, MM_POSE_UNMORPH
 } MmPose;
+/* Where the cannon points, from the d-pad: up, up and forward, down (in the air), down and forward. */
+typedef enum {
+    MM_AIM_FORWARD, MM_AIM_UP, MM_AIM_DIAG_UP, MM_AIM_DOWN, MM_AIM_DIAG_DOWN
+} MmAim;
 typedef struct {
     int x, y; /* Q24.8 world position; never discard fractional movement. */
     int vx, vy;
@@ -47,7 +52,8 @@ typedef struct {
     MmRect stand_box; /* Standing hitbox, the base for the crouch and ball boxes. */
     int grounded, facing_left, jumped;
     int run_extra, move_direction;
-    int spin_jumping, shoot_pose_timer, shoot_frame;
+    int spin_jumping;
+    int shoot_pose_timer; /* Ticks the shooting pose still shows; refilled while the shot is held. */
     int ball, crouching; /* Toggled by down/up presses and the d-pad. */
     int down_ticks; /* Ticks down has been held, capped just past MM_TAP_TICKS. */
     int crouch_latch; /* Crouch kept after a tap on the ground; a jump, a direction or up ends it. */
@@ -56,6 +62,7 @@ typedef struct {
     int wall_lock, wall_vx; /* Wall kick: ticks left and the fixed speed while locked. */
     MmState state; /* Derived at the end of every mm_tick. */
     MmPose pose; /* Derived at the end of every mm_tick, like state. */
+    MmAim aim; /* Derived at the end of every mm_tick, while the d-pad is held, shot or not. */
     int pose_timer; /* Ticks left in a one-shot pose (takeoff, wall kick, landing); 0 for looping poses. */
 } MmBody;
 typedef struct {

@@ -2,6 +2,7 @@
 #include <stdio.h>
 #include <string.h>
 #include "core/world.h"
+#include "core/weapon.h"
 #include "out/maps.h"
 
 static unsigned char tiles[64 * 32];
@@ -703,9 +704,71 @@ static void wall_jump_rules(void) {
 #undef AIRBORNE
     puts("PASS wall jump rules: only in a spin, touching a wall and pressing away from it");
 }
+/* The aim follows the d-pad while it is held, shot or not. Down crouches on the ground and aims
+   down only in the air or, with a direction, down and forward while walking. */
+static void aiming(void) {
+    MmBody b;
+    MmRect real = {8, 8, 32, 48};
+    MmInput up = {.aim_y = -1}, up_right = {.aim_y = -1, .axis = 1}, down = {.aim_y = 1};
+    MmInput down_right = {.aim_y = 1, .axis = 1}, shoot = {.shoot_held = 1, .shoot_pressed = 1};
+    int t;
+    reset(); floor_at(20);
+    mm_body_init(&b, 80, 112, real); mm_tick(&world, &b, idle);
+    assert(b.aim == MM_AIM_FORWARD && !b.shoot_pose_timer);
+    mm_tick(&world, &b, up);
+    assert(b.aim == MM_AIM_UP && !b.shoot_pose_timer);
+    mm_tick(&world, &b, up_right);
+    assert(b.aim == MM_AIM_DIAG_UP && b.vx > 0);
+    mm_tick(&world, &b, down_right);
+    assert(b.aim == MM_AIM_DIAG_DOWN && b.vx > 0 && !b.crouching);
+    mm_tick(&world, &b, down);
+    assert(b.aim == MM_AIM_FORWARD && b.crouching);
+    mm_body_init(&b, 80, 112, real); mm_tick(&world, &b, idle);
+    mm_tick(&world, &b, shoot);
+    for (t = 0; t < 30; ++t) mm_tick(&world, &b, (MmInput){.shoot_held = 1});
+    assert(b.shoot_pose_timer == MM_SHOOT_POSE_TICKS);
+    for (t = 0; t < MM_SHOOT_POSE_TICKS; ++t) mm_tick(&world, &b, idle);
+    assert(!b.shoot_pose_timer);
+    mm_body_init(&b, 80, 40, real); mm_tick(&world, &b, idle);
+    mm_tick(&world, &b, down);
+    assert(!b.grounded && b.aim == MM_AIM_DOWN);
+    mm_tick(&world, &b, (MmInput){.aim_y = 1, .axis = -1});
+    assert(b.aim == MM_AIM_DIAG_DOWN && b.facing_left);
+    puts("PASS aim: up, up-forward, down-forward walking, down in the air; the shooting pose holds while firing");
+}
+/* The beam leaves from the given muzzle along the aim, and not when the cannon is inside a wall. */
+static void beam_from_muzzle(void) {
+    MmBody b;
+    MmWeapon w;
+    MmRect real = {8, 8, 32, 48};
+    MmCamera camera = {0, 0};
+    MmInput shoot = {.shoot_held = 1, .shoot_pressed = 1};
+    int y;
+    reset(); floor_at(20);
+    mm_body_init(&b, 80, 112, real); mm_tick(&world, &b, idle);
+    mm_weapon_init(&w);
+    mm_weapon_tick(&w, &world, &b, shoot, camera, 33, 21);
+    assert(w.fired && w.beams[0].active && w.beams[0].vy == 0 && w.beams[0].vx == MM_BEAM_SPEED);
+    assert(mm_pixel(w.beams[0].x) == 80 + 33 && mm_pixel(w.beams[0].y) == 112 + 21);
+    b.aim = MM_AIM_DIAG_UP; b.facing_left = 1;
+    mm_weapon_init(&w);
+    mm_weapon_tick(&w, &world, &b, shoot, camera, 2, 1);
+    assert(w.beams[0].active && w.beams[0].vx == -MM_BEAM_DIAGONAL_SPEED && w.beams[0].vy == -MM_BEAM_DIAGONAL_SPEED);
+    b.aim = MM_AIM_DOWN;
+    mm_weapon_init(&w);
+    mm_weapon_tick(&w, &world, &b, shoot, camera, 10, 43);
+    assert(w.beams[0].active && w.beams[0].vx == 0 && w.beams[0].vy == MM_BEAM_SPEED);
+    /* A wall at x 112-119, between the body centre (x 100) and a forward muzzle (x 113). */
+    for (y = 0; y < 20; ++y) tiles[y * 64 + 14] = 0;
+    b.aim = MM_AIM_FORWARD; b.facing_left = 0;
+    mm_weapon_init(&w);
+    mm_weapon_tick(&w, &world, &b, shoot, camera, 33, 21);
+    assert(!w.beams[0].active);
+    puts("PASS beam leaves from the muzzle along the aim, never from inside a wall");
+}
 int main(void) {
     movement(); collisions(); jump_and_ledge(); states(); physics(); variable_jump(); coyote_jump();
-    slopes(); slope_sweep(); tunnels(); wall_climb(); wall_jump_rules(); poses(); crouch_poses(); crouch_tap(); double_tap(); ball_poses(); morph_rules(); ball_stands_on_slope();
+    slopes(); slope_sweep(); tunnels(); wall_climb(); wall_jump_rules(); poses(); crouch_poses(); crouch_tap(); double_tap(); ball_poses(); aiming(); beam_from_muzzle(); morph_rules(); ball_stands_on_slope();
     ball_stand_real(); camera_and_input(); real_levels();
     puts("All core regression tests passed."); return 0;
 }

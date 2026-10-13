@@ -31,8 +31,12 @@ void mm_weapon_init(MmWeapon *w)
     }
 }
 
-void mm_weapon_tick(MmWeapon *w, const MmWorld *world,
-                    const MmBody *player, MmInput input, MmCamera camera)
+/* The body centre the cannon is traced from, in pixels from the body position. */
+#define CANNON_BASE_X 20
+#define CANNON_BASE_Y 24
+
+void mm_weapon_tick(MmWeapon *w, const MmWorld *world, const MmBody *player,
+                    MmInput input, MmCamera camera, int muzzle_x, int muzzle_y)
 {
     int i;
     w->fired = 0;
@@ -45,19 +49,20 @@ void mm_weapon_tick(MmWeapon *w, const MmWorld *world,
     for (i = 0; i < MM_BEAM_COUNT; ++i) {
         if (!w->beams[i].active) {
             MmBeam *b = &w->beams[i];
-            int dx = player->facing_left ? -1 : 1;
-            int dy = input.aim_y < 0 ? -1 : input.aim_y > 0 ? 1 : 0;
-            int x = mm_pixel(player->x) + 20;
-            int y = mm_pixel(player->y) + 22;
-            int step, speed;
-            if (dy > 0 && player->grounded) dy = 0;
-            if (dy && !input.axis) dx = 0;
+            MmAim aim = player->aim;
+            int dx = aim == MM_AIM_UP || aim == MM_AIM_DOWN ? 0 : player->facing_left ? -1 : 1;
+            int dy = aim == MM_AIM_UP || aim == MM_AIM_DIAG_UP ? -1 :
+                     aim == MM_AIM_DOWN || aim == MM_AIM_DIAG_DOWN ? 1 : 0;
+            int px = mm_pixel(player->x), py = mm_pixel(player->y);
+            int ex = muzzle_x - CANNON_BASE_X, ey = muzzle_y - CANNON_BASE_Y;
+            int steps = ex < 0 ? -ex : ex, step, x = px + muzzle_x, y = py + muzzle_y, speed;
+            if ((ey < 0 ? -ey : ey) > steps) steps = ey < 0 ? -ey : ey;
             speed = dx && dy ? MM_BEAM_DIAGONAL_SPEED : MM_BEAM_SPEED;
             b->active = 1;
-            /* Trace from cannon to muzzle; never spawn beyond a wall. */
-            for (step = 0; step < 14; ++step) {
-                x += dx; y += dy;
-                if (beam_blocked(world, x, y)) { b->active = 0; break; }
+            /* Trace from the body centre to the muzzle; never spawn beyond a wall. */
+            for (step = 1; step <= steps; ++step) {
+                if (beam_blocked(world, px + CANNON_BASE_X + ex * step / steps,
+                                 py + CANNON_BASE_Y + ey * step / steps)) { b->active = 0; break; }
             }
             b->x = x * MM_UNIT; b->y = y * MM_UNIT;
             b->vx = dx * speed; b->vy = dy * speed;

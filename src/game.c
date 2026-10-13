@@ -45,12 +45,10 @@ static void draw_debug_overlay(const Game *g)
 }
 #endif
 
-/* Right-facing row of the body's pose; the render adds 1 for the left row. */
-static u16 pose_row(const Game *g, bool shooting_pose)
+/* Right-facing row of the body's pose with no aim or shot. */
+static u16 plain_row(const MmBody *p)
 {
-    /* Aiming frames come in 3.2.5; until then a shot freezes on the standing frame. */
-    if (shooting_pose) return PLAYER_ANIM_STAND_R;
-    switch (g->player.pose) {
+    switch (p->pose) {
     case MM_POSE_TAKEOFF: return PLAYER_ANIM_TAKEOFF_R;
     case MM_POSE_JUMP_UP: return PLAYER_ANIM_JUMP_UP_R;
     case MM_POSE_FALL: return PLAYER_ANIM_FALL_R;
@@ -64,8 +62,47 @@ static u16 pose_row(const Game *g, bool shooting_pose)
     case MM_POSE_MORPH: return PLAYER_ANIM_MORPH_R;
     case MM_POSE_BALL: return PLAYER_ANIM_BALL_R;
     case MM_POSE_UNMORPH: return PLAYER_ANIM_UNMORPH_R;
-    default: return g->player.vx ? PLAYER_ANIM_WALK_R : PLAYER_ANIM_STAND_R;
+    default: return p->vx ? PLAYER_ANIM_WALK_R : PLAYER_ANIM_STAND_R;
     }
+}
+
+/* Row of the body on screen, facing included (the left row is the right row + 1). Aiming or
+   shooting replaces the plain pose, one-shot poses included, except for the ball and its
+   transitions, the spin and the wall kick. */
+static u16 player_row(const MmBody *p)
+{
+    /* Air rows by aim, as {rising, falling}: forward (shooting), up, up-forward, down, down-forward. */
+    static const u16 air[5][2] = {
+        {PLAYER_ANIM_JUMP_SHOOT_R, PLAYER_ANIM_FALL_SHOOT_R},
+        {PLAYER_ANIM_JUMP_AIM_UP_R, PLAYER_ANIM_FALL_AIM_UP_R},
+        {PLAYER_ANIM_JUMP_AIM_DIAG_UP_R, PLAYER_ANIM_FALL_AIM_DIAG_UP_R},
+        {PLAYER_ANIM_JUMP_AIM_DOWN_R, PLAYER_ANIM_FALL_AIM_DOWN_R},
+        {PLAYER_ANIM_JUMP_AIM_DIAG_DOWN_R, PLAYER_ANIM_FALL_AIM_DIAG_DOWN_R},
+    };
+    u16 side = p->facing_left ? 1 : 0, row;
+    bool up = p->aim == MM_AIM_UP || p->aim == MM_AIM_DIAG_UP;
+    if ((p->aim == MM_AIM_FORWARD && !p->shoot_pose_timer) || p->ball || p->pose == MM_POSE_UNMORPH ||
+        p->pose == MM_POSE_SPIN || p->pose == MM_POSE_WALL_KICK)
+        row = plain_row(p);
+    else if (p->grounded && p->crouching)
+        row = up ? PLAYER_ANIM_CROUCH_AIM_UP_R : PLAYER_ANIM_CROUCH_R;
+    else if (p->grounded && p->vx)
+        row = p->aim == MM_AIM_DIAG_UP ? PLAYER_ANIM_WALK_AIM_UP_R :
+              p->aim == MM_AIM_DIAG_DOWN ? PLAYER_ANIM_WALK_AIM_DOWN_R :
+              p->aim == MM_AIM_UP ? PLAYER_ANIM_AIM_UP_R : PLAYER_ANIM_WALK_SHOOT_R;
+    else if (p->grounded)
+        row = up ? PLAYER_ANIM_AIM_UP_R : PLAYER_ANIM_STAND_R;
+    else
+        row = air[p->aim][p->vy < 0 ? 0 : 1];
+    return row + side;
+}
+
+/* Walking rows share the leg cycle: switching between them keeps the frame. */
+static bool walk_row(u16 row)
+{
+    row &= ~1;
+    return row == PLAYER_ANIM_WALK_R || row == PLAYER_ANIM_WALK_SHOOT_R ||
+           row == PLAYER_ANIM_WALK_AIM_UP_R || row == PLAYER_ANIM_WALK_AIM_DOWN_R;
 }
 
 static void render(Game *g)
@@ -75,25 +112,22 @@ static void render(Game *g)
     MmRect world_bounds = {0, 0, g->level->map_width, g->level->map_height};
     MmRect bounds = mm_camera_bounds(x + 20, y + 28, world_bounds,
         g->level->camera_zones, g->level->camera_zone_count);
-    /* A ball does not shoot, so it never takes the shooting pose. */
-    bool shooting_pose = g->player.shoot_pose_timer != 0 && !g->player.ball;
-    bool rolling;
     /* Left is its own row, not a flip: the facing picks the row of the action. */
     u16 side = g->player.facing_left ? 1 : 0;
-    u16 animation = pose_row(g, shooting_pose) + side;
-    rolling = animation == PLAYER_ANIM_BALL_R + side;
+    u16 animation = player_row(&g->player);
+    bool rolling = animation == PLAYER_ANIM_BALL_R + side;
     g->camera = mm_camera(x + 20, y + 28, VIEW_WIDTH, VIEW_HEIGHT, bounds);
     MAP_scrollTo(g->foreground, g->camera.x, g->camera.y);
     MAP_scrollTo(g->background, 0, 0);
     SPR_setPosition(g->sprite, x - g->camera.x - SAMUS_DRAW_X, y - g->camera.y - SAMUS_DRAW_Y);
     if (animation != g->animation) {
-        SPR_setAnim(g->sprite, animation);
+        if (g->animation != 0xFFFF && walk_row(animation) && walk_row(g->animation))
+            SPR_setAnimAndFrame(g->sprite, animation, g->sprite->frameInd);
+        else
+            SPR_setAnim(g->sprite, animation);
         g->animation = animation;
     }
-    if (shooting_pose) {
-        SPR_setAutoAnimation(g->sprite, FALSE);
-        SPR_setFrame(g->sprite, 0);
-    } else if (rolling) {
+    if (rolling) {
         /* The ball only turns while it moves, and a turn takes about the time it rolls its own
            circumference (16 px * pi at 2.75 px/tick): 2 ticks a frame. */
         SPR_setAutoAnimation(g->sprite, g->player.vx != 0);
@@ -102,7 +136,7 @@ static void render(Game *g)
         SPR_setAutoAnimation(g->sprite, TRUE);
     }
     /* Shorten the walk cycle as dash momentum builds. */
-    if (animation == PLAYER_ANIM_WALK_R + side && g->player.run_extra && g->sprite->timer > 3)
+    if (walk_row(animation) && g->player.run_extra && g->sprite->timer > 3)
         g->sprite->timer = 3;
     for (i = 0; i < MM_BEAM_COUNT; ++i) {
         const MmBeam *beam = &g->weapon.beams[i];
@@ -208,14 +242,17 @@ static void update_music(Game *g)
 
 void game_update(Game *g, MmInput input)
 {
-    u16 steps = 1;
+    u16 steps = 1, row;
     /* A 60 Hz simulation also runs at the same speed on a 50 Hz console. */
     if (SYS_isPAL() && ++g->pal_phase == 5) { steps = 2; g->pal_phase = 0; }
     while (steps--) {
         MmPose pose_before = g->player.pose;
         ++g->frame;
         mm_tick(&g->world, &g->player, input);
-        mm_weapon_tick(&g->weapon, &g->world, &g->player, input, g->camera);
+        /* The shot leaves from the cannon of the pose that will be on screen. */
+        row = player_row(&g->player);
+        mm_weapon_tick(&g->weapon, &g->world, &g->player, input, g->camera,
+                       player_muzzle[row][0], player_muzzle[row][1]);
         play_sounds(g, pose_before);
         /* Presses count once, even when a PAL frame runs two ticks. */
         input.jump_pressed = 0;
