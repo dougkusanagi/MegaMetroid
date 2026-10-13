@@ -47,8 +47,8 @@ Compilação com SGDK 2.11, Java e Python 3, a partir da raiz do projeto:
 ./scripts/build.ps1 -Sgdk D:/apps/sgdk -Java D:/apps/jre/bin/java.exe
 ```
 
-A ROM final é `build.bin`, com uma cópia em `build/rom.bin`. O build padrão do SGDK
-(`make -f %GDK%\makefile.gen`, ver `docs/BUILD.md`) gera `out/rom.bin`; `out/` e `build/` não são versionados.
+A ROM final é `build.bin`, com uma cópia em `out/rom.bin`. Os intermediários ficam em `out/`,
+a pasta padrão do SGDK (a mesma do `make -f %GDK%\makefile.gen`, ver `docs/BUILD.md`), que não é versionada.
 Para ver posição, velocidade, chão e tiles sob os pés na tela, gere a variante de
 depuração. Ela vai para `tests/out/variant.bin` e não substitui `build.bin`:
 

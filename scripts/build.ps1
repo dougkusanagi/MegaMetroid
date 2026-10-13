@@ -4,13 +4,12 @@ if (!$Sgdk) { $Sgdk = 'D:/apps/sgdk' }
 if (!(Test-Path -LiteralPath "$Sgdk/makefile.gen")) { throw 'Set -Sgdk or GDK to your SGDK installation.' }
 Push-Location (Split-Path $PSScriptRoot -Parent)
 try {
-    # Isolated output prevents stale tracked .o files from entering the ROM.
     $extra = @()
     if ($SmokeTest) {
         $extra = @('SRC_C=src/game.c src/beam_sprite.c src/map.c src/map_crateria_1.c src/map_crateria_2.c src/core/world.c src/core/weapon.c src/core/input.c src/core/camera.c tests/rom_smoke.c')
     }
     # A define changes objects without changing their sources, so variants get their own objects.
-    $out = if ($Define) { 'build/variant' } else { 'build' }
+    $out = if ($Define) { 'out/variant' } else { 'out' }
     # Relink when switching entry points, without forcing SDK implicit rules.
     & "$Sgdk/bin/make.exe" @extra -W src/main.c -W tests/rom_smoke.c -f "$Sgdk/makefile.gen" "OUT=$out" "JAVA=$Java" "EXTRA_FLAGS=$Define" release
     if ($LASTEXITCODE -ne 0) { throw 'SGDK build failed.' }
