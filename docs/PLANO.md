@@ -197,13 +197,15 @@ Para a 3.2: o tamanho de quadro é 64×64 (8×8 tiles); com a Samus em pé, os p
 
 | # | Etapa | Entrega | Teste |
 |---|-------|---------|-------|
-| 8.1 | Música | Tema de Crateria (XGM/XGM2) | Toca sem engasgar |
+| 8.1 ✅ | Música | Tema de Crateria (XGM/XGM2) | Toca sem engasgar |
 | 8.2 ⏭️ | SFX | Tiro, dano, item, porta | Canais PCM não se atropelam |
 | 8.3 | Título / game over | Estados de jogo | Fluxo título → jogo → game over |
 | 8.4 | Desempenho | Medir `SYS_getCPULoad` no pior caso | CPU < 100% |
 | 8.5 | Release | ROM final, README com controles, tag de versão | Roda em BlastEm e em hardware real |
 
-**8.2, primeira parte (2026-10-13).** Os efeitos originais estão em `res/sound/Sound-Effects/` (WAV 44,1 kHz estéreo; o `rescomp` converte para PCM de 13,3 kHz no build). Ligados ao que já existe: tiro (`beam_shot`, canal 3, no lugar do bipe do PSG), giro (`samus_flip`, canal 2, em loop enquanto a Samus gira, no lugar do antigo `jump.wav`) e pouso (`samus_land`, canal 2, que o giro libera ao pousar). O canal 1 fica para a música (8.1). Ainda não há música nos arquivos. Os outros efeitos (porta, dano, inimigo, item, mísseis, nave) entram com as etapas que os usam. Teste: `tests/rom_smoke.c` confere que o giro e o tiro tocam PCM na ROM.
+**8.1 Música (2026-10-13).** A trilha veio em MP3 (`res/sound/musics/`, local, fora do Git). O Mega Drive não decodifica MP3, e um MP3 não vira VGM/XGM (FM) automaticamente, então a música toca como PCM de 8 bits, 13,3 kHz mono, no canal 1 do XGM2. `scripts/convert_music.py` (precisa de ffmpeg e numpy) corta cada faixa em introdução, tocada uma vez, e corpo do loop, repetido pelo driver; os dois ficam em múltiplos de 256 amostras, para o `rescomp` não inserir silêncio no ponto do loop. O ponto de loop sai de uma autocorrelação (`--find-loop`). Landing Site: faixa 03, "Arrival on Crateria", com 19,2 s de introdução e loop de 66,7 s. Custo: 1,1 MB de ROM (a ROM foi de 256 KB para 1,4 MB). Com 4 MB, cabem só mais umas duas ou três faixas desse tamanho: para o jogo inteiro será preciso tocar a meia taxa (6,65 kHz), encurtar loops ou, melhor, refazer as músicas em FM (VGM/XGM). Teste: `tests/rom_smoke.c` confere o canal 1 tocando; no overlay de depuração (`MUSIC INTRO`/`LOOP`), a troca para o loop aparece entre 15 s e 24 s.
+
+**8.2, primeira parte (2026-10-13).** Os efeitos originais estão em `res/sound/Sound-Effects/` (WAV 44,1 kHz estéreo; o `rescomp` converte para PCM de 13,3 kHz no build). Ligados ao que já existe: tiro (`beam_shot`, canal 3, no lugar do bipe do PSG), giro (`samus_flip`, canal 2, em loop enquanto a Samus gira, no lugar do antigo `jump.wav`) e pouso (`samus_land`, canal 2, que o giro libera ao pousar). O canal 1 fica para a música (8.1). Os outros efeitos (porta, dano, inimigo, item, mísseis, nave) entram com as etapas que os usam. Teste: `tests/rom_smoke.c` confere que o giro e o tiro tocam PCM na ROM.
 
 ## 4. Riscos e decisões em aberto
 

@@ -11,3 +11,6 @@ __pycache__/
 # Pranchas originais de referência: ficam só na máquina local. O resultado
 # extraído para o SGDK (res/images/*-original-sgdk/) é versionado.
 /res/images/original-references/
+# Trilha original em MP3 (~100 MB): fica local. scripts/convert_music.py gera os WAVs versionados
+# em res/sound/music/.
+/res/sound/musics/

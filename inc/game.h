@@ -14,6 +14,7 @@ typedef struct {
     MmWeapon weapon;
     Sprite *beam_sprites[MM_BEAM_COUNT];
     u16 animation;
+    bool music_looping; /* The music intro has ended and the loop body is playing. */
     u16 pal_phase;
     u32 frame; /* 60 Hz simulation ticks since game_init, same on NTSC and PAL. */
 } Game;

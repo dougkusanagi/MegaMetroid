@@ -10,3 +10,7 @@ SPRITE		player_sprite		"images/player/samus_sheet.png"		8			8			FAST		5		NONE
 WAV				beam_sfx				"sound/Sound-Effects/beam_shot.wav"							XGM2
 WAV				spin_sfx				"sound/Sound-Effects/samus_flip.wav"						XGM2
 WAV				land_sfx				"sound/Sound-Effects/samus_land.wav"						XGM2
+# Music as PCM on XGM2 channel 1: the intro plays once, then the loop body repeats.
+# Converted from res/sound/musics/*.mp3 by scripts/convert_music.py.
+WAV				music_crateria_arrival_intro	"sound/music/music_crateria_arrival_intro.wav"	XGM2
+WAV				music_crateria_arrival_loop		"sound/music/music_crateria_arrival_loop.wav"	XGM2

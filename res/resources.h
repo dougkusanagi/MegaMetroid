@@ -6,6 +6,8 @@
 extern const u8 beam_sfx[4352];
 extern const u8 spin_sfx[3840];
 extern const u8 land_sfx[1536];
+extern const u8 music_crateria_arrival_intro[256000];
+extern const u8 music_crateria_arrival_loop[887040];
 extern const Palette pal_samus_power_suit;
 extern const SpriteDefinition player_sprite;
 

@@ -39,8 +39,8 @@ static void draw_debug_overlay(const Game *g)
     VDP_drawText(line, 0, 1);
     sprintf(line, "%-6s %s", mm_state_name(g->player.state), g->player.grounded ? "GROUND" : "AIR   ");
     VDP_drawText(line, 0, 2);
-    sprintf(line, "FOOT L %d R %d", mm_tile(&g->world, left / MM_TILE, foot_row),
-            mm_tile(&g->world, right / MM_TILE, foot_row));
+    sprintf(line, "FOOT L %d R %d  MUSIC %s", mm_tile(&g->world, left / MM_TILE, foot_row),
+            mm_tile(&g->world, right / MM_TILE, foot_row), g->music_looping ? "LOOP " : "INTRO");
     VDP_drawText(line, 0, 3);
 }
 #endif
@@ -125,6 +125,7 @@ bool game_init(Game *g, u16 level_index)
     g->level = level_get(level_index);
     if (!g->level) return FALSE;
     g->input.previous = 0; g->pal_phase = 0; g->frame = 0;
+    g->music_looping = FALSE;
     mm_weapon_init(&g->weapon);
     g->animation = 0xFFFF;
     g->world.tiles = g->level->map_collision;
@@ -172,6 +173,8 @@ bool game_init(Game *g, u16 level_index)
     VDP_setWindowVPos(FALSE, OVERLAY_ROWS);
     VDP_setTextPlane(WINDOW);
 #endif
+    XGM2_playPCMEx(music_crateria_arrival_intro, sizeof(music_crateria_arrival_intro),
+                   SOUND_PCM_CH1, 15, FALSE, FALSE);
     render(g);
     SYS_doVBlankProcess();
     return TRUE;
@@ -193,6 +196,16 @@ static void play_sounds(const Game *g, MmPose pose_before)
         XGM2_stopPCM(SOUND_PCM_CH2);
 }
 
+/* Crateria music: the intro once, then the loop body with the driver's loop on. The driver takes a
+   moment to report a new sample as playing, so the intro is not polled in its first half second. */
+static void update_music(Game *g)
+{
+    if (g->music_looping || g->frame < 30 || XGM2_isPlayingPCM(SOUND_PCM_CH1_MSK)) return;
+    XGM2_playPCMEx(music_crateria_arrival_loop, sizeof(music_crateria_arrival_loop),
+                   SOUND_PCM_CH1, 15, FALSE, TRUE);
+    g->music_looping = TRUE;
+}
+
 void game_update(Game *g, MmInput input)
 {
     u16 steps = 1;
@@ -210,6 +223,7 @@ void game_update(Game *g, MmInput input)
         input.down_pressed = 0;
         input.up_pressed = 0;
     }
+    update_music(g);
     render(g);
 }
 
