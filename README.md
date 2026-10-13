@@ -35,7 +35,9 @@ Referência: [disassembly de Super Metroid, banco 90](https://github.com/InsaneF
 rotina `Handle_Samus_XExtraRunSpeed` e tabela `SamusXSpeedTable_Normal`.
 
 O Power Beam não consome munição, não carrega e mantém até três projéteis.
-Há colisão com paredes e rampas, descarte ao sair da tela e som sintetizado.
+Há colisão com paredes e rampas, descarte ao sair da tela e o som de tiro original.
+Os efeitos sonoros do Super Metroid ficam em `res/sound/Sound-Effects/`; o tiro, o giro (em loop
+enquanto a Samus gira) e o pouso já tocam. Ainda não há música.
 As fases atuais ainda não têm entidades de inimigos ou portas destrutíveis;
 o valor de dano está preparado no projétil para essa integração futura.
 O sprite da Samus usa as poses originais do jogo (parada, andando, pulando, girando, agachando e em bola, cada uma com desenho próprio para a esquerda). A mira ainda é provisória; ver a etapa 3.2 em `docs/PLANO.md`.

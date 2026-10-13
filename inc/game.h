@@ -13,7 +13,6 @@ typedef struct {
     Sprite *sprite;
     MmWeapon weapon;
     Sprite *beam_sprites[MM_BEAM_COUNT];
-    u16 beam_sound_timer;
     u16 animation;
     u16 pal_phase;
     u32 frame; /* 60 Hz simulation ticks since game_init, same on NTSC and PAL. */

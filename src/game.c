@@ -125,7 +125,6 @@ bool game_init(Game *g, u16 level_index)
     g->level = level_get(level_index);
     if (!g->level) return FALSE;
     g->input.previous = 0; g->pal_phase = 0; g->frame = 0;
-    g->beam_sound_timer = 0;
     mm_weapon_init(&g->weapon);
     g->animation = 0xFFFF;
     g->world.tiles = g->level->map_collision;
@@ -167,7 +166,6 @@ bool game_init(Game *g, u16 level_index)
         }
         SPR_setVisibility(g->beam_sprites[i], HIDDEN);
     }
-    PSG_setEnvelope(0, PSG_ENVELOPE_MIN);
     SYS_enableInts();
 #if MM_DEBUG_OVERLAY
     /* Window plane stays put while plane A scrolls, so the overlay does not move. */
@@ -179,32 +177,39 @@ bool game_init(Game *g, u16 level_index)
     return TRUE;
 }
 
+/* PCM sound effects from res/sound/Sound-Effects. Channel 1 stays free for the music; the spin loop
+   and the landing share channel 2, since a landing ends the spin. */
+static void play_sounds(const Game *g, MmPose pose_before)
+{
+    MmPose pose = g->player.pose;
+    if (g->weapon.fired)
+        XGM2_playPCMEx(beam_sfx, sizeof(beam_sfx), SOUND_PCM_CH3, 15, FALSE, FALSE);
+    /* Only the spin and the wall kick make the spin sound, looped while spinning; a standing jump is silent. */
+    if (g->player.jumped && g->player.spin_jumping)
+        XGM2_playPCMEx(spin_sfx, sizeof(spin_sfx), SOUND_PCM_CH2, 14, FALSE, TRUE);
+    if (pose != pose_before && (pose == MM_POSE_LAND || pose == MM_POSE_SPIN_LAND))
+        XGM2_playPCMEx(land_sfx, sizeof(land_sfx), SOUND_PCM_CH2, 15, FALSE, FALSE);
+    else if (!g->player.spin_jumping && pose_before == MM_POSE_SPIN && pose != MM_POSE_SPIN)
+        XGM2_stopPCM(SOUND_PCM_CH2);
+}
+
 void game_update(Game *g, MmInput input)
 {
     u16 steps = 1;
     /* A 60 Hz simulation also runs at the same speed on a 50 Hz console. */
     if (SYS_isPAL() && ++g->pal_phase == 5) { steps = 2; g->pal_phase = 0; }
     while (steps--) {
+        MmPose pose_before = g->player.pose;
         ++g->frame;
         mm_tick(&g->world, &g->player, input);
         mm_weapon_tick(&g->weapon, &g->world, &g->player, input, g->camera);
-        if (g->weapon.fired) g->beam_sound_timer = 8;
-        if (g->beam_sound_timer) {
-            --g->beam_sound_timer;
-            PSG_setTone(0, 25 + (8 - g->beam_sound_timer) * 22);
-            PSG_setEnvelope(0, g->beam_sound_timer ? 3 + (8 - g->beam_sound_timer) : PSG_ENVELOPE_MIN);
-        }
-        /* Only the spin and the wall kick make the spin sound; a standing jump is silent. */
-        if (g->player.jumped && g->player.spin_jumping)
-            XGM2_playPCMEx(jump_sfx, sizeof(jump_sfx), SOUND_PCM_CH2, 15, FALSE, TRUE);
+        play_sounds(g, pose_before);
         /* Presses count once, even when a PAL frame runs two ticks. */
         input.jump_pressed = 0;
         input.shoot_pressed = 0;
         input.down_pressed = 0;
         input.up_pressed = 0;
     }
-    if (g->player.grounded && XGM2_isPlayingPCM(SOUND_PCM_CH2_MSK))
-        XGM2_stopPCM(SOUND_PCM_CH2);
     render(g);
 }
 

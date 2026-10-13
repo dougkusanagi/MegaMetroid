@@ -6,7 +6,7 @@ int main(bool hardReset)
 {
     static Game g;
     int frame, failed = 0, start, after_right = 0, after_left = 0, jumped = 0, poses_seen = 0;
-    int kept = 0, stood = 0, released = 0, morphed = 0, unmorphed = 0;
+    int kept = 0, stood = 0, released = 0, morphed = 0, unmorphed = 0, spin_sound = 0, beam_sound = 0;
     /* A standing jump shows its takeoff, rise, fall and landing; a jump from a run spins and lands spinning. */
     const int standing_jump_poses = 1 << MM_POSE_TAKEOFF | 1 << MM_POSE_JUMP_UP |
                                     1 << MM_POSE_FALL | 1 << MM_POSE_LAND;
@@ -25,6 +25,8 @@ int main(bool hardReset)
         if (frame >= 180 && frame < 300) input.axis = -1;
         if (frame >= 380 && frame < 420) input.axis = 1;
         input.jump_pressed = frame == 330 || frame == 400;
+        /* A shot on the ground plays the beam sound (channel 3); the spin jump at 400 loops channel 2. */
+        input.shoot_pressed = input.shoot_held = frame == 470;
         input.aim_y = frame >= 445 && frame < 460;
         /* Crouch: a 3-tick tap keeps it, up stands up, a 20-tick hold stands up on release.
            Ball: two taps of down (600 and 606) morph, and up stands up again. */
@@ -37,6 +39,8 @@ int main(bool hardReset)
         input.down_pressed = frame == 480 || frame == 600 || frame == 606;
         input.up_pressed = frame == 540 || frame == 621;
         game_update(&g, input);
+        if (frame == 405) spin_sound = XGM2_isPlayingPCM(SOUND_PCM_CH2_MSK) != 0;
+        if (frame == 472) beam_sound = XGM2_isPlayingPCM(SOUND_PCM_CH3_MSK) != 0;
         if (frame == 179) after_right = g.player.x;
         if (frame == 299) after_left = g.player.x;
         if (frame == 539) kept = g.player.crouching;
@@ -56,6 +60,7 @@ int main(bool hardReset)
     if ((poses_seen & crouch_poses) != crouch_poses) failed = 1;
     if ((poses_seen & ball_poses) != ball_poses) failed = 1;
     if (!kept || !stood || !released || !morphed || !unmorphed) failed = 1;
+    if (!spin_sound || !beam_sound) failed = 1;
     /* PAL adds one tick in every five game_update calls: 640 calls become 768 ticks. */
     if (g.frame != 640 + (SYS_isPAL() ? 128 : 0)) failed = 1;
     /* Window plane keeps the result on screen; plane A scrolls with the camera. */
