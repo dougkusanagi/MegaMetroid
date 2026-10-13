@@ -23,6 +23,12 @@ enum {
     PLAYER_ANIM_SPIN_LAND_L, /* pose A7 */
     PLAYER_ANIM_WALL_KICK_R, /* pose 83 */
     PLAYER_ANIM_WALL_KICK_L, /* pose 84 */
+    PLAYER_ANIM_CROUCH_DOWN_R, /* pose 35 */
+    PLAYER_ANIM_CROUCH_DOWN_L, /* pose 36 */
+    PLAYER_ANIM_CROUCH_R, /* pose 27 */
+    PLAYER_ANIM_CROUCH_L, /* pose 28 */
+    PLAYER_ANIM_STAND_UP_R, /* pose 3B */
+    PLAYER_ANIM_STAND_UP_L, /* pose 3C */
     PLAYER_ANIM_COUNT
 };
 

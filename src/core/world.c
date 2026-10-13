@@ -158,29 +158,37 @@ static MmState body_state(const MmBody *b)
 /* The pose once no one-shot pose is running. */
 static MmPose looping_pose(const MmBody *b)
 {
-    if (b->grounded) return MM_POSE_GROUND;
+    if (b->grounded) return b->crouching ? MM_POSE_CROUCH : MM_POSE_GROUND;
     if (b->spin_jumping) return MM_POSE_SPIN;
     return b->vy < 0 ? MM_POSE_JUMP_UP : MM_POSE_FALL;
 }
 
-/* A landing holds its pose for a while. The hold also ends when the body leaves the
-   ground or, for the standing landing, when it starts walking. */
-static void update_pose(MmBody *b, int was_grounded)
+/* Landings, crouching and standing up hold their pose for a while. The hold also ends when the
+   body leaves the ground or, for the standing landing and the stand-up, when it starts walking. */
+static void update_pose(MmBody *b, int was_grounded, int was_crouching)
 {
     /* A body from mm_body_init has GROUND as its pose, so its first tick is not a landing. */
     if (b->grounded && !was_grounded && b->pose != MM_POSE_GROUND) {
         b->pose = b->spin_jumping ? MM_POSE_SPIN_LAND : MM_POSE_LAND;
         b->pose_timer = b->spin_jumping ? MM_SPIN_LAND_TICKS : MM_LAND_TICKS;
     }
+    if (b->grounded && b->crouching && !was_crouching) {
+        b->pose = MM_POSE_CROUCH_DOWN; b->pose_timer = MM_CROUCH_DOWN_TICKS;
+    }
+    if (b->grounded && !b->crouching && was_crouching) {
+        b->pose = MM_POSE_STAND_UP; b->pose_timer = MM_STAND_UP_TICKS;
+    }
     if (b->pose == MM_POSE_LAND && b->vx) b->pose_timer = 0;
-    if (!b->grounded && (b->pose == MM_POSE_LAND || b->pose == MM_POSE_SPIN_LAND)) b->pose_timer = 0;
+    if (b->pose == MM_POSE_STAND_UP && b->vx) b->pose_timer = 0;
+    if (!b->grounded && (b->pose == MM_POSE_LAND || b->pose == MM_POSE_SPIN_LAND ||
+                         b->pose == MM_POSE_CROUCH_DOWN || b->pose == MM_POSE_STAND_UP)) b->pose_timer = 0;
     if (!b->pose_timer) b->pose = looping_pose(b);
 }
 
 void mm_tick(const MmWorld *w, MmBody *b, MmInput input)
 {
     int direction = input.axis < 0 ? -1 : input.axis > 0 ? 1 : 0;
-    int moving_before_jump = b->vx != 0, wall_jump, was_grounded = b->grounded;
+    int moving_before_jump = b->vx != 0, wall_jump, was_grounded = b->grounded, was_crouching = b->crouching;
     if (b->pose_timer) --b->pose_timer;
     /* Dash builds on the ground; takeoff retains the bonus. Stopping,
        reversing, releasing on ground or hitting a wall cancels it. */
@@ -232,7 +240,7 @@ void mm_tick(const MmWorld *w, MmBody *b, MmInput input)
     mm_move(w, b);
     if (!b->vx) b->run_extra = 0;
     /* Before the spin flag is cleared: a landing needs to know whether it came from a spin. */
-    update_pose(b, was_grounded);
+    update_pose(b, was_grounded, was_crouching);
     if (b->grounded) { b->spin_jumping = 0; b->wall_lock = 0; }
     if (b->grounded) b->coyote = MM_COYOTE_TICKS;
     else if (b->coyote) --b->coyote;

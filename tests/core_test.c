@@ -347,7 +347,8 @@ static void wall_climb(void) {
     printf("PASS wall jumps: %d kicks climbed the 40 px shaft to y %d\n", wall_jumps, mm_pixel(b.y));
 }
 static const char *pose_name(MmPose pose) {
-    static const char *const names[] = {"GROUND", "TAKEOFF", "JUMP_UP", "FALL", "SPIN", "WALL_KICK", "LAND", "SPIN_LAND"};
+    static const char *const names[] = {"GROUND", "TAKEOFF", "JUMP_UP", "FALL", "SPIN", "WALL_KICK", "LAND", "SPIN_LAND",
+                                        "CROUCH_DOWN", "CROUCH", "STAND_UP"};
     return names[pose];
 }
 /* Ticks with the given input, appending each pose change to log ("GROUND TAKEOFF"). */
@@ -420,6 +421,34 @@ static void poses(void) {
     run_poses(&b, log, right_held, 100);
     assert(strcmp(log, "GROUND TAKEOFF JUMP_UP FALL GROUND") == 0);
     puts("PASS poses: standing jump, spin jump, wall kick, landings and hold durations; spin sound only when spinning");
+}
+/* Crouch: the crouch-down frame, the crouched loop, then the stand-up frame. Walking out of a
+   crouch ends the stand-up at once, as a standing landing does. */
+static void crouch_poses(void) {
+    MmBody b;
+    char log[256];
+    MmRect real = {8, 8, 32, 48};
+    MmInput down = {.aim_y = 1}, right = {.axis = 1}, idle_in = {0};
+    /* The standing box is 48 px tall: y 112 puts its feet on the floor at y 160. */
+    reset(); floor_at(20);
+    mm_body_init(&b, 80, 112, real);
+    strcpy(log, "GROUND");
+    run_poses(&b, log, idle_in, 1);
+    run_poses(&b, log, down, 20);
+    run_poses(&b, log, idle_in, 20);
+    assert(strcmp(log, "GROUND CROUCH_DOWN CROUCH STAND_UP GROUND") == 0);
+    mm_body_init(&b, 80, 112, real); mm_tick(&world, &b, idle_in);
+    mm_tick(&world, &b, down);
+    assert(b.pose == MM_POSE_CROUCH_DOWN && hold_ticks(&b, down, MM_POSE_CROUCH_DOWN) == MM_CROUCH_DOWN_TICKS);
+    assert(b.pose == MM_POSE_CROUCH);
+    mm_tick(&world, &b, idle_in);
+    assert(b.pose == MM_POSE_STAND_UP && hold_ticks(&b, idle_in, MM_POSE_STAND_UP) == MM_STAND_UP_TICKS);
+    mm_body_init(&b, 80, 112, real); mm_tick(&world, &b, idle_in);
+    strcpy(log, "GROUND");
+    run_poses(&b, log, down, 20);
+    run_poses(&b, log, right, 20);
+    assert(strcmp(log, "GROUND CROUCH_DOWN CROUCH GROUND") == 0);
+    puts("PASS crouch: crouch-down, crouched loop and stand-up hold their frames; walking out ends the stand-up");
 }
 /* Morph rules. Down morphs in the air, but not while aiming down with the shot. A morphed body
    does not wall jump; it can stand up again in the air where the standing box fits. */
@@ -502,7 +531,7 @@ static void ball_stand_real(void) {
 }
 int main(void) {
     movement(); collisions(); jump_and_ledge(); states(); physics(); variable_jump(); coyote_jump();
-    slopes(); slope_sweep(); tunnels(); wall_climb(); poses(); morph_rules(); ball_stands_on_slope();
+    slopes(); slope_sweep(); tunnels(); wall_climb(); poses(); crouch_poses(); morph_rules(); ball_stands_on_slope();
     ball_stand_real(); camera_and_input(); real_levels();
     puts("All core regression tests passed."); return 0;
 }

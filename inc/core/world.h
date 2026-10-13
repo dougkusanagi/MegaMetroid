@@ -19,6 +19,8 @@
 #define MM_WALL_KICK_TICKS 10 /* 83/84: two frames, then the spin. */
 #define MM_LAND_TICKS 10 /* A4/A5, standing landing: two frames; ends at once when the body starts walking. */
 #define MM_SPIN_LAND_TICKS 15 /* A6/A7, landing from a spin jump: three frames. */
+#define MM_CROUCH_DOWN_TICKS 5 /* 35/36, crouching: one frame. */
+#define MM_STAND_UP_TICKS 5 /* 3B/3C, standing up from a crouch: one frame. */
 
 typedef struct { int left, top, right, bottom; } MmRect;
 typedef struct { const unsigned char *tiles; int columns, rows; } MmWorld;
@@ -29,7 +31,8 @@ typedef enum {
 /* Sprite pose. GROUND covers stand and walk, which the SGDK layer tells apart by vx. */
 typedef enum {
     MM_POSE_GROUND, MM_POSE_TAKEOFF, MM_POSE_JUMP_UP, MM_POSE_FALL,
-    MM_POSE_SPIN, MM_POSE_WALL_KICK, MM_POSE_LAND, MM_POSE_SPIN_LAND
+    MM_POSE_SPIN, MM_POSE_WALL_KICK, MM_POSE_LAND, MM_POSE_SPIN_LAND,
+    MM_POSE_CROUCH_DOWN, MM_POSE_CROUCH, MM_POSE_STAND_UP
 } MmPose;
 typedef struct {
     int x, y; /* Q24.8 world position; never discard fractional movement. */

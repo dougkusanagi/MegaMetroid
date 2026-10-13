@@ -60,6 +60,9 @@ static u16 pose_row(const Game *g, bool shooting_pose)
     case MM_POSE_WALL_KICK: return PLAYER_ANIM_WALL_KICK_R;
     case MM_POSE_LAND: return PLAYER_ANIM_LAND_R;
     case MM_POSE_SPIN_LAND: return PLAYER_ANIM_SPIN_LAND_R;
+    case MM_POSE_CROUCH_DOWN: return PLAYER_ANIM_CROUCH_DOWN_R;
+    case MM_POSE_CROUCH: return PLAYER_ANIM_CROUCH_R;
+    case MM_POSE_STAND_UP: return PLAYER_ANIM_STAND_UP_R;
     default: return g->player.vx ? PLAYER_ANIM_WALK_R : PLAYER_ANIM_STAND_R;
     }
 }

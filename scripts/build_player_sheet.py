@@ -33,6 +33,9 @@ ANIMATIONS = [
     ('LAND', 'A4', 'A5'),
     ('SPIN_LAND', 'A6', 'A7'),
     ('WALL_KICK', '83', '84'),
+    ('CROUCH_DOWN', '35', '36'),
+    ('CROUCH', '27', '28'),
+    ('STAND_UP', '3B', '3C'),
 ]
 
 

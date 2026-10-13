@@ -16,7 +16,7 @@ encostado numa parede, empurrando contra ela, faz pulo de parede, e **A** para o
 do Fusion configurado nesta máquina: A = tecla A, B = tecla S, C = tecla D.
 Segure cima ao atirar para mirar acima; cima + esquerda/direita mira na diagonal.
 No ar também é possível mirar para baixo. Tocar A dispara; segurar repete.
-Segurar ↓ no chão agacha: a hitbox fica menor, mas o sprite ainda é o de pé.
+Segurar ↓ no chão agacha: a hitbox fica menor e a Samus abaixa (pose de agachada); tiro agachado ainda usa o quadro de pé.
 Apertar ↓ no ar, sem atirar, entra em bola (hitbox de 16 px, sprite de giro enquanto não há pose
 própria); ↑ sai da bola só onde a Samus cabe em pé, então não sai dentro de túnel baixo.
 
