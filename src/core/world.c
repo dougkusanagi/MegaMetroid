@@ -87,6 +87,22 @@ static int fits(const MmWorld *w, const MmBody *b, MmRect box)
     return !mm_blocked(w, &probe, mm_pixel(b->x), mm_pixel(b->y));
 }
 
+/* Stands up from a ball. On a slope the standing box's lower corners sit in the surface, so the
+   body may lift by up to a tile to fit. Returns 0 if no lift up to that makes room. */
+static int stand_up(const MmWorld *w, MmBody *b)
+{
+    MmBody probe = *b;
+    int lift;
+    probe.hitbox = b->stand_box;
+    for (lift = 0; lift <= MM_TILE; ++lift) {
+        if (!mm_blocked(w, &probe, mm_pixel(b->x), mm_pixel(b->y) - lift)) {
+            b->y -= lift * MM_UNIT;
+            return 1;
+        }
+    }
+    return 0;
+}
+
 void mm_move(const MmWorld *w, MmBody *b)
 {
     int target, p, step, lift, x = mm_pixel(b->x), y = mm_pixel(b->y);
@@ -192,9 +208,9 @@ void mm_tick(const MmWorld *w, MmBody *b, MmInput input)
         else if (input.aim_y > 0 && !b->grounded) b->shoot_frame = input.axis ? 4 : 4;
         else b->shoot_frame = 3;
     } else if (b->shoot_pose_timer) --b->shoot_pose_timer;
-    /* Down morphs in the air; up un-morphs only where the standing box fits. */
-    if (input.down_pressed && !b->grounded) b->ball = 1;
-    if (input.up_pressed && fits(w, b, b->stand_box)) b->ball = 0;
+    /* Down morphs in the air, unless it aims down (down + shoot). Up stands the body up where stand_up finds room. */
+    if (input.down_pressed && !b->grounded && !input.shoot_held) b->ball = 1;
+    if (input.up_pressed && stand_up(w, b)) b->ball = 0;
     /* Crouch needs no direction and holds while a standing box would hit a ceiling. */
     b->crouching = b->grounded && !b->ball &&
         ((input.aim_y > 0 && !direction) || (b->crouching && !fits(w, b, b->stand_box)));

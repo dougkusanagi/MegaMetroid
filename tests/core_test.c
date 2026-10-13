@@ -421,8 +421,88 @@ static void poses(void) {
     assert(strcmp(log, "GROUND TAKEOFF JUMP_UP FALL GROUND") == 0);
     puts("PASS poses: standing jump, spin jump, wall kick, landings and hold durations; spin sound only when spinning");
 }
+/* Morph rules. Down morphs in the air, but not while aiming down with the shot. A morphed body
+   does not wall jump; it can stand up again in the air where the standing box fits. */
+static void morph_rules(void) {
+    MmBody b;
+    MmRect real = {8, 8, 32, 48};
+    MmInput idle_in = {0}, aim_down = {.aim_y = 1, .down_pressed = 1, .shoot_held = 1, .shoot_pressed = 1};
+    MmInput down_press = {.aim_y = 1, .down_pressed = 1};
+    MmInput kick = {.axis = 1, .jump_pressed = 1, .jump_held = 1}, right = {.axis = 1};
+    int y, t;
+    reset(); floor_at(20);
+    mm_body_init(&b, 80, 100, real); mm_tick(&world, &b, idle_in);
+    mm_tick(&world, &b, aim_down);
+    assert(!b.ball);
+    mm_tick(&world, &b, down_press);
+    assert(b.ball);
+    /* A wall at x 96. Standing, the body fits flush at x 64 (its box is 4 px wider than the ball's
+       at each side); a ball rolls up to x 68 and touches the wall there. */
+    reset(); floor_at(20);
+    for (y = 0; y < 20; ++y) tiles[y * 64 + 12] = 0;
+    mm_body_init(&b, 64, 20, real); mm_tick(&world, &b, idle_in);
+    mm_tick(&world, &b, down_press);
+    for (t = 0; t < 8; ++t) mm_tick(&world, &b, right);
+    assert(b.ball && mm_pixel(b.x) == 68);
+    mm_tick(&world, &b, kick);
+    assert(b.ball && !b.jumped && !b.spin_jumping);
+    mm_body_init(&b, 64, 20, real); mm_tick(&world, &b, idle_in);
+    mm_tick(&world, &b, kick);
+    assert(!b.ball && b.jumped && b.spin_jumping && b.wall_lock);
+    puts("PASS morph: shot aims down in the air without morphing; a ball does not wall jump");
+}
+/* A 45 degree slope (tile 2 steps rising to the right): a ball that lands on it stands up again. */
+static void ball_stands_on_slope(void) {
+    MmBody b;
+    MmRect real = {8, 8, 32, 48};
+    MmInput morph = {.down_pressed = 1, .aim_y = 1}, up = {.up_pressed = 1, .aim_y = -1}, idle_in = {0};
+    int x, y, t;
+    reset();
+    for (x = 0; x < 64; ++x) {
+        int row = x < 12 ? 24 : x < 20 ? 35 - x : 16;
+        for (y = row + 1; y < 32; ++y) tiles[y * 64 + x] = 0;
+        tiles[row * 64 + x] = x >= 12 && x < 20 ? 2 : 0;
+    }
+    /* Starts in the air above the slope (its feet at y 88, the surface at y 136), then drops onto it. */
+    mm_body_init(&b, 120, 40, real); mm_tick(&world, &b, idle_in);
+    mm_tick(&world, &b, morph);
+    for (t = 0; t < 300 && !b.grounded; ++t) mm_tick(&world, &b, idle_in);
+    assert(b.grounded && b.ball);
+    mm_tick(&world, &b, up);
+    assert(!b.ball);
+    for (t = 0; t < 30; ++t) { mm_tick(&world, &b, idle_in); assert(b.grounded); }
+    puts("PASS ball on a 45 degree slope stands up and stays on the surface");
+}
+/* Morphs in the air over every reachable landing of Crateria 1 and presses up. The standing box
+   can be blocked by a wall a few pixels away or by a ceiling, so a few spots keep the ball. */
+static void ball_stand_real(void) {
+    MmWorld crateria = {&real_map_1[0][0], 288, 156};
+    MmRect real = {8, 8, 32, 48};
+    MmInput morph = {.down_pressed = 1, .aim_y = 1}, up = {.up_pressed = 1, .aim_y = -1}, idle_in = {0};
+    int x, y, t, slopes = 0, stuck = 0;
+    for (x = 16; x < 288 * MM_TILE - 64; x += 6) for (y = 0; y < 156 * MM_TILE - 48; y += 80) {
+        MmBody b;
+        int c, row, on_slope = 0;
+        mm_body_init(&b, x, y, real);
+        if (mm_blocked(&crateria, &b, x, y)) continue;
+        mm_tick(&crateria, &b, morph);
+        if (!b.ball) continue;
+        for (t = 0; t < 600 && !b.grounded; ++t) mm_tick(&crateria, &b, idle_in);
+        if (!b.grounded) continue;
+        row = (mm_pixel(b.y) + real.bottom) / MM_TILE;
+        for (c = (mm_pixel(b.x) + real.left) / MM_TILE; c <= (mm_pixel(b.x) + real.right - 1) / MM_TILE; ++c)
+            if (mm_tile(&crateria, c, row) == 2 || mm_tile(&crateria, c, row) == 3) on_slope = 1;
+        if (!on_slope) continue;
+        ++slopes;
+        mm_tick(&crateria, &b, up);
+        stuck += b.ball;
+    }
+    assert(slopes >= 100 && stuck * 10 <= slopes);
+    printf("PASS ball stands up on Crateria 1 slopes: %d of %d landings still ball (narrow spots)\n", stuck, slopes);
+}
 int main(void) {
     movement(); collisions(); jump_and_ledge(); states(); physics(); variable_jump(); coyote_jump();
-    slopes(); slope_sweep(); tunnels(); wall_climb(); poses(); camera_and_input(); real_levels();
+    slopes(); slope_sweep(); tunnels(); wall_climb(); poses(); morph_rules(); ball_stands_on_slope();
+    ball_stand_real(); camera_and_input(); real_levels();
     puts("All core regression tests passed."); return 0;
 }
