@@ -7,12 +7,12 @@
 #define MM_RUN_ACCEL 8 /* +1/32 pixel/tick; +2 after 64 ticks. */
 #define MM_RUN_EXTRA_MAX 512
 /* Units and references in docs/FISICA.md. Speeds are Q24.8 px per tick. */
-#define MM_GRAVITY 56 /* 0.22 px/tick^2; SM NTSC is 0.11 (regional $1C00). */
-#define MM_JUMP 1690 /* 6.6 px/tick at takeoff; SM normal jump is 4.875 ($04E0). */
-#define MM_MAX_FALL 1536 /* 6 px/tick; SM stops accelerating near 5 px/frame ($0005). */
-#define MM_JUMP_CUT 768 /* 3 px/tick: letting go of jump while rising caps the ascent here. */
-#define MM_COYOTE_TICKS 6 /* Refilled while grounded; a jump still starts in the 5 ticks after leaving. */
-#define MM_WALL_JUMP 1184 /* 4.625 px/tick takeoff; SM wall jump is $04A0 (4.625 px/frame). */
+/* Vertical values are the Super Metroid NTSC ones, measured in the original (docs/FISICA.md). */
+#define MM_GRAVITY 28 /* 0.109375 px/tick^2 (SM $1C00 subpixels). */
+#define MM_JUMP 1248 /* 4.875 px/tick (SM $04E0); 111 px high, 92 ticks in the air. */
+#define MM_MAX_FALL 1280 /* Falling stops accelerating once it reaches 5 px/tick, so it ends at 5.03. */
+#define MM_JUMP_STILL 2 /* A standing jump rises from its third tick; a spin or wall jump from its second. */
+#define MM_WALL_JUMP 1184 /* 4.625 px/tick (SM $04A0). */
 #define MM_WALL_LOCK 12 /* Ticks a wall kick ignores steering and keeps its speed away from the wall. */
 #define MM_WALL_REACH 8 /* A wall up to 8 px behind still counts as touched: pressing away moves 2.75 px a tick. */
 /* One-shot poses last whole frames of the sheet, which play 5 ticks each (SPRITE ... 5 in res/resources.res). */
@@ -58,7 +58,7 @@ typedef struct {
     int down_ticks; /* Ticks down has been held, capped just past MM_TAP_TICKS. */
     int crouch_latch; /* Crouch kept after a tap on the ground; a jump, a direction or up ends it. */
     int down_window; /* Ticks left in which a second press of down morphs the body. */
-    int coyote; /* Ticks left in which a grounded jump is still allowed. */
+    int takeoff; /* Ticks a jump from the ground still waits, walking on the ground, before it rises. */
     int wall_lock, wall_vx; /* Wall kick: ticks left and the fixed speed while locked. */
     MmState state; /* Derived at the end of every mm_tick. */
     MmPose pose; /* Derived at the end of every mm_tick, like state. */

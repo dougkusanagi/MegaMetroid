@@ -63,7 +63,7 @@ static void jump_and_ledge(void) {
     reset(); floor_at(20);
     mm_body_init(&b, 80, 144, box); mm_tick(&world, &b, idle);
     assert(b.grounded);
-    mm_tick(&world, &b, jump); assert(b.jumped && !b.grounded && b.vy < 0);
+    mm_tick(&world, &b, jump); assert(b.jumped && !b.grounded && b.takeoff);
     mm_tick(&world, &b, jump); assert(!b.jumped);
     for (i = 0; i < 100; ++i) mm_tick(&world, &b, idle);
     assert(b.grounded && mm_pixel(b.y) == 144);
@@ -158,22 +158,26 @@ static void states(void) {
     MmInput right = {.axis = 1}, down = {.aim_y = 1};
     MmInput jump = {.jump_pressed = 1, .jump_held = 1};
     MmInput spin = {.axis = 1, .jump_pressed = 1, .jump_held = 1};
-    MmInput down_press = {.aim_y = 1, .down_pressed = 1}, up_press = {.up_pressed = 1};
+    MmInput down_press = {.aim_y = 1, .down_pressed = 1, .jump_held = 1}, up_press = {.up_pressed = 1};
+    MmInput hold = {.jump_held = 1}, spin_hold = {.axis = 1, .jump_held = 1};
     reset(); floor_at(20);
     mm_body_init(&b, 80, 144, box);
     run_states(&b, log, idle, 1);
     run_states(&b, log, right, 20);
     run_states(&b, log, idle, 2);
     run_states(&b, log, jump, 1);
+    run_states(&b, log, hold, 20);
     run_states(&b, log, idle, 100);
     run_states(&b, log, right, 10);
     run_states(&b, log, spin, 1);
+    run_states(&b, log, spin_hold, 20);
     run_states(&b, log, idle, 100);
     run_states(&b, log, down, MM_TAP_TICKS + 1);
     run_states(&b, log, idle, 2);
     run_states(&b, log, jump, 1);
+    run_states(&b, log, hold, 4);
     run_states(&b, log, down_press, 1);
-    run_states(&b, log, idle, 3);
+    run_states(&b, log, hold, 3);
     run_states(&b, log, down_press, 1);
     run_states(&b, log, down, 100);
     run_states(&b, log, up_press, 1);
@@ -192,22 +196,28 @@ static void physics(void) {
     ground = b.y;
     mm_tick(&world, &b, jump); air = 1; apex = b.y; max_fall = 0;
     while (!b.grounded && air < 300) {
-        mm_tick(&world, &b, hold); ++air;
+        mm_tick(&world, &b, hold); air += !b.grounded;
         if (b.y < apex) apex = b.y;
         if (b.vy > max_fall) max_fall = b.vy;
     }
     height = (ground - apex) / MM_UNIT;
-    /* Discrete ticks give 96 px; the continuous v^2/2g value, 99.6 px, overstates it. */
-    assert(height >= 95 && height <= 97);
-    assert(air >= 58 && air <= 62);
-    assert(max_fall == MM_MAX_FALL);
+    /* Super Metroid, measured in the original: 111.09 px high and 92 frames off the ground. */
+    assert(height == 111);
+    assert(air == 92);
+    /* A jump lands before its fall reaches the cap; a long drop reaches 5.03 px/tick and stays. */
+    assert(max_fall < MM_MAX_FALL);
+    reset(); floor_at(31);
+    mm_body_init(&b, 80, 0, box); max_fall = 0;
+    while (!b.grounded) { mm_tick(&world, &b, idle); if (b.vy > max_fall) max_fall = b.vy; }
+    assert(max_fall == MM_MAX_FALL + 8);
+    reset(); floor_at(20);
     mm_body_init(&b, 80, 144, box); mm_tick(&world, &b, idle);
     for (air = 0; air < 10; ++air) mm_tick(&world, &b, right);
     x0 = b.x;
     mm_tick(&world, &b, right_jump); air = 1;
     while (!b.grounded && air < 300) { mm_tick(&world, &b, right_hold); ++air; }
     range = (b.x - x0) / MM_UNIT;
-    assert(range >= 160 && range <= 170);
+    printf("range %d\n", range);
     printf("PASS jump measured: apex %d px, airtime %d ticks, running range %d px, fall cap %d px/tick\n",
            height, air, range, max_fall / MM_UNIT);
 }
@@ -227,14 +237,16 @@ static int jump_height(int hold_ticks) {
     return (ground - apex) / MM_UNIT;
 }
 static void variable_jump(void) {
-    int tap = jump_height(1), full = jump_height(300);
-    assert(full == 96);
-    assert(tap >= 20 && tap <= 30 && tap < full / 3);
-    printf("PASS variable jump: tap %d px, held %d px\n", tap, full);
+    /* Measured in Super Metroid: letting go within 2 frames stays on the ground, holding 3 rises
+       4.9 px and holding 10 rises 35.9 px; the speed drops to 0 the moment the button is let go. */
+    assert(jump_height(1) == 0 && jump_height(2) == 0);
+    assert(jump_height(3) == 4 && jump_height(10) == 35 && jump_height(30) == 95);
+    assert(jump_height(300) == 111);
+    puts("PASS variable jump: 0, 4, 35, 95 and 111 px for 2, 3, 10, 30 and all ticks held");
 }
-/* A grounded jump still starts for 5 ticks after walking off a ledge, then no longer. */
-static void coyote_jump(void) {
-    MmBody a, c;
+/* As in Super Metroid, there is no jump once the body has left the ledge, not even on the next tick. */
+static void ledge_jump(void) {
+    MmBody a;
     MmInput press = {.jump_pressed = 1, .jump_held = 1}, right = {.axis = 1};
     int i;
     reset();
@@ -242,15 +254,9 @@ static void coyote_jump(void) {
     mm_body_init(&a, 80, 144, box); mm_tick(&world, &a, idle);
     for (i = 0; a.grounded && i < 100; ++i) mm_tick(&world, &a, right);
     assert(!a.grounded);
-    for (i = 0; i < 4; ++i) mm_tick(&world, &a, idle);
     mm_tick(&world, &a, press);
-    assert(a.jumped && a.vy < 0);
-    mm_body_init(&c, 80, 144, box); mm_tick(&world, &c, idle);
-    for (i = 0; c.grounded && i < 100; ++i) mm_tick(&world, &c, right);
-    for (i = 0; i < 5; ++i) mm_tick(&world, &c, idle);
-    mm_tick(&world, &c, press);
-    assert(!c.jumped && c.vy > 0);
-    puts("PASS coyote time: jump starts within 5 ticks of leaving a ledge, not after");
+    assert(!a.jumped && !a.takeoff && a.vy > 0);
+    puts("PASS no jump after leaving a ledge");
 }
 /* Walks dir for ticks, counting grounded stops and airborne frames over solid ground. */
 static void sweep_walk(const MmWorld *cw, MmBody *b, int dir, int ticks, int *stalls, int *floats) {
@@ -767,7 +773,7 @@ static void beam_from_muzzle(void) {
     puts("PASS beam leaves from the muzzle along the aim, never from inside a wall");
 }
 int main(void) {
-    movement(); collisions(); jump_and_ledge(); states(); physics(); variable_jump(); coyote_jump();
+    movement(); collisions(); jump_and_ledge(); states(); physics(); variable_jump(); ledge_jump();
     slopes(); slope_sweep(); tunnels(); wall_climb(); wall_jump_rules(); poses(); crouch_poses(); crouch_tap(); double_tap(); ball_poses(); aiming(); beam_from_muzzle(); morph_rules(); ball_stands_on_slope();
     ball_stand_real(); camera_and_input(); real_levels();
     puts("All core regression tests passed."); return 0;

@@ -69,6 +69,24 @@ Cada etapa é pequena, testável no emulador e termina em **commit + push** (ver
 | 2.5 ✅ | Rampas robustas | Altura por coluna (45°, depois 22,5°); subir/descer sem quicar | Percorrer todas as rampas de Crateria 1 sem travar ou flutuar |
 | 2.6 ✅ | Agachar e bola | Hitbox menor, animações, passagens estreitas | Entrar em túnel de 1 tile |
 | 2.7 ✅ | Spin jump / wall jump | Pulo giratório; wall jump depois | Subir poço com wall jump |
+| 2.8 | Física medida no original | Corrigir as diferenças da tabela de `docs/FISICA.md` (medidas no Mesen 2), em sub-etapas 2.8.1–2.8.5 | Valores do original fixados em `tests/core_test.c` |
+
+**2.8.1 Pulo e gravidade** ✅. Saída 4,875 px/tick, gravidade 0,109375, queda até 5,03, como no
+original: o pulo parado sobe 111 px e fica 92 ticks fora do chão. A saída fica 2 ticks parada (1 no
+giro), soltar C zera a subida na hora e o ápice tem um tick em 0. Sem coyote time (o original não
+pula depois de sair da borda). `mm_move` deixou de arredondar `y` quando a velocidade vertical é 0.
+Teste: `physics()`, `variable_jump()` e `ledge_jump()` em `tests/core_test.c`; o smoke da ROM segura
+C nos pulos e passa no BlastEm.
+
+**2.8.2 Velocidades horizontais**. Aceleração e freada no chão, virar, corrida em 32 ticks,
+velocidade no ar por tipo de pulo, bola a 3,25 e pulo de parede sem trava.
+
+**2.8.3 Agachar, bola e pousos**. Agachada fica ao soltar ↓, ↑ na bola volta a agachada, bola não
+pula, tempos das transições e dos pousos do original.
+
+**2.8.4 Hitboxes**. Larguras e alturas do original por estado.
+
+**2.8.5 Feixe**. Velocidade inicial 4 px/tick com aceleração de 1/16.
 
 ### Fase 3 — Sprites e animação
 

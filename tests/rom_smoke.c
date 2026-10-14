@@ -26,7 +26,10 @@ int main(bool hardReset)
         if (frame >= 60 && frame < 180) input.axis = 1;
         if (frame >= 180 && frame < 300) input.axis = -1;
         if (frame >= 380 && frame < 420) input.axis = 1;
+        /* Jumps hold the button: letting go during the takeoff keeps the body on the ground. The holds
+           are short so the standing jump lands before 380 and the spin jump before 445. */
         input.jump_pressed = frame == 330 || frame == 400;
+        input.jump_held = (frame >= 330 && frame < 345) || (frame >= 400 && frame < 410);
         /* A shot on the ground plays the beam sound (channel 3); the spin jump at 400 loops channel 2. */
         input.shoot_pressed = input.shoot_held = frame == 470;
         input.aim_y = frame >= 445 && frame < 460;
@@ -47,7 +50,7 @@ int main(bool hardReset)
         input.shoot_pressed |= frame == 680 || frame == 722;
         if (frame >= 700 && frame < 740) { input.axis = 1; input.aim_y = -1; }
         input.jump_pressed |= frame == 720;
-        input.jump_held = frame >= 720 && frame < 726;
+        input.jump_held |= frame >= 720 && frame < 726;
         if (frame >= 722 && frame < 726) input.shoot_held = 1;
         game_update(&g, input);
         if (frame == 100) music = XGM2_isPlayingPCM(SOUND_PCM_CH1_MSK) != 0;

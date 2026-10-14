@@ -24,19 +24,17 @@ rótulos `SamusPhysicsConstants_*`. As medidas no jogo original estão em
 | `MM_SPEED` | 704 | 2,75 px/tick | Velocidade de caminhada (ver README) |
 | `MM_RUN_ACCEL` | 8 | 1/32 px/tick por tick | Corrida (ver README) |
 | `MM_RUN_EXTRA_MAX` | 512 | +2 px/tick | Corrida (ver README) |
-| `MM_JUMP` | 1690 | 6,60 px/tick no takeoff | `InitialYSpeeds_Jumping` = `$04E0` → 4,875 px/frame |
-| `MM_GRAVITY` | 56 | 0,219 px/tick² | `YSubAccelerationInAir` = `$1C00` → 0,109 px/frame² |
-| `MM_MAX_FALL` | 1536 | 6,0 px/tick | Acelera de queda até `$0005` → 5 px/frame |
-| `MM_JUMP_CUT` | 768 | 3,0 px/tick | Soltar C na subida corta a velocidade até este valor (decisão do projeto) |
-| `MM_COYOTE_TICKS` | 6 | 5 ticks após sair do chão | Janela para pular depois de cair de uma borda (decisão do projeto) |
+| `MM_JUMP` | 1248 | 4,875 px/tick | `InitialYSpeeds_Jumping` = `$04E0` → 4,875 px/frame |
+| `MM_GRAVITY` | 28 | 0,109375 px/tick² | `YSubAccelerationInAir` = `$1C00` → 0,109375 px/frame² |
+| `MM_MAX_FALL` | 1280 | 5 px/tick (para de acelerar ao chegar; fica em 5,03) | Medido: 5,03 px/frame |
+| `MM_JUMP_STILL` | 2 | 2 ticks parada na saída do pulo normal; 1 no giro | Medido: pose `4B` e mais 1 quadro sem subir |
 | `MM_WALL_JUMP` | 1184 | 4,625 px/tick | Pulo de parede: `InitialYSpeeds_WallJumping` = `$04A0` → 4,625 px/frame |
 | `MM_WALL_LOCK` | 12 | 12 ticks | Impulso de parede: afasta da parede a 2,75 px/tick, sem direcional (decisão do projeto) |
 | `MM_WALL_REACH` | 8 | 8 px | Distância máxima da parede para o pulo de parede (decisão do projeto) |
 
-Diferenças em relação ao SM: a gravidade é o dobro, o pulo é 35% mais rápido e a
-queda vai até 6 px/tick (SM para perto de 5). O projeto mantém esses valores por
-decisão própria, registrada no README. Trocá-los para os da tabela SM é uma decisão
-de jogabilidade, não de implementação.
+O movimento vertical segue o Super Metroid (2.8.1): a Samus anda e depois a gravidade é somada,
+o ápice tem um tick com velocidade 0 (o original guarda velocidade e direção separadas), soltar C
+na subida zera a velocidade na hora e não existe pulo depois de sair de uma borda (sem coyote time).
 
 Outras velocidades de referência no SM, para etapas futuras: pulo com Hi-Jump
 `$0600` (6,0 px/frame), pulo de parede `$04A0` (4,625 px/frame).
@@ -44,22 +42,19 @@ Outras velocidades de referência no SM, para etapas futuras: pulo com Hi-Jump
 ## Medidas
 
 Medidas por `physics()` em `tests/core_test.c`: chão plano, hitbox 8x16, pulo a partir
-do repouso ou em corrida com ↓ parado.
+do repouso ou andando, com C segurado.
 
-| Medida | Resultado | Teórico (tempo contínuo) | Motivo da diferença |
-|---|---|---|---|
-| Altura do pulo parado | 96 px | 99,6 px = v²/2g | Gravidade é aplicada antes do movimento a cada tick; a soma discreta fica em 96,3 px |
-| Tempo no ar | 60 ticks (1,0 s) | 60,3 ticks = 2v/g | Idem, arredondado a ticks |
-| Alcance de pulo corrido | 165 px | 165,8 px = 2,75 × 60,3 | Mesma aproximação discreta |
-| Velocidade de queda | 6 px/tick (teto) | — | O teto `MM_MAX_FALL` é alcançado antes do pouso |
-| Pulo curto (C solto após 1 tick) | 25 px | — | A subida cai para 3 px/tick ao soltar C |
-| Janela de coyote | 5 ticks | — | Pulo começa no 5º tick depois de sair do chão, não no 6º |
+| Medida | Port | Super Metroid |
+|---|---|---|
+| Altura do pulo parado | 111 px | 111,09 px |
+| Tempo fora do chão | 92 ticks | 92 quadros |
+| Alcance do pulo andando | 253 px | ainda diferente (velocidade no ar, 2.8.2) |
+| Queda máxima | 5,03 px/tick | 5,03 px/quadro |
+| C segurado 2 / 3 / 10 / 30 ticks | 0 / 4 / 35 / 95 px | 0 / 4,9 / 35,9 / 95,2 px |
+| Pular 1 tick depois de sair da borda | não pula | não pula |
 
-Os testes `physics()`, `variable_jump()` e `coyote_jump()` fixam esses valores em
+Os testes `physics()`, `variable_jump()` e `ledge_jump()` fixam esses valores em
 `tests/core_test.c`.
-
-Cálculo do SM com os valores da tabela, só como estimativa: altura v²/2g ≈ 108 px,
-tempo no ar ≈ 89 ticks. A medida no jogo original está na seção seguinte.
 
 ## Medidas no Super Metroid original (Mesen 2)
 
@@ -75,13 +70,14 @@ então px/quadro e px/tick são comparáveis. `python scripts/sm_reference_repor
 | Soltar o direcional | −0,5 por quadro; desliza ~16 px em 7 quadros | para na hora | não |
 | Virar no chão | 6 quadros virando (pose 25/26), depois acelera do zero | instantâneo | não |
 | Corrida (B) | +1/16 por quadro, +2 em 32 quadros (4,75 no total) | +1/32, +2 em 64 ticks | não (decisão no README) |
-| Pulo, velocidade de saída | 4,875 px/quadro | 6,6 | não |
-| Gravidade | 0,109375 px/quadro² | 0,219 | não |
-| Pulo parado, altura e tempo no ar | 111 px, pico no 46º quadro, 92 quadros no ar | 96 px, 60 ticks | não |
-| Primeiro quadro do pulo | parado (pose 4B), sobe no quadro seguinte | já sobe | não |
-| Queda máxima | 5,03 px/quadro, a partir de ~46 quadros caindo | 6,0 | não |
-| Soltar o pulo na subida | velocidade vertical vai a 0 na hora | limita a 3 px/tick | não |
-| Pulo mais curto | ~5 px (segurando 3 quadros; 1–2 quadros não saem do chão) | 25 px (1 tick) | não |
+| Pulo, velocidade de saída | 4,875 px/quadro | 4,875 | sim (2.8.1) |
+| Gravidade | 0,109375 px/quadro² | 0,109375 | sim (2.8.1) |
+| Pulo parado, altura e tempo no ar | 111 px, pico no 46º quadro, 92 quadros no ar | 111 px, 92 ticks | sim (2.8.1) |
+| Saída do pulo | 2 quadros sem subir (pose 4B e mais um); no giro, 1 | igual | sim (2.8.1) |
+| Queda máxima | 5,03 px/quadro, a partir de ~46 quadros caindo | 5,03 | sim (2.8.1) |
+| Soltar o pulo na subida | velocidade vertical vai a 0 na hora | igual | sim (2.8.1) |
+| Pulo mais curto | ~5 px (segurando 3 quadros; 1–2 quadros não saem do chão) | igual | sim (2.8.1) |
+| Pular logo depois de sair da borda | não pula, nem no 1º quadro | igual (era coyote de 5 ticks) | sim (2.8.1) |
 | Velocidade no ar: pulo normal / giro / queda | 1,25 / 1,375 / 1,0 px/quadro (+ bônus da corrida) | 2,75 (+ bônus) em todos | não |
 | Pulo correndo, no ar | 3,375 (1,375 + 2) | 4,75 | não |
 | Quando gira | só se já andava ao pular; direção + pulo parado é pulo normal (pose 51) | igual | sim |
@@ -155,9 +151,9 @@ e 3,25 na bola; desaceleração 0,5.
 
 ## Limites e próximos passos
 
-- A integração é de Euler por tick: `vy += g` e depois `y += vy`. Isso explica a
-  diferença de altura da tabela acima. O teste fixa 95 a 97 px para pegar regressões.
-- O pulo completo, medido acima, exige C segurado durante toda a subida. Soltar C
-  antes corta a subida em `MM_JUMP_CUT` (2.3). Um toque de 1 tick sobe 25 px.
+- A integração segue a ordem do Super Metroid: `y += vy` e depois `vy += g`, com a saída
+  parada e o ápice em 0. Assim a sequência de velocidades é a mesma do original, quadro a quadro.
+- O pulo completo, medido acima, exige C segurado durante toda a subida. Soltar C antes zera a
+  subida na hora; soltar nos 2 primeiros ticks nem tira a Samus do chão.
 - Rampas (2.5) e agachar/bola (2.6) mudam a colisão, então as medidas precisam ser
   refeitas depois dessas etapas.

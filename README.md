@@ -11,7 +11,7 @@ Small project with the intention of porting Super Metroid for Mega Drive / Sega 
 Update: simple tile collision system implemented. 
 
 Controles da build atual (Mega Drive): direcional para andar, **B segurado**
-para correr, **C** para pular (soltar C na subida faz um pulo curto), **C** durante o pulo
+para correr, **C** para pular (soltar C na subida para a subida na hora, como no Super Metroid; não dá para pular depois de sair de uma borda), **C** durante o pulo
 giratório, encostado numa parede e com o direcional apontando para longe dela, faz pulo de parede, e **A** para o Power Beam básico. No teclado
 do Fusion configurado nesta máquina: A = tecla A, B = tecla S, C = tecla D.
 No controle de 6 botões, a mira de L/R do SNES fica em Z (baixo) e Y (cima); X fica livre para

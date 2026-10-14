@@ -46,6 +46,14 @@ local SCENARIOS = {
   {name = "crouch_morph", setup = "morph",
    steps = after_prep({1, "down"}, {40, ""}, {1, "down"}, {40, ""}, {1, "up"}, {40, ""}, {1, "up"}, {40, ""})},
   {name = "down_hold", steps = after_prep({30, "down"}, {40, ""})},
+  {name = "morph_jump", setup = "morph", steps = after_prep({1, "down"}, {10, ""}, {1, "down"}, {20, ""}, {40, "jump"})},
+  {name = "spin_release", steps = after_prep({20, "right"}, {10, "right jump"}, {60, "jump"})},
+  {name = "spin_reverse", steps = after_prep({20, "right"}, {10, "right jump"}, {60, "left jump"})},
+  {name = "jump_release_dir", steps = after_prep({6, "jump"}, {20, "right jump"}, {60, "jump"})},
+  {name = "run_jump_release", steps = {{115, "left run"}, {10, "left run jump"}, {60, "jump"}}},
+  {name = "fall_release", steps = {{62, "right"}, {30, ""}}},
+  {name = "fall_reverse", steps = {{62, "right"}, {30, "left"}}},
+  {name = "shoot_left", steps = after_prep({7, "left"}, {20, ""}, {1, "shot"}, {90, ""})},
   {name = "morph_roll", setup = "morph", steps = after_prep({1, "down"}, {10, ""}, {1, "down"}, {20, ""}, {40, "right"}, {30, ""})},
   {name = "morph_air", setup = "morph", steps = after_prep({10, "jump"}, {1, "down"}, {60, ""})},
   {name = "morph_air_twice", setup = "morph", steps = after_prep({10, "jump"}, {1, "down"}, {1, ""}, {1, "down"}, {60, ""})},
@@ -54,6 +62,10 @@ local SCENARIOS = {
 }
 for n = 1, 30 do
   SCENARIOS[#SCENARIOS + 1] = {name = "jump_hold_" .. n, steps = after_prep({n, "jump"}, {90 - n, ""})}
+end
+-- Andando para a direita, a Samus sai da borda da nave e começa a cair no quadro 55.
+for k = 0, 4 do
+  SCENARIOS[#SCENARIOS + 1] = {name = "ledge_jump_" .. k, steps = {{54 + k, "right"}, {40, "right jump"}}}
 end
 local mash = {}
 for _ = 1, 30 do mash[#mash + 1] = {1, "shot"}; mash[#mash + 1] = {1, ""} end
@@ -123,7 +135,8 @@ emu.addEventCallback(function()
   local projectiles = {}
   for i = 0, 4 do
     if r16(0x0C18 + i * 2) ~= 0 then
-      projectiles[#projectiles + 1] = string.format("%d:%d", r16(0x0B64 + i * 2), r16(0x0B78 + i * 2))
+      projectiles[#projectiles + 1] = string.format("%.4f:%d", r16(0x0B64 + i * 2) + r16(0x0B8C + i * 2) / 65536,
+                                                    r16(0x0B78 + i * 2))
     end
   end
   out:write(string.format("%s,%d,%d,%s,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%s,%04X\n",

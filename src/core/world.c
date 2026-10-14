@@ -58,7 +58,7 @@ void mm_body_init(MmBody *b, int x, int y, MmRect hitbox)
     b->aim = MM_AIM_FORWARD;
     b->ball = b->crouching = 0;
     b->down_ticks = b->crouch_latch = b->down_window = 0;
-    b->coyote = 0;
+    b->takeoff = 0;
     b->wall_lock = b->wall_vx = 0;
     b->state = MM_STATE_STAND;
     b->pose = MM_POSE_GROUND; b->pose_timer = 0;
@@ -117,7 +117,7 @@ void mm_move(const MmWorld *w, MmBody *b)
 {
     int target, p, step, lift, x = mm_pixel(b->x), y = mm_pixel(b->y);
     int was_grounded = b->grounded;
-    int hit_x = 0;
+    int hit_x = 0, hit_y = 0;
     target = mm_pixel(b->x + b->vx);
     step = b->vx < 0 ? -1 : 1;
     for (p = x; p != target;) {
@@ -138,11 +138,12 @@ void mm_move(const MmWorld *w, MmBody *b)
     for (p = y; p != target;) {
         if (mm_blocked(w, b, x, p + step)) {
             if (step > 0) b->grounded = 1;
-            b->vy = 0; break;
+            b->vy = 0; hit_y = 1; break;
         }
         p += step;
     }
-    b->y = b->vy ? b->y + b->vy : p * MM_UNIT;
+    /* Keeps the fraction when nothing was hit, also at speed 0 (the apex of a jump). */
+    b->y = hit_y ? p * MM_UNIT : b->y + b->vy;
     /* Follow a descending slope, but release grounded immediately at ledges. */
     if (was_grounded && b->vy >= 0 && !b->grounded) {
         int distance = (b->vx < 0 ? -b->vx : b->vx) / MM_UNIT + 1;
@@ -162,7 +163,7 @@ static MmState body_state(const MmBody *b)
     if (b->ball) return MM_STATE_BALL;
     if (b->grounded) return b->crouching ? MM_STATE_CROUCH : b->vx ? MM_STATE_WALK : MM_STATE_STAND;
     if (b->spin_jumping) return MM_STATE_SPIN;
-    return b->vy < 0 ? MM_STATE_JUMP : MM_STATE_FALL;
+    return b->vy < 0 || b->takeoff ? MM_STATE_JUMP : MM_STATE_FALL;
 }
 
 /* Up aims up, or up and forward with a direction. Down aims down in the air; on the ground it
@@ -184,7 +185,7 @@ static MmPose looping_pose(const MmBody *b)
     if (b->ball) return MM_POSE_BALL;
     if (b->grounded) return b->crouching ? MM_POSE_CROUCH : MM_POSE_GROUND;
     if (b->spin_jumping) return MM_POSE_SPIN;
-    return b->vy < 0 ? MM_POSE_JUMP_UP : MM_POSE_FALL;
+    return b->vy < 0 || b->takeoff ? MM_POSE_JUMP_UP : MM_POSE_FALL;
 }
 
 /* Landings, crouching and standing up hold their pose for a while. The hold also ends when the
@@ -212,6 +213,14 @@ static void update_pose(MmBody *b, int was_grounded, int was_crouching, int was_
     if (!b->pose_timer) b->pose = looping_pose(b);
 }
 
+/* Gravity after the move, as in Super Metroid. The apex keeps one tick at speed 0, since the original
+   keeps the speed and its direction apart, and a fall stops accelerating once it reaches MM_MAX_FALL. */
+static void fall(MmBody *b)
+{
+    if (b->vy < 0 && b->vy + MM_GRAVITY > 0) b->vy = 0;
+    else if (b->vy < MM_MAX_FALL) b->vy += MM_GRAVITY;
+}
+
 void mm_tick(const MmWorld *w, MmBody *b, MmInput input)
 {
     int direction = input.axis < 0 ? -1 : input.axis > 0 ? 1 : 0;
@@ -228,8 +237,8 @@ void mm_tick(const MmWorld *w, MmBody *b, MmInput input)
         } else b->run_extra = 0;
     }
     b->move_direction = direction;
-    b->jumped = input.jump_pressed && (b->grounded || b->coyote > 0);
-    if (b->jumped) { b->spin_jumping = moving_before_jump; b->coyote = 0; }
+    b->jumped = input.jump_pressed && b->grounded;
+    if (b->jumped) b->spin_jumping = moving_before_jump;
     /* Wall jump, as in Super Metroid: only in a spin jump, touching a wall and pressing away from it.
        The kick goes the pressed way and locks steering. */
     wall_jump = input.jump_pressed && !b->jumped && !b->grounded && !b->ball && b->spin_jumping &&
@@ -270,24 +279,29 @@ void mm_tick(const MmWorld *w, MmBody *b, MmInput input)
     if (b->wall_lock) --b->wall_lock;
     if (input.axis) b->facing_left = input.axis < 0;
     if (b->jumped) {
-        b->vy = wall_jump ? -MM_WALL_JUMP : -MM_JUMP; b->grounded = 0;
+        /* A wall jump rises at once; a jump from the ground first stands still, as in Super Metroid. */
+        if (wall_jump) b->vy = -MM_WALL_JUMP;
+        else { b->takeoff = b->spin_jumping ? 1 : MM_JUMP_STILL; b->vy = 0; }
+        b->grounded = 0;
         /* A kick shows its own pose first, a spin goes straight into the spin, a standing jump shows its
            takeoff. A ball that jumps stays a ball. */
         b->pose = wall_jump ? MM_POSE_WALL_KICK : b->spin_jumping ? MM_POSE_SPIN : MM_POSE_TAKEOFF;
         b->pose_timer = wall_jump ? MM_WALL_KICK_TICKS : b->spin_jumping ? 0 : MM_TAKEOFF_TICKS;
         if (b->ball) { b->pose = MM_POSE_BALL; b->pose_timer = 0; }
     }
-    /* Releasing jump while rising caps the ascent, so a tap makes a short hop. */
-    if (!input.jump_held && b->vy < -MM_JUMP_CUT) b->vy = -MM_JUMP_CUT;
-    b->vy += MM_GRAVITY;
-    if (b->vy > MM_MAX_FALL) b->vy = MM_MAX_FALL;
+    /* Releasing jump stops the ascent at once, also before the takeoff ends: a tap is a short hop. */
+    if (!input.jump_held) { if (b->vy < 0) b->vy = 0; b->takeoff = 0; }
+    /* A takeoff still moves along the ground, slopes included, and rises once it ends. */
+    if (b->takeoff) b->grounded = 1;
     mm_move(w, b);
+    if (b->takeoff) {
+        b->grounded = 0;
+        if (!--b->takeoff) b->vy = -MM_JUMP;
+    } else if (!b->grounded) fall(b);
     if (!b->vx) b->run_extra = 0;
     /* Before the spin flag is cleared: a landing needs to know whether it came from a spin. */
     update_pose(b, was_grounded, was_crouching, was_ball);
     if (b->grounded) { b->spin_jumping = 0; b->wall_lock = 0; }
-    if (b->grounded) b->coyote = MM_COYOTE_TICKS;
-    else if (b->coyote) --b->coyote;
     b->state = body_state(b);
     b->aim = body_aim(b, input);
 }

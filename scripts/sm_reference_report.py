@@ -110,8 +110,8 @@ def main():
 
     print('## Tiro')
     rows = steps(s['shoot_single'], 3)
-    xs = [int(r['shots'].split(':')[0]) for r in rows if r['shots']]
-    print('feixe, dx por quadro:', [b - a for a, b in zip(xs, xs[1:])][:28])
+    xs = [float(r['shots'].split(':')[0]) for r in rows if r['shots']]
+    print('feixe, dx por quadro:', [round(b - a, 4) for a, b in zip(xs, xs[1:])][:28])
     for name in ('shoot_hold', 'shoot_mash'):
         rows = steps(s[name], 3)
         shots, previous = [], 0
