@@ -27,11 +27,13 @@ Dois toques de ↓ em até 1/3 de segundo, sem atirar, entram em bola, no chão 
 Agachada, um novo toque de ↓ também entra em bola, sem pressa. Um toque no ar não faz nada. A bola não
 atira e só gira enquanto se move. ↑ sai da bola só onde a Samus cabe em pé, então não sai dentro de túnel baixo.
 
-A caminhada usa 2,75 px/tick. A corrida acrescenta 0,03125 px/tick a cada tick
-no chão, até +2 após 64 ticks (4,75 px/tick no total). O salto conserva o bônus;
+A caminhada acelera 0,1875 px/tick por tick até 2,75 px/tick (11 ticks); soltar o direcional desliza
+a 0,5 px/tick por tick e virar leva 7 ticks. A corrida acrescenta 0,0625 px/tick a cada tick
+no chão, até +2 após 32 ticks (4,75 px/tick no total). O salto conserva o bônus;
 parar, inverter, bater numa parede ou soltar B no chão reinicia a corrida.
-O limite reproduz a corrida NTSC sem Speed Booster, com aceleração alongada para
-aproximadamente um segundo; a resposta ao direcional e o salto são do projeto.
+No ar o pulo normal anda a 1,25 px/tick e para ao soltar o direcional; o giro anda a 1,375 e mantém a
+inércia; a queda de uma borda anda a 1 px/tick; a bola rola a 3,25. Os valores foram medidos no Super
+Metroid original no Mesen 2 (`docs/FISICA.md`).
 Referência: [disassembly de Super Metroid, banco 90](https://github.com/InsaneFirebat/sm_disassembly/blob/main/src/bank_90.asm),
 rotina `Handle_Samus_XExtraRunSpeed` e tabela `SamusXSpeedTable_Normal`.
 
@@ -45,7 +47,7 @@ o valor de dano está preparado no projétil para essa integração futura.
 O sprite da Samus usa as poses originais do jogo (parada, andando, pulando, girando, agachando, em bola, mirando e atirando, cada uma com desenho próprio para a esquerda). Ver a etapa 3.2 em `docs/PLANO.md`.
 
 O salto giratório só começa quando C é pressionado enquanto Samus já estava em
-movimento. Direcionar depois de um salto parado move no ar sem iniciar o giro.
+movimento (andando ou deslizando). Direcionar depois de um salto parado move no ar sem iniciar o giro.
 Atirar no ar interrompe o giro e mostra a pose correspondente à direção do tiro.
 
 Compilação com SGDK 2.11, Java e Python 3, a partir da raiz do projeto:

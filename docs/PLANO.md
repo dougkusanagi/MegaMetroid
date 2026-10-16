@@ -78,8 +78,13 @@ pula depois de sair da borda). `mm_move` deixou de arredondar `y` quando a veloc
 Teste: `physics()`, `variable_jump()` e `ledge_jump()` em `tests/core_test.c`; o smoke da ROM segura
 C nos pulos e passa no BlastEm.
 
-**2.8.2 Velocidades horizontais**. Aceleração e freada no chão, virar, corrida em 32 ticks,
-velocidade no ar por tipo de pulo, bola a 3,25 e pulo de parede sem trava.
+**2.8.2 Velocidades horizontais** ✅. Caminhada acelera 0,1875 por tick até 2,75 (11 ticks), soltar o
+direcional desliza a 0,5 por tick, virar leva 7 ticks (com o empurrão de 1 px do original), a corrida
+soma 1/16 por tick (+2 em 32 ticks), o ar tem 1,25 (pulo), 1,375 (giro) e 1,0/1,75 (queda), inverter
+no ar freia e treme como no original, a bola rola a 3,25 e o pulo de parede deixa o direcional livre.
+Só gira quem já se movia ao pular (também no deslize). Teste: `movement()`, `air_steering()` e os
+demais em `tests/core_test.c`, com as sequências px a px medidas no Mesen (`scripts/sm_reference.lua`);
+o smoke da ROM passa no BlastEm.
 
 **2.8.3 Agachar, bola e pousos**. Agachada fica ao soltar ↓, ↑ na bola volta a agachada, bola não
 pula, tempos das transições e dos pousos do original.

@@ -3,9 +3,19 @@
 /* Portable C: no SGDK, allocation, rendering or global mutable state. */
 #define MM_UNIT 256
 #define MM_TILE 8
-#define MM_SPEED 704 /* 2.75 pixels/tick, the SNES ground speed cap. */
-#define MM_RUN_ACCEL 8 /* +1/32 pixel/tick; +2 after 64 ticks. */
-#define MM_RUN_EXTRA_MAX 512
+/* Horizontal values are the Super Metroid NTSC ones, measured in the original (docs/FISICA.md). */
+#define MM_SPEED 704 /* 2.75 px/tick, the walking speed. */
+#define MM_WALK_ACCEL 48 /* +0.1875 px/tick each tick... */
+#define MM_WALK_SNAP 480 /* ...and past 1.875 the walk jumps to MM_SPEED: full speed on the 11th tick. */
+#define MM_DECEL 128 /* -0.5 px/tick when letting go on the ground, turning around or reversing in the air. */
+#define MM_TURN_TICKS 7 /* Turning around on the ground or in a normal jump or fall, the tick it starts on included. */
+#define MM_RUN_ACCEL 16 /* Dash: +1/16 px/tick each tick... */
+#define MM_RUN_EXTRA_MAX 512 /* ...up to +2 (4.75 px/tick in all) after 32 ticks. */
+#define MM_AIR_ACCEL 192 /* +0.75 px/tick in the air and in the ball. */
+#define MM_JUMP_AIR_SPEED 320 /* 1.25 px/tick in a normal jump, which stops when the direction is let go. */
+#define MM_SPIN_AIR_SPEED 352 /* 1.375 px/tick in a spin or wall jump, which keeps its momentum. */
+#define MM_FALL_AIR_SPEED 256 /* 1 px/tick after walking off a ledge (alternating with 1.75). */
+#define MM_BALL_SPEED 832 /* 3.25 px/tick rolling. */
 /* Units and references in docs/FISICA.md. Speeds are Q24.8 px per tick. */
 /* Vertical values are the Super Metroid NTSC ones, measured in the original (docs/FISICA.md). */
 #define MM_GRAVITY 28 /* 0.109375 px/tick^2 (SM $1C00 subpixels). */
@@ -13,8 +23,7 @@
 #define MM_MAX_FALL 1280 /* Falling stops accelerating once it reaches 5 px/tick, so it ends at 5.03. */
 #define MM_JUMP_STILL 2 /* A standing jump rises from its third tick; a spin or wall jump from its second. */
 #define MM_WALL_JUMP 1184 /* 4.625 px/tick (SM $04A0). */
-#define MM_WALL_LOCK 12 /* Ticks a wall kick ignores steering and keeps its speed away from the wall. */
-#define MM_WALL_REACH 8 /* A wall up to 8 px behind still counts as touched: pressing away moves 2.75 px a tick. */
+#define MM_WALL_REACH 8 /* A wall up to 8 px behind still counts as touched. */
 /* One-shot poses last whole frames of the sheet, which play 5 ticks each (SPRITE ... 5 in res/resources.res). */
 #define MM_TAKEOFF_TICKS 5 /* 4B: one frame. */
 #define MM_WALL_KICK_TICKS 10 /* 83/84: two frames, then the spin. */
@@ -51,7 +60,10 @@ typedef struct {
     MmRect hitbox; /* Half-open local pixel bounds; crouch and ball shrink it. */
     MmRect stand_box; /* Standing hitbox, the base for the crouch and ball boxes. */
     int grounded, facing_left, jumped;
-    int run_extra, move_direction;
+    int speed, run_extra; /* Base speed along the facing direction and the dash bonus, Q24.8 px/tick. */
+    int turn, turned; /* Ticks left turning around, and whether the body already faces the new way. */
+    int slide, walking; /* Ground: sliding after letting go, already walking. */
+    int falling; /* In the air without a jump: walked off a ledge. */
     int spin_jumping;
     int shoot_pose_timer; /* Ticks the shooting pose still shows; refilled while the shot is held. */
     int ball, crouching; /* Toggled by down/up presses and the d-pad. */
@@ -59,7 +71,6 @@ typedef struct {
     int crouch_latch; /* Crouch kept after a tap on the ground; a jump, a direction or up ends it. */
     int down_window; /* Ticks left in which a second press of down morphs the body. */
     int takeoff; /* Ticks a jump from the ground still waits, walking on the ground, before it rises. */
-    int wall_lock, wall_vx; /* Wall kick: ticks left and the fixed speed while locked. */
     MmState state; /* Derived at the end of every mm_tick. */
     MmPose pose; /* Derived at the end of every mm_tick, like state. */
     MmAim aim; /* Derived at the end of every mm_tick, while the d-pad is held, shot or not. */

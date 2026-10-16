@@ -21,20 +21,33 @@ rótulos `SamusPhysicsConstants_*`. As medidas no jogo original estão em
 
 | Constante | Valor no projeto | Equivale a | Referência SM (NTSC) |
 |---|---|---|---|
-| `MM_SPEED` | 704 | 2,75 px/tick | Velocidade de caminhada (ver README) |
-| `MM_RUN_ACCEL` | 8 | 1/32 px/tick por tick | Corrida (ver README) |
-| `MM_RUN_EXTRA_MAX` | 512 | +2 px/tick | Corrida (ver README) |
+| `MM_SPEED` | 704 | 2,75 px/tick | Velocidade de caminhada, medida |
+| `MM_WALK_ACCEL` / `MM_WALK_SNAP` | 48 / 480 | +0,1875 por tick; passando de 1,875 vai a 2,75 | Medido: 2,75 no 11º quadro |
+| `MM_DECEL` | 128 | −0,5 px/tick | Soltar o direcional, virar e inverter no ar; medido |
+| `MM_TURN_TICKS` | 7 | 7 ticks, o do aperto incluído | Virada no chão, no pulo normal e na queda; medido |
+| `MM_RUN_ACCEL` | 16 | 1/16 px/tick por tick | Corrida: medido, +2 em 32 ticks |
+| `MM_RUN_EXTRA_MAX` | 512 | +2 px/tick | Corrida: medido (4,75 no total) |
+| `MM_AIR_ACCEL` | 192 | +0,75 px/tick | Aceleração no ar e na bola; medido |
+| `MM_JUMP_AIR_SPEED` / `MM_SPIN_AIR_SPEED` / `MM_FALL_AIR_SPEED` | 320 / 352 / 256 | 1,25 / 1,375 / 1,0 px/tick | Pulo normal, giro, queda; medido |
+| `MM_BALL_SPEED` | 832 | 3,25 px/tick | Bola rolando; medido |
 | `MM_JUMP` | 1248 | 4,875 px/tick | `InitialYSpeeds_Jumping` = `$04E0` → 4,875 px/frame |
 | `MM_GRAVITY` | 28 | 0,109375 px/tick² | `YSubAccelerationInAir` = `$1C00` → 0,109375 px/frame² |
 | `MM_MAX_FALL` | 1280 | 5 px/tick (para de acelerar ao chegar; fica em 5,03) | Medido: 5,03 px/frame |
 | `MM_JUMP_STILL` | 2 | 2 ticks parada na saída do pulo normal; 1 no giro | Medido: pose `4B` e mais 1 quadro sem subir |
 | `MM_WALL_JUMP` | 1184 | 4,625 px/tick | Pulo de parede: `InitialYSpeeds_WallJumping` = `$04A0` → 4,625 px/frame |
-| `MM_WALL_LOCK` | 12 | 12 ticks | Impulso de parede: afasta da parede a 2,75 px/tick, sem direcional (decisão do projeto) |
 | `MM_WALL_REACH` | 8 | 8 px | Distância máxima da parede para o pulo de parede (decisão do projeto) |
 
 O movimento vertical segue o Super Metroid (2.8.1): a Samus anda e depois a gravidade é somada,
 o ápice tem um tick com velocidade 0 (o original guarda velocidade e direção separadas), soltar C
 na subida zera a velocidade na hora e não existe pulo depois de sair de uma borda (sem coyote time).
+
+O movimento horizontal segue o original (2.8.2). No chão: +0,1875 por tick até 1,875 e depois 2,75;
+soltar o direcional desliza com −0,5 por tick (na saída, mais 1 px no primeiro tick); virar leva 7 ticks
+(o aperto e a velocidade antiga caem juntos, depois um empurrão de 1 px e a aceleração do zero); a corrida
+soma 1/16 por tick até +2. No ar: pulo normal a 1,25 (soltar o direcional para na hora), giro a 1,375 e queda
+a 1,0 alternando com 1,75, ambos mantendo a inércia, e bola a 3,25. Inverter no ar freia em 0,5 por tick
+e passa por um tremor de 0,75 px; o pulo parado com direção no mesmo tick não gira (só gira quem já se
+movia, também durante o deslize). O pulo de parede tira do repouso e deixa o direcional livre.
 
 Outras velocidades de referência no SM, para etapas futuras: pulo com Hi-Jump
 `$0600` (6,0 px/frame), pulo de parede `$04A0` (4,625 px/frame).
@@ -48,7 +61,7 @@ do repouso ou andando, com C segurado.
 |---|---|---|
 | Altura do pulo parado | 111 px | 111,09 px |
 | Tempo fora do chão | 92 ticks | 92 quadros |
-| Alcance do pulo andando | 253 px | ainda diferente (velocidade no ar, 2.8.2) |
+| Alcance do giro depois de 10 ticks andando | ~127 px (`1,875 + 91 × 1,375`) | ver a comparação abaixo; o cenário `walk_spin` bate no teto |
 | Queda máxima | 5,03 px/tick | 5,03 px/quadro |
 | C segurado 2 / 3 / 10 / 30 ticks | 0 / 4 / 35 / 95 px | 0 / 4,9 / 35,9 / 95,2 px |
 | Pular 1 tick depois de sair da borda | não pula | não pula |
@@ -66,10 +79,10 @@ então px/quadro e px/tick são comparáveis. `python scripts/sm_reference_repor
 | Medida | Super Metroid | Port | Bate? |
 |---|---|---|---|
 | Caminhada, velocidade máxima | 2,75 px/quadro | 2,75 | sim |
-| Caminhada, aceleração | +0,1875 por quadro; 2,75 no 11º quadro (~10 px) | instantânea | não |
-| Soltar o direcional | −0,5 por quadro; desliza ~16 px em 7 quadros | para na hora | não |
-| Virar no chão | 6 quadros virando (pose 25/26), depois acelera do zero | instantâneo | não |
-| Corrida (B) | +1/16 por quadro, +2 em 32 quadros (4,75 no total) | +1/32, +2 em 64 ticks | não (decisão no README) |
+| Caminhada, aceleração | +0,1875 por quadro; 2,75 no 11º quadro (~10 px) | igual | sim (2.8.2) |
+| Soltar o direcional | −0,5 por quadro; desliza ~16 px em 7 quadros | igual | sim (2.8.2) |
+| Virar no chão | 7 quadros (pose 25/26): 2,75 … 0,25, 0, empurrão de −1, depois −0,1875 … | igual; do repouso 0, 0, −0,75, 0, −0,75, 0, −0,75 | sim (2.8.2) |
+| Corrida (B) | +1/16 por quadro, +2 em 32 quadros (4,75 no total) | igual | sim (2.8.2) |
 | Pulo, velocidade de saída | 4,875 px/quadro | 4,875 | sim (2.8.1) |
 | Gravidade | 0,109375 px/quadro² | 0,109375 | sim (2.8.1) |
 | Pulo parado, altura e tempo no ar | 111 px, pico no 46º quadro, 92 quadros no ar | 111 px, 92 ticks | sim (2.8.1) |
@@ -78,17 +91,18 @@ então px/quadro e px/tick são comparáveis. `python scripts/sm_reference_repor
 | Soltar o pulo na subida | velocidade vertical vai a 0 na hora | igual | sim (2.8.1) |
 | Pulo mais curto | ~5 px (segurando 3 quadros; 1–2 quadros não saem do chão) | igual | sim (2.8.1) |
 | Pular logo depois de sair da borda | não pula, nem no 1º quadro | igual (era coyote de 5 ticks) | sim (2.8.1) |
-| Velocidade no ar: pulo normal / giro / queda | 1,25 / 1,375 / 1,0 px/quadro (+ bônus da corrida) | 2,75 (+ bônus) em todos | não |
-| Pulo correndo, no ar | 3,375 (1,375 + 2) | 4,75 | não |
-| Quando gira | só se já andava ao pular; direção + pulo parado é pulo normal (pose 51) | igual | sim |
+| Velocidade no ar: pulo normal / giro / queda | 1,25 / 1,375 / 1,0 px/quadro (+ bônus da corrida) | igual | sim (2.8.2) |
+| Pulo correndo, no ar | 3,375 (1,375 + 2) | igual | sim (2.8.2) |
+| Inverter o direcional no ar | freia 0,5 por quadro, tremor de 0,75, depois a nova direção (pulo, giro e queda têm sequências próprias) | igual | sim (2.8.2) |
+| Quando gira | só se já andava ao pular (também no deslize sem direcional); direção + pulo parado é pulo normal (pose 51) | igual | sim |
 | Pulo de parede, subida | 4,625 px/quadro | 4,625 | sim |
-| Pulo de parede, lado | 1,375 px/quadro, direcional livre | 2,75 travado por 12 ticks | não |
+| Pulo de parede, lado | 1,375 px/quadro, direcional livre | igual | sim (2.8.2) |
 | Pouso | pulo normal: 7 quadros (A4); giro: 1 quadro (A6/A7) | 10 / 15 ticks | não |
 | Agachar (↓) | transição de 3 quadros; fica agachada ao soltar, mesmo segurando ↓ por muito tempo | 5 ticks; segurar ↓ mais de 12 ticks levanta ao soltar | não |
 | ↓ agachada | vira bola, transição de 6 quadros | igual, 10 ticks | lógica sim, tempo não |
 | ↓ no ar | o 1º mira para baixo, o 2º vira bola | dois toques em até 20 ticks | sim |
 | ↑ na bola | volta para agachada (6 quadros); outro ↑ levanta (3 quadros) | levanta direto (10 ticks) | não |
-| Bola rolando | 3,25 px/quadro, acelera +0,75 por quadro | 2,75 (+ bônus), sem aceleração | não |
+| Bola rolando | 3,25 px/quadro, acelera +0,75 por quadro | igual | sim (2.8.2) |
 | Hitbox (largura × altura) | em pé 10×42, pulo 10×38, giro 10×24, agachada 10×32, bola 10×14 | 24×40, 24×24 agachada, 16×16 bola; giro usa a de pé | não |
 | Feixe (Power Beam) | sai a 4 px/quadro e acelera até ~6 em ~28 quadros | 12 px/tick constante | não |
 | Intervalo de tiro | 15 quadros apertando; segurado dispara de novo a cada 25 | 15 / 25 | sim |

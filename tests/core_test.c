@@ -14,27 +14,137 @@ static void floor_at(int row) {
     int x, y;
     for (y = row; y < 32; ++y) for (x = 0; x < 64; ++x) tiles[y * 64 + x] = 0;
 }
+/* Ticks once and returns how far the body moved, in Q24.8. */
+static int step_dx(MmBody *b, MmInput input) {
+    int x = b->x;
+    mm_tick(&world, b, input);
+    return b->x - x;
+}
+/* Compares the movement of count ticks against the Super Metroid trace, in 1/256 px. */
+static void expect_dx(MmBody *b, MmInput input, const int *expected, int count) {
+    int i, dx;
+    for (i = 0; i < count; ++i) {
+        dx = step_dx(b, input);
+        if (dx != expected[i]) fprintf(stderr, "tick %d: moved %d, Super Metroid %d\n", i, dx, expected[i]);
+        assert(dx == expected[i]);
+    }
+}
 static void movement(void) {
     MmBody left, right;
+    MmInput l = {.axis = -1}, r = {.axis = 1}, run = {.axis = 1, .run_held = 1};
+    /* Super Metroid, measured: one pixel, +0.1875 a tick up to 1.875, then 2.75 (docs/FISICA.md). */
+    static const int walk[] = {256, 48, 96, 144, 192, 240, 288, 336, 384, 432, 480, 704, 704};
+    /* Letting go slides 16 px: 0.5 less each tick, plus one pixel a tick. */
+    static const int slide[] = {960, 832, 704, 576, 448, 320, 256, 0, 0};
+    /* Turning around keeps the old speed for a tick, slows down to rest, then walks the new way. */
+    static const int turn[] = {704, 576, 448, 320, 192, 64, 0, -256, -48, -96};
+    /* From rest it wobbles the new way for 7 ticks before the first step. */
+    static const int turn_rest[] = {0, 0, -192, 0, -192, 0, -192, -256, -48};
     int i, origin = 256 * MM_UNIT;
     reset(); floor_at(30);
-    mm_body_init(&left, 256, 224, box); right = left;
+    mm_body_init(&left, 256, 224, box); mm_tick(&world, &left, idle);
+    right = left; left.facing_left = 1;
     for (i = 0; i < 80; ++i) {
-        MmInput l = {.axis = -1}, r = {.axis = 1};
         mm_tick(&world, &left, l); mm_tick(&world, &right, r);
         assert(origin - left.x == right.x - origin);
-        assert(right.x - origin == (i + 1) * MM_SPEED);
     }
-    {
-        MmBody b;
-        MmInput l = {.axis = -1}, r = {.axis = 1};
-        mm_body_init(&b,256,224,box);
-        for(i=0;i<50;++i) { mm_tick(&world,&b,r); mm_tick(&world,&b,idle); }
-        for(i=0;i<50;++i) { mm_tick(&world,&b,l); mm_tick(&world,&b,idle); }
-        assert(b.x == origin);
-    }
+    mm_body_init(&right, 256, 224, box); mm_tick(&world, &right, idle);
+    expect_dx(&right, r, walk, 13);
+    expect_dx(&right, idle, slide, 9);
+    for (i = 0; i < 20; ++i) mm_tick(&world, &right, r);
+    expect_dx(&right, l, turn, 10);
+    assert(right.facing_left);
+    mm_body_init(&right, 256, 224, box); mm_tick(&world, &right, idle);
+    expect_dx(&right, l, turn_rest, 9);
+    assert(right.facing_left);
+    /* The dash adds 1/16 a tick from the first accelerating tick: 4.75 px/tick after 32 ticks. */
+    mm_body_init(&right, 256, 224, box); mm_tick(&world, &right, idle);
+    mm_tick(&world, &right, run);
+    for (i = 1; i <= 32; ++i) { mm_tick(&world, &right, run); assert(right.run_extra == i * MM_RUN_ACCEL); }
+    assert(step_dx(&right, run) == MM_SPEED + MM_RUN_EXTRA_MAX);
     assert(mm_pixel(-1) == -1 && mm_pixel(-256) == -1);
-    puts("PASS symmetric subpixel movement (80 ticks)");
+    puts("PASS walking, sliding, turning around and dashing as in Super Metroid; both ways alike");
+}
+/* Horizontal speed in the air and in the ball, from the Super Metroid traces. */
+static void air_steering(void) {
+    MmBody b;
+    MmInput r = {.axis = 1}, l = {.axis = -1}, run = {.axis = 1, .run_held = 1};
+    MmInput press = {.jump_pressed = 1, .jump_held = 1}, hold = {.jump_held = 1};
+    MmInput r_press = {.axis = 1, .jump_pressed = 1, .jump_held = 1}, r_hold = {.axis = 1, .jump_held = 1};
+    MmInput l_hold = {.axis = -1, .jump_held = 1}, l_press = {.axis = -1, .jump_pressed = 1, .jump_held = 1};
+    MmInput run_press = {.axis = 1, .run_held = 1, .jump_pressed = 1, .jump_held = 1};
+    MmInput down_press = {.aim_y = 1, .down_pressed = 1};
+    static const int jump_right[] = {192, 320, 320};
+    static const int spin_reverse[] = {352, 224, 96, 0, -192, -352};
+    /* A normal jump or a fall turns around for 7 ticks: the old way, slowing down, then a wobble. */
+    static const int jump_reverse[] = {320, 192, 64, 0, -192, 0, -192, -320, -320};
+    static const int fall_reverse[] = {448, 320, 192, 64, 0, -192, 0, -192, -384, -256, -448};
+    static const int spin_slide[] = {352, 352, 352};
+    static const int turn_jump[] = {320, 192, 64, 0, -192, -352};
+    static const int air_turn_rest[] = {192, 64, 0, -192, 0, -192, 0, -192, -320};
+    static const int fall[] = {256, 448, 256, 448};
+    static const int roll[] = {192, 384, 576, 768, 960, 832, 832};
+    int i, ledge;
+    reset(); floor_at(20);
+    /* Normal jump: steering accelerates to 1.25 and letting go stops at once. */
+    mm_body_init(&b, 80, 144, box); mm_tick(&world, &b, idle);
+    mm_tick(&world, &b, press);
+    for (i = 0; i < 5; ++i) assert(step_dx(&b, hold) == 0);
+    expect_dx(&b, r_hold, jump_right, 3);
+    assert(step_dx(&b, hold) == 0);
+    expect_dx(&b, r_hold, jump_right, 3);
+    expect_dx(&b, l_hold, jump_reverse, 9);
+    /* Spin from a walk: 1.375 in the air, kept without a direction, reversed through rest. */
+    mm_body_init(&b, 80, 144, box); mm_tick(&world, &b, idle);
+    for (i = 0; i < 20; ++i) mm_tick(&world, &b, r);
+    assert(step_dx(&b, r_press) == MM_SPEED && b.spin_jumping);
+    assert(step_dx(&b, r_hold) == MM_SPIN_AIR_SPEED);
+    assert(step_dx(&b, hold) == MM_SPIN_AIR_SPEED);
+    expect_dx(&b, l_hold, spin_reverse, 6);
+    /* Jumping during the slide, with no direction, is a spin at the slide speed, without the extra pixel. */
+    mm_body_init(&b, 80, 144, box); mm_tick(&world, &b, idle);
+    for (i = 0; i < 30; ++i) mm_tick(&world, &b, r);
+    mm_tick(&world, &b, idle); mm_tick(&world, &b, idle);
+    assert(step_dx(&b, press) == 448 && b.spin_jumping);
+    expect_dx(&b, hold, spin_slide, 3);
+    /* Jumping in the middle of a turnaround spins and turns the pressed way (turn_jump in the trace). */
+    mm_body_init(&b, 80, 144, box); mm_tick(&world, &b, idle);
+    for (i = 0; i < 30; ++i) mm_tick(&world, &b, r);
+    for (i = 0; i < 3; ++i) mm_tick(&world, &b, l);
+    assert(step_dx(&b, l_press) == turn_jump[0] && b.spin_jumping);
+    expect_dx(&b, l_hold, turn_jump + 1, 5);
+    /* A standing jump turns around in the air through a 0.75 nudge first (air_turn_rest in the trace). */
+    mm_body_init(&b, 80, 144, box); mm_tick(&world, &b, idle);
+    mm_tick(&world, &b, press);
+    for (i = 0; i < 10; ++i) assert(step_dx(&b, hold) == 0);
+    expect_dx(&b, l_hold, air_turn_rest, 9);
+    /* A running spin keeps the dash bonus in the air, also without a direction. */
+    mm_body_init(&b, 8, 144, box); mm_tick(&world, &b, idle);
+    for (i = 0; i < 40; ++i) mm_tick(&world, &b, run);
+    mm_tick(&world, &b, run_press);
+    assert(step_dx(&b, hold) == MM_SPIN_AIR_SPEED + MM_RUN_EXTRA_MAX);
+    /* Landing stops the body: it starts over from rest, even with the direction held. */
+    for (i = 0; i < 200 && !b.grounded; ++i) mm_tick(&world, &b, r_hold);
+    assert(b.grounded && step_dx(&b, r) == MM_UNIT && step_dx(&b, r) == MM_WALK_ACCEL);
+    /* Walking off a ledge falls at 1 and 1.75 px/tick in turn and stops when the direction is let go. */
+    reset(); for (i = 0; i < 12; ++i) tiles[20 * 64 + i] = 0;
+    mm_body_init(&b, 40, 144, box); mm_tick(&world, &b, idle);
+    for (ledge = 0; b.grounded && ledge < 100; ++ledge) mm_tick(&world, &b, r);
+    expect_dx(&b, r, fall, 4);
+    assert(step_dx(&b, idle) == 0);
+    reset(); for (i = 0; i < 12; ++i) tiles[20 * 64 + i] = 0;
+    mm_body_init(&b, 40, 144, box); mm_tick(&world, &b, idle);
+    for (ledge = 0; b.grounded && ledge < 100; ++ledge) mm_tick(&world, &b, r);
+    expect_dx(&b, r, fall, 3);
+    expect_dx(&b, l, fall_reverse, 11);
+    /* The ball rolls up to 3.25 px/tick and stops when the direction is let go. */
+    reset(); floor_at(20);
+    mm_body_init(&b, 80, 144, box); mm_tick(&world, &b, idle);
+    mm_tick(&world, &b, down_press); mm_tick(&world, &b, idle); mm_tick(&world, &b, down_press);
+    assert(b.ball);
+    expect_dx(&b, r, roll, 7);
+    assert(step_dx(&b, idle) == 0 && step_dx(&b, l) == -MM_AIR_ACCEL);
+    puts("PASS air and ball speeds: 1.25 jump, 1.375 spin kept and reversed, 1/1.75 fall, 3.25 roll");
 }
 static void collisions(void) {
     MmBody b;
@@ -87,7 +197,7 @@ static void slopes(void) {
     mm_body_init(&b, 72, 184, tiny); mm_tick(&world,&b,idle);
     for (i=0;i<48;++i) mm_tick(&world,&b,right);
     assert(mm_pixel(b.x)>168 && mm_pixel(b.y)==120 && b.grounded);
-    for (i=0;i<48;++i) mm_tick(&world,&b,left);
+    for (i=0;i<64;++i) mm_tick(&world,&b,left);
     assert(mm_pixel(b.x)<80 && mm_pixel(b.y)==184 && b.grounded);
     /* Mirror the entire terrain and traverse the opposite slope type. */
     for (y=0;y<32;++y) for(x=0;x<32;++x) {
@@ -97,7 +207,7 @@ static void slopes(void) {
     mm_body_init(&b, 436, 184, tiny); mm_tick(&world,&b,idle);
     for(i=0;i<48;++i) mm_tick(&world,&b,left);
     assert(mm_pixel(b.x)<340 && mm_pixel(b.y)==120 && b.grounded);
-    for(i=0;i<48;++i) mm_tick(&world,&b,right);
+    for(i=0;i<64;++i) mm_tick(&world,&b,right);
     assert(mm_pixel(b.x)>430 && mm_pixel(b.y)==184 && b.grounded);
     puts("PASS both slope orientations uphill and downhill");
 }
@@ -164,7 +274,7 @@ static void states(void) {
     mm_body_init(&b, 80, 144, box);
     run_states(&b, log, idle, 1);
     run_states(&b, log, right, 20);
-    run_states(&b, log, idle, 2);
+    run_states(&b, log, idle, 10);
     run_states(&b, log, jump, 1);
     run_states(&b, log, hold, 20);
     run_states(&b, log, idle, 100);
@@ -181,7 +291,7 @@ static void states(void) {
     run_states(&b, log, down_press, 1);
     run_states(&b, log, down, 100);
     run_states(&b, log, up_press, 1);
-    assert(strcmp(log, "STAND WALK STAND JUMP FALL STAND WALK SPIN STAND CROUCH STAND JUMP BALL STAND") == 0);
+    assert(strcmp(log, "STAND WALK STAND JUMP FALL STAND WALK SPIN WALK STAND CROUCH STAND JUMP BALL STAND") == 0);
     printf("PASS state transitions: %s\n", log);
 }
 /* Measures a standing jump and a running jump; bounds follow docs/FISICA.md. */
@@ -210,15 +320,26 @@ static void physics(void) {
     mm_body_init(&b, 80, 0, box); max_fall = 0;
     while (!b.grounded) { mm_tick(&world, &b, idle); if (b.vy > max_fall) max_fall = b.vy; }
     assert(max_fall == MM_MAX_FALL + 8);
+    /* Super Metroid: a jump from rest with the direction pressed on the same tick is a standing jump.
+       It holds still for the 2 takeoff ticks, then moves 0.75 px and 1.25 px a tick for 90 more
+       ticks, the landing tick included. */
     reset(); floor_at(20);
+    mm_body_init(&b, 80, 144, box); mm_tick(&world, &b, idle);
+    x0 = b.x;
+    mm_tick(&world, &b, right_jump);
+    assert(!b.spin_jumping && b.x == x0);
+    while (!b.grounded) mm_tick(&world, &b, right_hold);
+    assert(b.x - x0 == MM_AIR_ACCEL + 90 * MM_JUMP_AIR_SPEED);
+    /* A spin after 10 ticks of walking: 1.875 px on the takeoff tick, then 1.375 for 91 ticks. */
     mm_body_init(&b, 80, 144, box); mm_tick(&world, &b, idle);
     for (air = 0; air < 10; ++air) mm_tick(&world, &b, right);
     x0 = b.x;
     mm_tick(&world, &b, right_jump); air = 1;
+    assert(b.spin_jumping && b.x - x0 == 10 * MM_WALK_ACCEL);
     while (!b.grounded && air < 300) { mm_tick(&world, &b, right_hold); ++air; }
+    assert(air == 92 && b.x - x0 == 10 * MM_WALK_ACCEL + 91 * MM_SPIN_AIR_SPEED);
     range = (b.x - x0) / MM_UNIT;
-    printf("range %d\n", range);
-    printf("PASS jump measured: apex %d px, airtime %d ticks, running range %d px, fall cap %d px/tick\n",
+    printf("PASS jump measured: apex %d px, airtime %d ticks, spin range %d px, fall cap %d px/tick\n",
            height, air, range, max_fall / MM_UNIT);
 }
 /* Height of a jump whose jump button is held for the first hold_ticks ticks. */
@@ -258,14 +379,17 @@ static void ledge_jump(void) {
     assert(!a.jumped && !a.takeoff && a.vy > 0);
     puts("PASS no jump after leaving a ledge");
 }
-/* Walks dir for ticks, counting grounded stops and airborne frames over solid ground. */
+/* Walks dir for ticks, counting grounded stops and airborne frames over solid ground. A turnaround
+   and a landing stop the body on purpose, so they are not stalls. */
 static void sweep_walk(const MmWorld *cw, MmBody *b, int dir, int ticks, int *stalls, int *floats) {
     MmInput in = {0};
-    int t;
+    int t, was_grounded;
     in.axis = dir;
     for (t = 0; t < ticks; ++t) {
+        was_grounded = b->grounded;
         mm_tick(cw, b, in);
-        if (b->grounded && b->vx == 0 && !mm_blocked(cw, b, mm_pixel(b->x) + dir, mm_pixel(b->y) - 1)) ++*stalls;
+        if (t >= MM_TURN_TICKS && was_grounded && b->grounded && b->vx == 0 &&
+            !mm_blocked(cw, b, mm_pixel(b->x) + dir, mm_pixel(b->y) - 1)) ++*stalls;
         if (!b->grounded && mm_blocked(cw, b, mm_pixel(b->x), mm_pixel(b->y) + 1)) ++*floats;
     }
 }
@@ -332,7 +456,7 @@ static void tunnels(void) {
     assert(b.crouching && b.hitbox.top == 24 && b.hitbox.bottom == 48 && b.state == MM_STATE_CROUCH);
     puts("PASS ball through a 2-tile tunnel; no standing up or un-morphing under the ceiling");
 }
-/* Climbs a 40 px shaft by alternating wall jumps: the body must rise from y 112 to 40. Each kick
+/* Climbs a 40 px shaft by alternating wall jumps: the body must rise from y 112 to 8. Each kick
    presses away from the wall it touches; the first jump spins because the body walks before it. */
 static void wall_climb(void) {
     MmBody b;
@@ -341,7 +465,7 @@ static void wall_climb(void) {
     reset(); floor_at(20);
     for (y = 0; y < 20; ++y) { tiles[y * 64 + 12] = 0; tiles[y * 64 + 18] = 0; }
     mm_body_init(&b, 104, 112, real);
-    for (i = 0; i < 400 && mm_pixel(b.y) > 40; ++i) {
+    for (i = 0; i < 400 && mm_pixel(b.y) > 8; ++i) {
         MmInput in = {0};
         int left = mm_blocked(&world, &b, mm_pixel(b.x) - 1, mm_pixel(b.y));
         int right = mm_blocked(&world, &b, mm_pixel(b.x) + 1, mm_pixel(b.y));
@@ -351,9 +475,9 @@ static void wall_climb(void) {
         else if (right) { in.axis = -1; in.jump_pressed = 1; side = -1; }
         else in.axis = side;
         mm_tick(&world, &b, in);
-        if (b.wall_lock == MM_WALL_LOCK - 1) ++wall_jumps;
+        if (in.jump_pressed && b.jumped && b.pose == MM_POSE_WALL_KICK) ++wall_jumps;
     }
-    assert(mm_pixel(b.y) <= 40 && wall_jumps >= 2);
+    assert(mm_pixel(b.y) <= 8 && wall_jumps >= 2);
     printf("PASS wall jumps: %d kicks climbed the 40 px shaft to y %d\n", wall_jumps, mm_pixel(b.y));
 }
 static const char *pose_name(MmPose pose) {
@@ -417,7 +541,7 @@ static void poses(void) {
     run_poses(&b, log, idle, 1);
     run_poses(&b, log, right, 1);
     run_poses(&b, log, right_jump, 1);
-    run_poses(&b, log, right_held, 6);
+    run_poses(&b, log, right_held, 12);
     assert(!b.grounded && mm_pixel(b.x) == 88);
     run_poses(&b, log, (MmInput){.axis = -1, .jump_pressed = 1, .jump_held = 1}, 1);
     assert(b.jumped && b.spin_jumping && b.pose == MM_POSE_WALL_KICK && b.vx < 0);
@@ -593,7 +717,7 @@ static void morph_rules(void) {
     mm_body_init(&b, 64, 20, real); mm_tick(&world, &b, idle_in);
     b.spin_jumping = 1;
     mm_tick(&world, &b, kick);
-    assert(!b.ball && b.jumped && b.spin_jumping && b.wall_lock);
+    assert(!b.ball && b.jumped && b.spin_jumping && b.pose == MM_POSE_WALL_KICK);
     puts("PASS morph: shot aims down in the air without morphing; a ball does not wall jump");
 }
 /* A 45 degree slope (tile 2 steps rising to the right): a ball that lands on it stands up again. */
@@ -694,19 +818,20 @@ static void wall_jump_rules(void) {
     /* In the air with the standing box flush against the wall at x 96 (body x 64). */
 #define AIRBORNE(x, spin) (mm_body_init(&b, (x), 40, real), b.spin_jumping = (spin), b.vy = -MM_UNIT)
     AIRBORNE(64, 1); mm_tick(&world, &b, away);
-    assert(b.jumped && b.wall_lock && b.vx == -MM_SPEED && b.pose == MM_POSE_WALL_KICK);
+    /* The kick faces away from the wall and accelerates from rest, as a spin does. */
+    assert(b.jumped && b.facing_left && b.vx == -MM_AIR_ACCEL && b.pose == MM_POSE_WALL_KICK);
     AIRBORNE(64, 0); mm_tick(&world, &b, away);
-    assert(!b.jumped && !b.wall_lock);
+    assert(!b.jumped && b.pose != MM_POSE_WALL_KICK);
     AIRBORNE(64, 1); mm_tick(&world, &b, into);
-    assert(!b.jumped && !b.wall_lock);
+    assert(!b.jumped && b.pose != MM_POSE_WALL_KICK);
     AIRBORNE(64, 1); mm_tick(&world, &b, none);
-    assert(!b.jumped && !b.wall_lock);
+    assert(!b.jumped && b.pose != MM_POSE_WALL_KICK);
     for (gap = 1; gap < MM_WALL_REACH; ++gap) {
         AIRBORNE(64 - gap, 1); mm_tick(&world, &b, away);
-        assert(b.jumped && b.wall_lock);
+        assert(b.jumped && b.pose == MM_POSE_WALL_KICK);
     }
     AIRBORNE(64 - MM_WALL_REACH, 1); mm_tick(&world, &b, away);
-    assert(!b.jumped && !b.wall_lock);
+    assert(!b.jumped && b.pose != MM_POSE_WALL_KICK);
 #undef AIRBORNE
     puts("PASS wall jump rules: only in a spin, touching a wall and pressing away from it");
 }
@@ -738,8 +863,9 @@ static void aiming(void) {
     mm_body_init(&b, 80, 40, real); mm_tick(&world, &b, idle);
     mm_tick(&world, &b, down);
     assert(!b.grounded && b.aim == MM_AIM_DOWN);
-    mm_tick(&world, &b, (MmInput){.aim_y = 1, .axis = -1});
-    assert(b.aim == MM_AIM_DIAG_DOWN && b.facing_left);
+    /* Pressing the other way in the air turns around first, as in Super Metroid. */
+    for (t = 0; t < MM_TURN_TICKS; ++t) mm_tick(&world, &b, (MmInput){.aim_y = 1, .axis = -1});
+    assert(!b.grounded && b.aim == MM_AIM_DIAG_DOWN && b.facing_left);
     puts("PASS aim: up, up-forward, down-forward walking, down in the air; the shooting pose holds while firing");
 }
 /* The beam leaves from the given muzzle along the aim, and not when the cannon is inside a wall. */
@@ -773,7 +899,7 @@ static void beam_from_muzzle(void) {
     puts("PASS beam leaves from the muzzle along the aim, never from inside a wall");
 }
 int main(void) {
-    movement(); collisions(); jump_and_ledge(); states(); physics(); variable_jump(); ledge_jump();
+    movement(); air_steering(); collisions(); jump_and_ledge(); states(); physics(); variable_jump(); ledge_jump();
     slopes(); slope_sweep(); tunnels(); wall_climb(); wall_jump_rules(); poses(); crouch_poses(); crouch_tap(); double_tap(); ball_poses(); aiming(); beam_from_muzzle(); morph_rules(); ball_stands_on_slope();
     ball_stand_real(); camera_and_input(); real_levels();
     puts("All core regression tests passed."); return 0;

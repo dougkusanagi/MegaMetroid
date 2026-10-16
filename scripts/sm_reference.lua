@@ -51,6 +51,15 @@ local SCENARIOS = {
   {name = "spin_reverse", steps = after_prep({20, "right"}, {10, "right jump"}, {60, "left jump"})},
   {name = "jump_release_dir", steps = after_prep({6, "jump"}, {20, "right jump"}, {60, "jump"})},
   {name = "run_jump_release", steps = {{115, "left run"}, {10, "left run jump"}, {60, "jump"}}},
+  {name = "jump_reverse", steps = after_prep({6, "jump"}, {12, "right jump"}, {60, "left jump"})},
+  {name = "turn_moving", steps = after_prep({30, "right"}, {40, "left"})},
+  {name = "release_short", steps = after_prep({5, "right"}, {20, ""})},
+  -- Pulos sem direção durante o deslize, empurrando a parede da esquerda e no meio da virada.
+  {name = "slide_jump", steps = after_prep({30, "right"}, {2, ""}, {60, "jump"})},
+  {name = "wall_push_jump", steps = {{300, "left run"}, {20, "left"}, {60, "left jump"}}},
+  {name = "turn_jump", steps = after_prep({30, "right"}, {3, "left"}, {60, "left jump"})},
+  -- Virada no ar partindo do repouso: pulo parado e, no meio dele, a direção oposta.
+  {name = "air_turn_rest", steps = after_prep({12, "jump"}, {40, "left jump"})},
   {name = "fall_release", steps = {{62, "right"}, {30, ""}}},
   {name = "fall_reverse", steps = {{62, "right"}, {30, "left"}}},
   {name = "shoot_left", steps = after_prep({7, "left"}, {20, ""}, {1, "shot"}, {90, ""})},

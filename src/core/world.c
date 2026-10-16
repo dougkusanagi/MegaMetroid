@@ -53,13 +53,12 @@ void mm_body_init(MmBody *b, int x, int y, MmRect hitbox)
     b->x = x * MM_UNIT; b->y = y * MM_UNIT;
     b->vx = b->vy = 0; b->hitbox = hitbox;
     b->grounded = b->facing_left = b->jumped = 0;
-    b->run_extra = b->move_direction = 0;
+    b->speed = b->run_extra = b->turn = b->slide = b->walking = b->falling = 0;
     b->spin_jumping = b->shoot_pose_timer = 0;
     b->aim = MM_AIM_FORWARD;
     b->ball = b->crouching = 0;
     b->down_ticks = b->crouch_latch = b->down_window = 0;
     b->takeoff = 0;
-    b->wall_lock = b->wall_vx = 0;
     b->state = MM_STATE_STAND;
     b->pose = MM_POSE_GROUND; b->pose_timer = 0;
     b->stand_box = hitbox;
@@ -213,6 +212,92 @@ static void update_pose(MmBody *b, int was_grounded, int was_crouching, int was_
     if (!b->pose_timer) b->pose = looping_pose(b);
 }
 
+static int min_int(int a, int b) { return a < b ? a : b; }
+static int max_int(int a, int b) { return a > b ? a : b; }
+
+/* Horizontal speed, as measured in Super Metroid (docs/FISICA.md). speed is the base speed along the
+   facing direction and run_extra the dash bonus on top of it; vx is their sum. */
+static void steer(MmBody *b, int direction, int run_held)
+{
+    int facing = b->facing_left ? -1 : 1, nudge = 0, moved;
+    if (b->takeoff && !b->spin_jumping) {
+        /* A standing jump holds still through its takeoff; a spin takes off at the walking speed. */
+        b->speed = b->run_extra = b->turn = b->slide = b->walking = 0;
+        b->vx = 0;
+        return;
+    }
+    if (b->turn && !b->ball) {
+        /* After the tick it starts on, a turn slows down by 0.5 a tick to a tick at rest, where the body
+           faces the new way. A spin turns there; a turn on the ground or in a normal jump or fall lasts
+           MM_TURN_TICKS in all and only wobbles the new way for the rest, 0.75 px every other tick. */
+        if (!b->turned) {
+            b->speed = max_int(0, b->speed - MM_DECEL); b->run_extra = 0;
+            if (!b->speed) {
+                b->turned = 1; b->facing_left = !b->facing_left;
+                if (b->spin_jumping) b->turn = 1;
+            }
+        } else b->speed = b->speed ? 0 : MM_AIR_ACCEL;
+        --b->turn;
+        b->vx = b->facing_left ? -b->speed : b->speed;
+        return;
+    }
+    if (direction == -facing && !b->ball && !(b->grounded && b->crouching) &&
+        (b->speed || b->run_extra || !b->spin_jumping)) {
+        /* The tick the opposite way is pressed still steers the old way, as the original does; a body at
+           rest on the ground stays put. A spin at rest just faces the new way. */
+        b->turn = MM_TURN_TICKS - 1; b->turned = b->slide = 0;
+        direction = b->grounded && !b->walking ? 0 : facing;
+    }
+    if (b->grounded && !b->ball) {
+        if (b->crouching || !direction) {
+            /* Letting go slides on, slowing down, with one extra pixel a tick, as the original does. */
+            if (b->walking && b->speed) b->slide = 1;
+            b->walking = b->run_extra = 0;
+            if (b->slide) {
+                /* The slide moves at the speed it had, then slows down for the next tick. A spin
+                   jump from a slide takes off at that speed, without the extra pixel. */
+                b->vx = facing * (b->speed + (b->takeoff ? 0 : MM_UNIT));
+                if (b->speed) b->speed = max_int(0, b->speed - MM_DECEL);
+                else b->slide = 0;
+                return;
+            }
+            b->speed = 0;
+        } else if (!b->walking) {
+            /* The first step from rest moves one pixel, then the walk accelerates from rest. */
+            b->walking = 1; b->slide = b->speed = 0; nudge = MM_UNIT;
+        } else {
+            b->speed += MM_WALK_ACCEL;
+            if (b->speed > MM_WALK_SNAP) b->speed = MM_SPEED;
+            b->run_extra = run_held ? min_int(b->run_extra + MM_RUN_ACCEL, MM_RUN_EXTRA_MAX) : 0;
+        }
+    } else if (b->grounded) {
+        /* The ball rolls only while a direction is held and turns at once. */
+        b->run_extra = b->turn = b->slide = b->walking = 0;
+        if (!direction) b->speed = 0;
+        else {
+            if (direction != facing) { b->facing_left = direction < 0; b->speed = 0; }
+            b->speed = b->speed >= MM_BALL_SPEED ? MM_BALL_SPEED : b->speed + MM_AIR_ACCEL;
+        }
+    } else {
+        int max = b->spin_jumping ? MM_SPIN_AIR_SPEED : b->falling || b->ball ? MM_FALL_AIR_SPEED : MM_JUMP_AIR_SPEED;
+        b->slide = b->walking = 0;
+        if (!direction && !b->spin_jumping) {
+            /* A jump or a fall stops when the direction is let go; a spin carries on as if held. */
+            b->speed = b->run_extra = 0;
+        } else if (direction && direction != facing && (b->speed || b->run_extra)) {
+            /* A ball in the air does not turn around: it slows down, then rolls the new way. */
+            b->speed = max_int(0, b->speed - MM_DECEL); b->run_extra = 0;
+        } else {
+            if (direction) b->facing_left = direction < 0;
+            /* A fall alternates 1 and 1.75 px a tick: the original caps it before adding. */
+            if (b->falling || b->ball) b->speed = b->speed > max ? max : b->speed + MM_AIR_ACCEL;
+            else b->speed = min_int(b->speed + MM_AIR_ACCEL, max);
+        }
+    }
+    moved = b->speed + b->run_extra + nudge;
+    b->vx = b->facing_left ? -moved : moved;
+}
+
 /* Gravity after the move, as in Super Metroid. The apex keeps one tick at speed 0, since the original
    keeps the speed and its direction apart, and a fall stops accelerating once it reaches MM_MAX_FALL. */
 static void fall(MmBody *b)
@@ -227,25 +312,17 @@ void mm_tick(const MmWorld *w, MmBody *b, MmInput input)
     int moving_before_jump = b->vx != 0, wall_jump, was_grounded = b->grounded, was_crouching = b->crouching;
     int was_ball = b->ball;
     if (b->pose_timer) --b->pose_timer;
-    /* Dash builds on the ground; takeoff retains the bonus. Stopping,
-       reversing, releasing on ground or hitting a wall cancels it. */
-    if (!direction || direction != b->move_direction) b->run_extra = 0;
-    if (b->grounded) {
-        if (input.run_held && direction) {
-            b->run_extra += MM_RUN_ACCEL;
-            if (b->run_extra > MM_RUN_EXTRA_MAX) b->run_extra = MM_RUN_EXTRA_MAX;
-        } else b->run_extra = 0;
-    }
-    b->move_direction = direction;
     b->jumped = input.jump_pressed && b->grounded;
-    if (b->jumped) b->spin_jumping = moving_before_jump;
+    /* As in Super Metroid, only a jump while walking spins: from rest, even with a direction pressed on
+       the same tick, the jump is a standing one. A jump during a slide, with no direction, still spins. */
+    if (b->jumped) b->spin_jumping = moving_before_jump && (direction || b->slide);
     /* Wall jump, as in Super Metroid: only in a spin jump, touching a wall and pressing away from it.
-       The kick goes the pressed way and locks steering. */
+       The kick turns the body the pressed way and accelerates from rest, with free steering. */
     wall_jump = input.jump_pressed && !b->jumped && !b->grounded && !b->ball && b->spin_jumping &&
                 direction && wall_behind(w, b, direction);
     if (wall_jump) {
         b->jumped = 1; b->spin_jumping = 1;
-        b->wall_lock = MM_WALL_LOCK; b->wall_vx = direction * MM_SPEED;
+        b->facing_left = direction < 0; b->speed = b->run_extra = b->turn = 0;
     }
     /* Shooting stops a spin; the cannon stays out while the shot is held and a moment after. */
     if (input.shoot_pressed) b->spin_jumping = 0;
@@ -275,13 +352,13 @@ void mm_tick(const MmWorld *w, MmBody *b, MmInput input)
         ((input.aim_y > 0 && !direction) || b->crouch_latch || (b->crouching && !fits(w, b, b->stand_box)));
     b->hitbox = b->ball ? ball_box(b->stand_box) :
                 b->crouching ? crouch_box(b->stand_box) : b->stand_box;
-    b->vx = b->wall_lock ? b->wall_vx : direction * (MM_SPEED + b->run_extra);
-    if (b->wall_lock) --b->wall_lock;
-    if (input.axis) b->facing_left = input.axis < 0;
+    if (b->jumped && !wall_jump) b->takeoff = b->spin_jumping ? 1 : MM_JUMP_STILL;
+    steer(b, direction, input.run_held);
     if (b->jumped) {
+        b->falling = 0;
         /* A wall jump rises at once; a jump from the ground first stands still, as in Super Metroid. */
         if (wall_jump) b->vy = -MM_WALL_JUMP;
-        else { b->takeoff = b->spin_jumping ? 1 : MM_JUMP_STILL; b->vy = 0; }
+        else b->vy = 0;
         b->grounded = 0;
         /* A kick shows its own pose first, a spin goes straight into the spin, a standing jump shows its
            takeoff. A ball that jumps stays a ball. */
@@ -298,10 +375,15 @@ void mm_tick(const MmWorld *w, MmBody *b, MmInput input)
         b->grounded = 0;
         if (!--b->takeoff) b->vy = -MM_JUMP;
     } else if (!b->grounded) fall(b);
-    if (!b->vx) b->run_extra = 0;
+    /* A wall stops the body; so does a landing, which then accelerates again from rest. Walking off a
+       ledge is a fall, slower in the air than a jump. */
+    if (!b->vx || (b->grounded && !was_grounded)) { b->speed = b->run_extra = b->slide = b->walking = 0; }
+    if (b->grounded && !was_grounded) b->turn = 0;
+    if (was_grounded && !b->grounded && !b->jumped) b->falling = 1;
+    if (b->grounded) b->falling = 0;
     /* Before the spin flag is cleared: a landing needs to know whether it came from a spin. */
     update_pose(b, was_grounded, was_crouching, was_ball);
-    if (b->grounded) { b->spin_jumping = 0; b->wall_lock = 0; }
+    if (b->grounded) b->spin_jumping = 0;
     b->state = body_state(b);
     b->aim = body_aim(b, input);
 }
