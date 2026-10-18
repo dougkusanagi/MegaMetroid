@@ -10,6 +10,29 @@ O registro detalhado começa em 18/10/2026. A entrada anterior abaixo foi
 reconstituída do commit indicado; o histórico anterior completo permanece no Git
 (`git log`) e as entregas por etapa estão em [docs/PLANO.md](docs/PLANO.md).
 
+## 2026-10-18 16:37:00 −03:00 — Velocidade e aceleração do Power Beam (2.8.5)
+
+### Corrigido
+
+- O feixe usava 12 px/tick constantes. Agora começa a 4 px/tick nos eixos
+  cardinais e 683/256 por eixo diagonal, acelerando 1/16 por eixo ativo antes
+  de cada movimento. O primeiro avanço já ocorre no quadro do disparo.
+- Preservadas colisões por varredura, impacto animado, três slots e cadência
+  de 15/25 ticks. Disparos podem atingir uma parede no próprio quadro de criação.
+
+### Adicionado
+
+- Seis capturas direcionais do original, com velocidades de projétil e Y com
+  subpixel, arquivadas para reutilização sem iniciar o Mesen novamente.
+- Expectativas de trajetória geradas da RAM salva; testes de oito direções,
+  cadência, toques rápidos, pool cheio e colisão em alta velocidade. A ROM
+  verifica também velocidades e posições no 68000, com resultado pela API.
+
+**Validação:** regressão do núcleo com gcc, build SGDK e `SMOKE PASS` no
+BlastEm via API GDB, em sessão oculta. Os componentes de movimento da Samus/
+câmera herdados pelo projétil original permanecem pendentes; limites registrados
+em `docs/FISICA.md`.
+
 ## 2026-10-18 16:25:15 −03:00 — Hitboxes originais por estado (2.8.4)
 
 ### Melhorado

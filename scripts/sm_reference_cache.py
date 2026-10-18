@@ -93,10 +93,18 @@ def check():
     manifest = json.loads((DEST / 'manifest.json').read_text(encoding='utf-8'))
     total = 0
     radii_by_pose = defaultdict(Counter)
+    beam_vectors = {}
     for name, item in manifest['scenarios'].items():
         data = gzip.decompress((DEST / item['file']).read_bytes())
         assert digest(data) == item['csv_sha256'], name + ': checksum mismatch'
         rows = list(csv.DictReader(io.StringIO(data.decode())))
+        if name in ('beam_up', 'beam_up_right'):
+            vectors = [r['shot_vectors'].split(':') for r in rows if r.get('shot_vectors')]
+            # First 16 live samples; later records may be wall impacts or off screen.
+            direction = '0' if name == 'beam_up' else '1'
+            assert len(vectors) >= 16 and all(len(v) == 5 and v[:2] == ['0', direction]
+                and v[4] == '8000' for v in vectors[:16]), name
+            beam_vectors[name] = [(abs(int(v[2])), abs(int(v[3]))) for v in vectors[:16]]
         assert len(rows) == item['rows'] and all(r['scenario'] == name for r in rows), name
         assert [int(r['frame']) for r in rows] == list(range(1, len(rows) + 1)), name + ': missing frames'
         sizes = Counter((int(r['pose']), int(r['xradius']), int(r['yradius'])) for r in rows)
@@ -115,6 +123,11 @@ def check():
     out.mkdir(parents=True, exist_ok=True)
     (out / 'sm_hitboxes.h').write_text('/* Generated from archived original RAM, not production constants. */\n'
         'static const int reference_hitboxes[][2] = {\n' + '\n'.join(expected) + '\n};\n')
+    beam_header = '/* Exact Q8.8 projectile velocities sampled from original RAM. */\n'
+    for name, vectors in sorted(beam_vectors.items()):
+        beam_header += f'static const int reference_{name}[][2] = {{\n'
+        beam_header += ''.join(f'    {{{x}, {y}}},\n' for x, y in vectors) + '};\n'
+    (out / 'sm_beams.h').write_text(beam_header)
     print(f'PASS saved reference: {len(manifest["scenarios"])} scenarios, {total} RAM samples; no emulator needed')
 
 

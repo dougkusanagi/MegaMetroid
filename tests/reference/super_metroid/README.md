@@ -51,3 +51,11 @@ frequentes das poses de referência; os testes C comparam o perfil real da Samus
 com esse arquivo, não com cópias dos valores do código de produção. Os dados
 transitórios permanecem nos CSVs e não são substituídos pelo resumo modal.
 Os testes do porte continuam rodando no BlastEm pela API, conforme `AGENTS.md`.
+
+As seis capturas `beam_*` adicionadas na 2.8.5 cobrem as direções que faltavam.
+Incluem subpixel em Y e a coluna `shot_vectors` (velocidades Q8.8 assinadas,
+direção e tipo por slot); capturas anteriores preservam seu formato original.
+`check` também gera `tests/out/sm_beams.h` com 16 velocidades iniciais dos
+cenários `beam_up` e `beam_up_right`. Os testes usam esses dados para conferir
+aceleração e trajetórias. Componentes herdadas de Samus/câmera e impactos devem
+ser separados da velocidade base; a análise e os limites estão em `docs/FISICA.md`.

@@ -49,6 +49,8 @@ Referência: [disassembly de Super Metroid, banco 90](https://github.com/InsaneF
 rotina `Handle_Samus_XExtraRunSpeed` e tabela `SamusXSpeedTable_Normal`.
 
 O Power Beam não consome munição, não carrega e mantém até três projéteis.
+Sua velocidade base é 4 px/tick na horizontal/vertical e cerca de 2,668 por eixo
+diagonal, acelerando 1/16 por eixo ativo a cada tick, como nas tabelas originais.
 Há colisão com paredes e rampas, descarte ao sair da tela e o som de tiro original.
 Os efeitos sonoros do Super Metroid ficam em `res/sound/Sound-Effects/`; o tiro, o giro (em loop
 enquanto a Samus gira) e o pouso já tocam. A música do Landing Site ("Arrival on Crateria") toca como

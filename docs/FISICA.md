@@ -105,7 +105,7 @@ então px/quadro e px/tick são comparáveis. `python scripts/sm_reference_repor
 | Pulo na bola, sem Spring Ball | desfaz a bola, sem impulso de pulo, no chão ou no ar | igual; no chão termina agachada | sim (2.8.3) |
 | Bola rolando | 3,25 px/quadro, acelera +0,75 por quadro | igual | sim (2.8.2) |
 | Hitbox (largura × altura) | em pé 10×42, pulo 10×38, giro 10×24, agachada 10×32, bola 10×14 | mesmas dimensões estáveis; mira para baixo no ar 10×20 | sim (2.8.4; ver limites transitórios abaixo) |
-| Feixe (Power Beam) | sai a 4 px/quadro e acelera até ~6 em ~28 quadros | 12 px/tick constante | não |
+| Feixe (Power Beam), base sem movimento herdado | cardinal 4 px/quadro; diagonal 683/256 por eixo; aceleração 1/16 por eixo ativo | mesmos valores, primeiro avanço já acelerado | sim (2.8.5; limites abaixo) |
 | Intervalo de tiro | 15 quadros apertando; segurado dispara de novo a cada 25 | 15 / 25 | sim |
 | Feixes ao mesmo tempo | ao menos 3 (o limite não apareceu nos cenários) | 3 | — |
 
@@ -113,6 +113,36 @@ Os quadros de pose (`4B`, `A4`, …) são os números de pose do Super Metroid (
 folha de sprites. As velocidades batem com `SamusXSpeedTable_Normal` em `bank_90.asm`: aceleração
 `$0030`, máxima 2,75 no chão, 1,25 no pulo normal, 1,375 no giro e no pulo de parede, 1,0 na queda
 e 3,25 na bola; desaceleração 0,5.
+
+## Feixe (2.8.5)
+
+- Power Beam: base cardinal `$0400`, diagonal `$02AB` por eixo, velocidades
+  Q8.8. Aceleração `$0010` em cada eixo ativo, com o sinal da direção; eixos
+  parados continuam em zero. O primeiro movimento já usa 1040/256 = 4,0625 px
+  ou 699/256 = 2,73046875 px por eixo diagonal. Não há normalização por √2.
+- Fontes: tabelas `BeamSpeeds_Horizontal_Vertical`, `BeamSpeeds_Diagonal` e
+  `ProjectileAccelerations` em [bank_90.asm](https://github.com/InsaneFirebat/sm_disassembly/blob/master/src/bank_90.asm),
+  conferidas com as novas capturas `beam_up`, `beam_down`, `beam_up_right`,
+  `beam_down_right`, `beam_up_left` e `beam_down_left` no Mesen em 18/10/2026.
+  Só faltavam medições direcionais; as horizontais já estavam arquivadas.
+- As novas capturas incluem Y com subpixel e `shot_vectors`, no formato
+  `slot:direção:vx:vy:tipo` (entradas separadas por espaço). Velocidades são inteiros
+  Q8.8 com sinal. Tipo `8000` é o feixe vivo; `8700` é impacto e não deve ser
+  usado para deduzir aceleração ou velocidade máxima.
+- O validador gera `tests/out/sm_beams.h` com 16 amostras iniciais exatas de
+  `beam_up` e `beam_up_right`, sem componentes herdadas nesses trechos. O núcleo
+  compara cada velocidade e posição acumulada; as outras direções usam a
+  simetria das tabelas. A ROM executa as mesmas operações no 68000 e mantém os
+  testes de renderização/expiração do impacto pelo BlastEm via API.
+- Cadência de 15/25 ticks, três slots, origem no canhão e colisões por varredura
+  permanecem. O feixe agora avança no tick de criação e pode atingir uma parede
+  já nesse tick. Não há novo estado por projétil nem recursos gráficos novos.
+- Limites: o original soma componentes do deslocamento da Samus/câmera na
+  criação. Elas aparecem, por exemplo, nos disparos aéreos para baixo e não são
+  reproduzidas nesta etapa de velocidade base/aceleração. O porte mantém a
+  vida de 60 ticks e seu recorte de tela; os dados finitos não confirmam esses
+  limites como idênticos ao SNES. A observação antiga de “até ~6” era um trecho
+  antes da colisão, não uma velocidade máxima comprovada.
 
 ## Agachar, bola e pousos (2.8.3)
 

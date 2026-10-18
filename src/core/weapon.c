@@ -16,7 +16,11 @@ static void impact(MmBeam *b, int x, int y)
 static void advance(MmBeam *b, const MmWorld *w, MmCamera camera)
 {
     int x = mm_pixel(b->x), y = mm_pixel(b->y);
-    int nx = mm_pixel(b->x + b->vx), ny = mm_pixel(b->y + b->vy);
+    int nx, ny;
+    /* Original projectiles accelerate before moving, including the spawn tick. */
+    if (b->vx) b->vx += b->vx > 0 ? MM_BEAM_ACCEL : -MM_BEAM_ACCEL;
+    if (b->vy) b->vy += b->vy > 0 ? MM_BEAM_ACCEL : -MM_BEAM_ACCEL;
+    nx = mm_pixel(b->x + b->vx); ny = mm_pixel(b->y + b->vy);
     /* Sweep every crossed pixel so the beam cannot skip a thin wall. */
     while (x != nx || y != ny) {
         if (x != nx) x += x < nx ? 1 : -1;
@@ -80,6 +84,7 @@ void mm_weapon_tick(MmWeapon *w, const MmWorld *world, const MmBody *player,
             b->x = x * MM_UNIT; b->y = y * MM_UNIT;
             b->vx = dx * speed; b->vy = dy * speed;
             b->life = 60; b->damage = MM_BEAM_DAMAGE;
+            if (b->active) advance(b, world, camera);
             w->cooldown = w->repeating ? MM_BEAM_REPEAT : MM_BEAM_COOLDOWN;
             w->repeating = w->fired = 1;
             return;

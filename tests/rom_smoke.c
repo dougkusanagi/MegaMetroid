@@ -12,6 +12,33 @@ __attribute__((noinline, used, externally_visible)) void mm_smoke_finish(void)
     while (1) SYS_doVBlankProcess();
 }
 
+static int beam_motion(void)
+{
+    static unsigned char air[32 * 32];
+    MmWorld world = {air, 32, 32};
+    MmBody b;
+    MmWeapon w;
+    MmCamera camera = {0, 0};
+    int side, diagonal, t;
+    memset(air, 1, sizeof air);
+    mm_body_init(&b, 108, 88, (MmRect){8, 8, 32, 48});
+    for (side = 0; side < 2; ++side) for (diagonal = 0; diagonal < 2; ++diagonal) {
+        int x = 128 * MM_UNIT, y = 112 * MM_UNIT;
+        b.aim = diagonal ? MM_AIM_DIAG_UP : MM_AIM_FORWARD;
+        b.facing_left = side;
+        mm_weapon_init(&w);
+        for (t = 0; t < 16; ++t) {
+            int speed = (diagonal ? 699 : 1040) + t * 16;
+            int vx = side ? -speed : speed, vy = diagonal ? -speed : 0;
+            mm_weapon_tick(&w, &world, &b, (MmInput){.shoot_held = t == 0}, camera, 20, 24);
+            x += vx; y += vy;
+            if (!w.beams[0].active || w.beams[0].vx != vx || w.beams[0].vy != vy ||
+                w.beams[0].x != x || w.beams[0].y != y) return 1;
+        }
+    }
+    return 0;
+}
+
 static int turns(Game *g)
 {
     int side, air, t, failed = 0;
@@ -161,11 +188,12 @@ int main(bool hardReset)
         }
     }
     if (turns(&g)) failed |= 4096;
+    if (beam_motion()) failed |= 32768;
     /* A downward beam just above the floor must render all five impact frames, then hide. */
     mm_weapon_init(&g.weapon);
     g.weapon.beams[0] = (MmBeam){.active = 1, .x = g.player.x + 20 * MM_UNIT,
         .y = g.player.y + (g.player.hitbox.bottom - 8) * MM_UNIT,
-        .vy = MM_BEAM_SPEED, .life = 60};
+        .vy = 12 * MM_UNIT, .life = 60}; /* Fast fixture also exercises swept collision. */
     game_update(&g, (MmInput){0});
     if (!g.weapon.beams[0].impact_ticks ||
         g.beam_sprites[0]->definition != &beam_impact_sprite) failed |= 8192;

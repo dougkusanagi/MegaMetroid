@@ -70,6 +70,13 @@ local SCENARIOS = {
   {name = "morph_air_twice", setup = "morph", steps = after_prep({10, "jump"}, {1, "down"}, {1, ""}, {1, "down"}, {60, ""})},
   {name = "shoot_single", steps = after_prep({1, "shot"}, {60, ""})},
   {name = "shoot_hold", steps = after_prep({60, "shot"})},
+  -- Direction probes for the Power Beam; take down shots in the air so the floor does not erase them immediately.
+  {name = "beam_up", steps = after_prep({3, "up"}, {1, "up shot"}, {60, "up"})},
+  {name = "beam_down", steps = after_prep({20, "jump"}, {3, "down jump"}, {1, "down shot jump"}, {60, "jump"})},
+  {name = "beam_up_right", steps = after_prep({3, "right up"}, {1, "right up shot"}, {60, "up"})},
+  {name = "beam_down_right", steps = after_prep({20, "jump"}, {3, "right down jump"}, {1, "right down shot jump"}, {60, "jump"})},
+  {name = "beam_up_left", steps = after_prep({7, "left"}, {20, ""}, {3, "left up"}, {1, "left up shot"}, {60, "up"})},
+  {name = "beam_down_left", steps = after_prep({7, "left"}, {20, ""}, {20, "jump"}, {3, "left down jump"}, {1, "left down shot jump"}, {60, "jump"})},
 }
 for n = 1, 30 do
   SCENARIOS[#SCENARIOS + 1] = {name = "jump_hold_" .. n, steps = after_prep({n, "jump"}, {90 - n, ""})}
@@ -144,20 +151,23 @@ emu.addEventCallback(function()
   if frame == 0 then return end
   local s = SCENARIOS[scenario_index]
   local projectiles = {}
+  local vectors = {}
   for i = 0, 4 do
     if r16(0x0C18 + i * 2) ~= 0 then
-      projectiles[#projectiles + 1] = string.format("%.4f:%d", r16(0x0B64 + i * 2) + r16(0x0B8C + i * 2) / 65536,
-                                                    r16(0x0B78 + i * 2))
+      projectiles[#projectiles + 1] = string.format("%.4f:%.4f", r16(0x0B64 + i * 2) + r16(0x0B8C + i * 2) / 65536,
+                                                    r16(0x0B78 + i * 2) + r16(0x0BA0 + i * 2) / 65536)
+      vectors[#vectors + 1] = string.format("%d:%d:%d:%d:%04X", i, r16(0x0C04 + i * 2),
+        s16(0x0BDC + i * 2), s16(0x0BF0 + i * 2), r16(0x0C18 + i * 2))
     end
   end
-  out:write(string.format("%s,%d,%d,%s,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%s,%04X,%d,%d\n",
+  out:write(string.format("%s,%d,%d,%s,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%s,%04X,%d,%d,%s\n",
     s.name, frame, step_of[frame], (buttons_for(frame):gsub(" ", "+")),
     r16(0x0AF6), r16(0x0AF8), r16(0x0AFA), r16(0x0AFC),
     r16(0x0B2E), r16(0x0B2C), r16(0x0B36),
     r16(0x0B46), r16(0x0B48), r16(0x0B42), r16(0x0B44),
     r16(0x0A1C), emu.read(0x0A1F, WR, false), r16(0x0AFE), r16(0x0B00),
     r16(0x0CCE), r16(0x0CCC), table.concat(projectiles, " "), r16(0x008B),
-    r16(0x0A96), r16(0x0A94)))
+    r16(0x0A96), r16(0x0A94), table.concat(vectors, " ")))
   if frame >= #inputs then next_scenario() end
 end, emu.eventType.endFrame)
 
@@ -166,5 +176,5 @@ state_data = f:read("a")
 f:close()
 out = assert(io.open(OUT, "w"))
 out:write("scenario,frame,step,buttons,x,xsub,y,ysub,vy,vysub,ydir,vx_base,vx_basesub,vx_extra,vx_extrasub," ..
-          "pose,movement,xradius,yradius,projectiles,cooldown,shots,pad,anim_frame,anim_timer\n")
+          "pose,movement,xradius,yradius,projectiles,cooldown,shots,pad,anim_frame,anim_timer,shot_vectors\n")
 next_scenario()

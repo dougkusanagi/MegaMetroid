@@ -69,7 +69,7 @@ Cada etapa é pequena, testável no emulador e termina em **commit + push** (ver
 | 2.5 ✅ | Rampas robustas | Altura por coluna (45°, depois 22,5°); subir/descer sem quicar | Percorrer todas as rampas de Crateria 1 sem travar ou flutuar |
 | 2.6 ✅ | Agachar e bola | Hitbox menor, animações, passagens estreitas | Entrar em túnel de 1 tile |
 | 2.7 ✅ | Spin jump / wall jump | Pulo giratório; wall jump depois | Subir poço com wall jump |
-| 2.8 | Física medida no original | Corrigir as diferenças da tabela de `docs/FISICA.md` (medidas no Mesen 2), em sub-etapas 2.8.1–2.8.5 | Valores do original fixados em `tests/core_test.c` |
+| 2.8 ✅ | Física medida no original | Correções 2.8.1–2.8.5 entregues; limites de fidelidade em `docs/FISICA.md` | Valores do original fixados em `tests/core_test.c` |
 
 **2.8.1 Pulo e gravidade** ✅. Saída 4,875 px/tick, gravidade 0,109375, queda até 5,03, como no
 original: o pulo parado sobe 111 px e fica 92 ticks fora do chão. A saída fica 2 ticks parada (1 no
@@ -109,7 +109,14 @@ expansões bloqueadas, 72 superfícies de rampa e 80 mil ticks nos mapas reais;
 ROM confere as seis dimensões pelo BlastEm via API. Sem nova execução do Mesen.
 Limites dos quadros transitórios e custo em `docs/FISICA.md`.
 
-**2.8.5 Feixe**. Velocidade inicial 4 px/tick com aceleração de 1/16.
+**2.8.5 Feixe ✅ (2026-10-18).** Power Beam começa a 4 px/tick nos eixos
+cardinais e 683/256 px por eixo na diagonal. Acelera 1/16 por eixo ativo antes
+do movimento, inclusive no quadro do disparo (primeiro avanço: 4,0625 px ou
+699/256 px por eixo). Mantidos os intervalos 15/25, três slots e impactos por
+varredura. Seis novas capturas originais arquivadas; testes comparam trajetórias
+e velocidades contra RAM salva e verificam direções, cadência e paredes finas.
+ROM validada no BlastEm via API. Componentes herdadas do movimento da Samus
+e da câmera do original ainda não são reproduzidas; detalhes em `docs/FISICA.md`.
 
 ### Fase 3 — Sprites e animação
 
@@ -199,7 +206,7 @@ quadros, com `SMOKE PASS` via API GDB do BlastEm. Custo em `docs/SPRITES.md`.
 - A faixa da `69` diz "Facing left - aiming up-right", provável erro de digitação ("Facing right").
 
 > **Prioridade de 2026-10-12 atendida em 2026-10-18:** a 3.2 está concluída.
-> Próxima pendência após 2.8.4: 2.8.5 (velocidade e aceleração do feixe).
+> Próxima pendência após 2.8.5: 3.3 (auditar e completar animações e mira).
 
 #### Extração (revisão de 2026-10-12)
 

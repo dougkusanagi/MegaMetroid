@@ -5,6 +5,7 @@
 #include "core/weapon.h"
 #include "out/maps.h"
 #include "out/sm_hitboxes.h"
+#include "out/sm_beams.h"
 
 static unsigned char tiles[64 * 32];
 static MmWorld world = {tiles, 64, 32};
@@ -964,16 +965,16 @@ static void beam_from_muzzle(void) {
     mm_body_init(&b, 80, 112, real); mm_tick(&world, &b, idle);
     mm_weapon_init(&w);
     mm_weapon_tick(&w, &world, &b, shoot, camera, 33, 21);
-    assert(w.fired && w.beams[0].active && w.beams[0].vy == 0 && w.beams[0].vx == MM_BEAM_SPEED);
-    assert(mm_pixel(w.beams[0].x) == 80 + 33 && mm_pixel(w.beams[0].y) == 112 + 21);
+    assert(w.fired && w.beams[0].active && w.beams[0].vy == 0 && w.beams[0].vx == 1040);
+    assert(w.beams[0].x == (80 + 33) * MM_UNIT + 1040 && w.beams[0].y == (112 + 21) * MM_UNIT);
     b.aim = MM_AIM_DIAG_UP; b.facing_left = 1;
     mm_weapon_init(&w);
     mm_weapon_tick(&w, &world, &b, shoot, camera, 2, 1);
-    assert(w.beams[0].active && w.beams[0].vx == -MM_BEAM_DIAGONAL_SPEED && w.beams[0].vy == -MM_BEAM_DIAGONAL_SPEED);
+    assert(w.beams[0].active && w.beams[0].vx == -699 && w.beams[0].vy == -699);
     b.aim = MM_AIM_DOWN;
     mm_weapon_init(&w);
-    mm_weapon_tick(&w, &world, &b, shoot, camera, 10, 43);
-    assert(w.beams[0].active && w.beams[0].vx == 0 && w.beams[0].vy == MM_BEAM_SPEED);
+    mm_weapon_tick(&w, &world, &b, shoot, camera, 10, 35);
+    assert(w.beams[0].active && w.beams[0].vx == 0 && w.beams[0].vy == 1040);
     /* A wall at x 112-119, between the body centre (x 100) and a forward muzzle (x 113). */
     for (y = 0; y < 20; ++y) tiles[y * 64 + 14] = 0;
     b.aim = MM_AIM_FORWARD; b.facing_left = 0;
@@ -1091,6 +1092,46 @@ static void normal_jump_animation(void) {
     }
     puts("PASS normal jump frames: held ascent, four ticks each on descent 2/3/4, held final frame; both facings and short hop");
 }
+static void measured_beams(void) {
+    const MmAim aims[] = {MM_AIM_FORWARD, MM_AIM_UP, MM_AIM_DOWN, MM_AIM_DIAG_UP, MM_AIM_DIAG_DOWN};
+    int side, a, t;
+    MmBody b;
+    MmWeapon w;
+    MmCamera camera = {0, 0};
+    reset();
+    mm_body_init(&b, 108, 88, (MmRect){8, 8, 32, 48});
+    for (side = 0; side < 2; ++side) for (a = 0; a < 5; ++a) {
+        int dx = a == 1 || a == 2 ? 0 : side ? -1 : 1;
+        int dy = a == 1 || a == 3 ? -1 : a == 2 || a == 4 ? 1 : 0;
+        int x = 128 * MM_UNIT, y = 112 * MM_UNIT;
+        b.aim = aims[a]; b.facing_left = side;
+        mm_weapon_init(&w);
+        for (t = 0; t < 16; ++t) {
+            int speed = a >= 3 ? reference_beam_up_right[t][0] : reference_beam_up[t][1];
+            mm_weapon_tick(&w, &world, &b, t ? idle : (MmInput){.shoot_held = 1}, camera, 20, 24);
+            x += dx * speed; y += dy * speed;
+            assert(w.beams[0].active && w.beams[0].vx == dx * speed && w.beams[0].vy == dy * speed);
+            assert(w.beams[0].x == x && w.beams[0].y == y);
+        }
+    }
+    b.aim = MM_AIM_FORWARD; b.facing_left = 0;
+    mm_weapon_init(&w);
+    for (t = 0; t < 70; ++t) {
+        mm_weapon_tick(&w, &world, &b, (MmInput){.shoot_held = 1}, camera, 20, 24);
+        assert(w.fired == (t == 0 || t == 15 || t == 40 || t == 65));
+    }
+    mm_weapon_init(&w);
+    for (t = 0; t < 40; ++t) {
+        mm_weapon_tick(&w, &world, &b, (MmInput){.shoot_held = !(t & 1), .shoot_pressed = !(t & 1)}, camera, 20, 24);
+        assert(w.fired == (t == 0 || t == 16 || t == 32));
+    }
+    mm_weapon_init(&w);
+    for (t = 0; t < MM_BEAM_COUNT; ++t)
+        w.beams[t] = (MmBeam){.active = 1, .x = 128 * MM_UNIT, .y = 112 * MM_UNIT, .life = 60};
+    mm_weapon_tick(&w, &world, &b, (MmInput){.shoot_held = 1}, camera, 20, 24);
+    assert(!w.fired && !w.cooldown);
+    puts("PASS beam: 16 exact original velocity samples/trajectory, eight directions, 15/25 cadence, rapid taps and full pool");
+}
 static void beam_impacts(void) {
     MmBody b;
     MmWeapon w;
@@ -1101,7 +1142,7 @@ static void beam_impacts(void) {
     for (y = 0; y < 20; ++y) tiles[y * 64 + 16] = 0;
     mm_weapon_init(&w);
     mm_weapon_tick(&w, &world, &b, (MmInput){.shoot_held = 1}, camera, 33, 21);
-    for (t = 0; t < 2; ++t) mm_weapon_tick(&w, &world, &b, idle, camera, 33, 21);
+    for (t = 0; t < 3; ++t) mm_weapon_tick(&w, &world, &b, idle, camera, 33, 21);
     assert(!w.beams[0].active && w.beams[0].impact_ticks == MM_IMPACT_TICKS);
     assert(w.beams[0].impact_x == 127 && w.beams[0].impact_y == 85);
     for (t = 0; t < MM_IMPACT_TICKS; ++t) mm_weapon_tick(&w, &world, &b, idle, camera, 33, 21);
@@ -1112,6 +1153,12 @@ static void beam_impacts(void) {
                          .vx = MM_BEAM_SPEED, .life = 60};
     mm_weapon_tick(&w, &world, &b, idle, camera, 33, 21);
     assert(!w.beams[0].active && !w.beams[0].impact_ticks);
+    /* Accelerating beams still sweep thin walls even above their normal speed. */
+    mm_weapon_init(&w);
+    w.beams[0] = (MmBeam){.active = 1, .x = 80 * MM_UNIT, .y = 85 * MM_UNIT,
+                         .vx = 80 * MM_UNIT, .life = 60};
+    mm_weapon_tick(&w, &world, &b, idle, camera, 33, 21);
+    assert(!w.beams[0].active && w.beams[0].impact_ticks == MM_IMPACT_TICKS && w.beams[0].impact_x == 127);
     puts("PASS beam impact at swept wall contact, expires after 10 ticks; no impact off screen");
 }
 static void expect_samus_box(const MmBody *b, MmHitboxKind kind) {
@@ -1233,6 +1280,7 @@ int main(void) {
     normal_jump_animation();
     slope_spin_takeoff();
     beam_impacts();
+    measured_beams();
     movement(); air_steering(); collisions(); jump_and_ledge(); states(); physics(); variable_jump(); ledge_jump();
     slopes(); slope_sweep(); tunnels(); wall_climb(); wall_jump_rules(); poses(); crouch_poses(); crouch_tap(); double_tap(); ball_poses(); aiming(); beam_from_muzzle(); morph_rules(); ball_stands_on_slope();
     ball_stand_real(); camera_and_input(); real_levels();

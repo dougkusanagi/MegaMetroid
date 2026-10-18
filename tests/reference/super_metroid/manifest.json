@@ -4949,6 +4949,432 @@
           "samples": 2
         }
       ]
+    },
+    "beam_down": {
+      "file": "beam_down.csv.gz",
+      "saved_at": "2026-10-18T16:31:43-03:00",
+      "rows": 299,
+      "csv_sha256": "11f9477c4788a4a657b4b6a2a182ae5096314855173410a1ccfa713c7c6ce5cf",
+      "last_committed_script_before_saved_at": "3f1af2ac4e3b4f6ad9436cb9265ad18c645f0cdb",
+      "source_file": "beam_down.csv",
+      "observed_radii": [
+        {
+          "pose": "01",
+          "x": 5,
+          "y": 21,
+          "samples": 34
+        },
+        {
+          "pose": "09",
+          "x": 5,
+          "y": 21,
+          "samples": 140
+        },
+        {
+          "pose": "17",
+          "x": 5,
+          "y": 10,
+          "samples": 63
+        },
+        {
+          "pose": "17",
+          "x": 5,
+          "y": 19,
+          "samples": 1
+        },
+        {
+          "pose": "26",
+          "x": 5,
+          "y": 21,
+          "samples": 5
+        },
+        {
+          "pose": "26",
+          "x": 5,
+          "y": 24,
+          "samples": 1
+        },
+        {
+          "pose": "29",
+          "x": 5,
+          "y": 19,
+          "samples": 33
+        },
+        {
+          "pose": "29",
+          "x": 5,
+          "y": 21,
+          "samples": 1
+        },
+        {
+          "pose": "4B",
+          "x": 5,
+          "y": 21,
+          "samples": 1
+        },
+        {
+          "pose": "4D",
+          "x": 5,
+          "y": 19,
+          "samples": 19
+        },
+        {
+          "pose": "A4",
+          "x": 5,
+          "y": 19,
+          "samples": 1
+        }
+      ]
+    },
+    "beam_down_left": {
+      "file": "beam_down_left.csv.gz",
+      "saved_at": "2026-10-18T16:31:52-03:00",
+      "rows": 326,
+      "csv_sha256": "534d10a7184e2e6d53a92332118221fa9e2c1abe42c9490688c11209badae0c1",
+      "last_committed_script_before_saved_at": "3f1af2ac4e3b4f6ad9436cb9265ad18c645f0cdb",
+      "source_file": "beam_down_left.csv",
+      "observed_radii": [
+        {
+          "pose": "01",
+          "x": 5,
+          "y": 21,
+          "samples": 34
+        },
+        {
+          "pose": "02",
+          "x": 5,
+          "y": 21,
+          "samples": 21
+        },
+        {
+          "pose": "09",
+          "x": 5,
+          "y": 21,
+          "samples": 140
+        },
+        {
+          "pose": "25",
+          "x": 5,
+          "y": 21,
+          "samples": 6
+        },
+        {
+          "pose": "26",
+          "x": 5,
+          "y": 21,
+          "samples": 5
+        },
+        {
+          "pose": "26",
+          "x": 5,
+          "y": 24,
+          "samples": 1
+        },
+        {
+          "pose": "29",
+          "x": 5,
+          "y": 19,
+          "samples": 33
+        },
+        {
+          "pose": "29",
+          "x": 5,
+          "y": 21,
+          "samples": 1
+        },
+        {
+          "pose": "4C",
+          "x": 5,
+          "y": 21,
+          "samples": 1
+        },
+        {
+          "pose": "4E",
+          "x": 5,
+          "y": 19,
+          "samples": 79
+        },
+        {
+          "pose": "6C",
+          "x": 5,
+          "y": 19,
+          "samples": 4
+        },
+        {
+          "pose": "A4",
+          "x": 5,
+          "y": 19,
+          "samples": 1
+        }
+      ]
+    },
+    "beam_down_right": {
+      "file": "beam_down_right.csv.gz",
+      "saved_at": "2026-10-18T16:31:48-03:00",
+      "rows": 299,
+      "csv_sha256": "853552b8968d221c061d6a6fcc77910c6f601f8b4876ac60c150648b64a4945c",
+      "last_committed_script_before_saved_at": "3f1af2ac4e3b4f6ad9436cb9265ad18c645f0cdb",
+      "source_file": "beam_down_right.csv",
+      "observed_radii": [
+        {
+          "pose": "01",
+          "x": 5,
+          "y": 21,
+          "samples": 34
+        },
+        {
+          "pose": "09",
+          "x": 5,
+          "y": 21,
+          "samples": 140
+        },
+        {
+          "pose": "26",
+          "x": 5,
+          "y": 21,
+          "samples": 5
+        },
+        {
+          "pose": "26",
+          "x": 5,
+          "y": 24,
+          "samples": 1
+        },
+        {
+          "pose": "29",
+          "x": 5,
+          "y": 19,
+          "samples": 33
+        },
+        {
+          "pose": "29",
+          "x": 5,
+          "y": 21,
+          "samples": 1
+        },
+        {
+          "pose": "4B",
+          "x": 5,
+          "y": 21,
+          "samples": 1
+        },
+        {
+          "pose": "4D",
+          "x": 5,
+          "y": 19,
+          "samples": 79
+        },
+        {
+          "pose": "6B",
+          "x": 5,
+          "y": 19,
+          "samples": 4
+        },
+        {
+          "pose": "A4",
+          "x": 5,
+          "y": 19,
+          "samples": 1
+        }
+      ]
+    },
+    "beam_up": {
+      "file": "beam_up.csv.gz",
+      "saved_at": "2026-10-18T16:31:41-03:00",
+      "rows": 279,
+      "csv_sha256": "ec59d098c05dc8a8920cf5390022e0c27959e432d28b82ce24c5717cd9a807b9",
+      "last_committed_script_before_saved_at": "3f1af2ac4e3b4f6ad9436cb9265ad18c645f0cdb",
+      "source_file": "beam_up.csv",
+      "observed_radii": [
+        {
+          "pose": "01",
+          "x": 5,
+          "y": 21,
+          "samples": 34
+        },
+        {
+          "pose": "03",
+          "x": 5,
+          "y": 21,
+          "samples": 64
+        },
+        {
+          "pose": "09",
+          "x": 5,
+          "y": 21,
+          "samples": 140
+        },
+        {
+          "pose": "26",
+          "x": 5,
+          "y": 21,
+          "samples": 5
+        },
+        {
+          "pose": "26",
+          "x": 5,
+          "y": 24,
+          "samples": 1
+        },
+        {
+          "pose": "29",
+          "x": 5,
+          "y": 19,
+          "samples": 33
+        },
+        {
+          "pose": "29",
+          "x": 5,
+          "y": 21,
+          "samples": 1
+        },
+        {
+          "pose": "A4",
+          "x": 5,
+          "y": 19,
+          "samples": 1
+        }
+      ]
+    },
+    "beam_up_left": {
+      "file": "beam_up_left.csv.gz",
+      "saved_at": "2026-10-18T16:31:50-03:00",
+      "rows": 306,
+      "csv_sha256": "6f12fb11833a6cb9a818fe5bb60eaabcacca35b1b4d85f480e2773896e68206b",
+      "last_committed_script_before_saved_at": "3f1af2ac4e3b4f6ad9436cb9265ad18c645f0cdb",
+      "source_file": "beam_up_left.csv",
+      "observed_radii": [
+        {
+          "pose": "01",
+          "x": 5,
+          "y": 21,
+          "samples": 34
+        },
+        {
+          "pose": "02",
+          "x": 5,
+          "y": 21,
+          "samples": 21
+        },
+        {
+          "pose": "04",
+          "x": 5,
+          "y": 21,
+          "samples": 60
+        },
+        {
+          "pose": "09",
+          "x": 5,
+          "y": 21,
+          "samples": 140
+        },
+        {
+          "pose": "10",
+          "x": 5,
+          "y": 21,
+          "samples": 4
+        },
+        {
+          "pose": "25",
+          "x": 5,
+          "y": 21,
+          "samples": 6
+        },
+        {
+          "pose": "26",
+          "x": 5,
+          "y": 21,
+          "samples": 5
+        },
+        {
+          "pose": "26",
+          "x": 5,
+          "y": 24,
+          "samples": 1
+        },
+        {
+          "pose": "29",
+          "x": 5,
+          "y": 19,
+          "samples": 33
+        },
+        {
+          "pose": "29",
+          "x": 5,
+          "y": 21,
+          "samples": 1
+        },
+        {
+          "pose": "A4",
+          "x": 5,
+          "y": 19,
+          "samples": 1
+        }
+      ]
+    },
+    "beam_up_right": {
+      "file": "beam_up_right.csv.gz",
+      "saved_at": "2026-10-18T16:31:45-03:00",
+      "rows": 279,
+      "csv_sha256": "d68f937cc6a0ba4a423f87304f775551db199ed093f35ed24e4f9e6b46804d27",
+      "last_committed_script_before_saved_at": "3f1af2ac4e3b4f6ad9436cb9265ad18c645f0cdb",
+      "source_file": "beam_up_right.csv",
+      "observed_radii": [
+        {
+          "pose": "01",
+          "x": 5,
+          "y": 21,
+          "samples": 34
+        },
+        {
+          "pose": "03",
+          "x": 5,
+          "y": 21,
+          "samples": 60
+        },
+        {
+          "pose": "09",
+          "x": 5,
+          "y": 21,
+          "samples": 140
+        },
+        {
+          "pose": "0F",
+          "x": 5,
+          "y": 21,
+          "samples": 4
+        },
+        {
+          "pose": "26",
+          "x": 5,
+          "y": 21,
+          "samples": 5
+        },
+        {
+          "pose": "26",
+          "x": 5,
+          "y": 24,
+          "samples": 1
+        },
+        {
+          "pose": "29",
+          "x": 5,
+          "y": 19,
+          "samples": 33
+        },
+        {
+          "pose": "29",
+          "x": 5,
+          "y": 21,
+          "samples": 1
+        },
+        {
+          "pose": "A4",
+          "x": 5,
+          "y": 19,
+          "samples": 1
+        }
+      ]
     }
   },
   "reference": {

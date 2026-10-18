@@ -3,8 +3,10 @@
 #include "world.h"
 
 #define MM_BEAM_COUNT 3
-#define MM_BEAM_SPEED (12 * MM_UNIT)
-#define MM_BEAM_DIAGONAL_SPEED 2172
+#define MM_BEAM_SPEED (4 * MM_UNIT)
+/* Original Power Beam tables: $0400 cardinal, $02AB per diagonal axis (Q8.8). */
+#define MM_BEAM_DIAGONAL_SPEED 683
+#define MM_BEAM_ACCEL 16
 #define MM_BEAM_DAMAGE 20
 #define MM_BEAM_COOLDOWN 15
 #define MM_BEAM_REPEAT 25
