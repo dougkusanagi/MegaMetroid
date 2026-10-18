@@ -50,6 +50,7 @@ int main(bool hardReset)
     static u8 rows_seen[PLAYER_ANIM_COUNT];
     int kept = 0, stood = 0, released = 0, morphed = 0, unmorphed = 0, spin_sound = 0, beam_sound = 0, music = 0;
     int morph_frames = 0, unmorph_frames = 0;
+    int hitboxes_seen = 0;
     /* A standing jump shows its takeoff, rise, fall and landing; a jump from a run spins and lands spinning. */
     const int standing_jump_poses = 1 << MM_POSE_TAKEOFF | 1 << MM_POSE_JUMP_UP |
                                     1 << MM_POSE_FALL | 1 << MM_POSE_LAND;
@@ -75,6 +76,7 @@ int main(bool hardReset)
         /* A shot on the ground plays the beam sound (channel 3); the spin jump at 400 loops channel 2. */
         input.shoot_pressed = input.shoot_held = frame == 470;
         input.aim_y = frame >= 445 && frame < 460;
+        if (frame >= 350 && frame < 355) input.aim_y = 1;
         if (frame == 465) input.aim_y = -1;
         /* Crouch persists after both a tap and a long hold. Up stands up.
            Ball: down twice morphs; up unmorphs to crouch, another up stands up. */
@@ -97,6 +99,16 @@ int main(bool hardReset)
         input.jump_held |= frame >= 720 && frame < 726;
         if (frame >= 722 && frame < 726) input.shoot_held = 1;
         game_update(&g, input);
+        {
+            int height = g.player.hitbox.bottom - g.player.hitbox.top;
+            if (!g.player.samus_hitboxes || g.player.hitbox.right - g.player.hitbox.left != 10) failed |= 16384;
+            if (height == 42) hitboxes_seen |= 1;
+            if (height == 38) hitboxes_seen |= 2;
+            if (height == 24) hitboxes_seen |= 4;
+            if (height == 32) hitboxes_seen |= 8;
+            if (height == 14) hitboxes_seen |= 16;
+            if (height == 20) hitboxes_seen |= 32;
+        }
         if (frame == 100) music = XGM2_isPlayingPCM(SOUND_PCM_CH1_MSK) != 0;
         if (frame == 405) spin_sound = XGM2_isPlayingPCM(SOUND_PCM_CH2_MSK) != 0;
         if (frame == 472) beam_sound = XGM2_isPlayingPCM(SOUND_PCM_CH3_MSK) != 0;
@@ -113,7 +125,7 @@ int main(bool hardReset)
         poses_seen |= 1 << g.player.pose;
         rows_seen[g.animation] = 1;
         if (g.camera.y != 1024 || mm_blocked(&g.world, &g.player,
-            mm_pixel(g.player.x), mm_pixel(g.player.y))) failed = 1;
+            mm_pixel(g.player.x), mm_pixel(g.player.y))) failed |= 1;
         SYS_doVBlankProcess();
     }
     if (after_right <= start || after_left >= after_right || !jumped || !g.player.grounded) failed |= 2;
@@ -123,6 +135,7 @@ int main(bool hardReset)
     if ((poses_seen & ball_poses) != ball_poses) failed |= 32;
     if (!kept || !stood || !released || !morphed || !unmorphed) failed |= 64;
     if (morph_frames != 3 || unmorph_frames != 3) failed |= 128;
+    if (hitboxes_seen != 63) failed |= 16384;
     if (!spin_sound || !beam_sound || !music) failed |= 256;
     if (!rows_seen[PLAYER_ANIM_AIM_UP_R] || !rows_seen[PLAYER_ANIM_WALK_SHOOT_L] ||
         !rows_seen[PLAYER_ANIM_WALK_AIM_UP_R] || !rows_seen[PLAYER_ANIM_JUMP_AIM_DIAG_UP_R]) failed |= 512;

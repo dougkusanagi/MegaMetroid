@@ -10,6 +10,30 @@ O registro detalhado começa em 18/10/2026. A entrada anterior abaixo foi
 reconstituída do commit indicado; o histórico anterior completo permanece no Git
 (`git log`) e as entregas por etapa estão em [docs/PLANO.md](docs/PLANO.md).
 
+## 2026-10-18 16:25:15 −03:00 — Hitboxes originais por estado (2.8.4)
+
+### Melhorado
+
+- A Samus usa caixas de 10 px de largura, com alturas de 42 em pé, 38 no pulo
+  normal, 24 no giro, 32 agachada e 14 em bola. Mirar diretamente para baixo no
+  ar usa 20 px. As medidas vêm das capturas de RAM já arquivadas.
+- Mudanças de caixa preservam o apoio no chão ou o centro no ar. A expansão é
+  adiada se estiver bloqueada; pousos sob teto tentam a caixa agachada.
+- Morfar cancela o giro; desmorfar usa a caixa de transição antes de retornar
+  ao estado seguinte. Nenhuma nova execução do Mesen foi necessária.
+- Mantido suporte a caixas personalizadas nos testes genéricos do núcleo.
+
+### Adicionado
+
+- Expectativas de hitbox geradas das capturas originais versionadas e testes
+  do perfil real: ambos os lados, transições, passagens estreitas, tetos,
+  72 superfícies de rampa e 80 mil ticks nos mapas de Crateria.
+- A ROM verifica pela API as seis dimensões de colisão durante o roteiro.
+
+**Validação:** testes do núcleo com gcc, pulo normal a 111 px/92 ticks, build
+SGDK e `SMOKE PASS` no BlastEm via API GDB. Documentados os limites dos raios
+de um único quadro nas transições do original.
+
 ## 2026-10-18 16:17:35 −03:00 — Referência do original reutilizável
 
 ### Adicionado

@@ -39,6 +39,13 @@
 
 typedef struct { int left, top, right, bottom; } MmRect;
 typedef struct { const unsigned char *tiles; int columns, rows; } MmWorld;
+
+typedef enum {
+    MM_BOX_STAND, MM_BOX_JUMP, MM_BOX_SPIN, MM_BOX_CROUCH, MM_BOX_BALL,
+    MM_BOX_AIR_DOWN, MM_BOX_COUNT
+} MmHitboxKind;
+/* Original steady-state radii, expressed relative to the port's drawing origin. */
+extern const MmRect mm_samus_boxes[MM_BOX_COUNT];
 typedef enum {
     MM_STATE_STAND, MM_STATE_WALK, MM_STATE_CROUCH, MM_STATE_BALL,
     MM_STATE_JUMP, MM_STATE_SPIN, MM_STATE_FALL
@@ -59,6 +66,7 @@ typedef struct {
     int vx, vy;
     MmRect hitbox; /* Half-open local pixel bounds; crouch and ball shrink it. */
     MmRect stand_box; /* Standing hitbox, the base for the crouch and ball boxes. */
+    int samus_hitboxes; /* Production Samus profile; custom mm_body_init boxes stay generic. */
     int grounded, facing_left, jumped;
     int speed, run_extra; /* Base speed along the facing direction and the dash bonus, Q24.8 px/tick. */
     int turn, turned; /* Ticks left turning around, and whether the body already faces the new way. */
@@ -68,7 +76,7 @@ typedef struct {
     int spin_jumping;
     int shoot_pose_timer; /* Ticks the shooting pose still shows; refilled while the shot is held. */
     int ball, crouching; /* Toggled by down/up presses and the d-pad. */
-    int crouch_latch; /* Crouch kept after a tap on the ground; a jump, a direction or up ends it. */
+    int crouch_latch; /* Crouch persists after down; jump, direction or a new up press ends it. */
     int down_window; /* Ticks left in which a second press of down morphs the body. */
     int takeoff; /* Ticks a jump from the ground still waits, walking on the ground, before it rises. */
     MmState state; /* Derived at the end of every mm_tick. */
@@ -91,6 +99,7 @@ int mm_tile(const MmWorld *world, int x, int y);
 int mm_rect_blocked(const MmWorld *world, MmRect rect);
 int mm_blocked(const MmWorld *world, const MmBody *body, int x, int y);
 void mm_body_init(MmBody *body, int x, int y, MmRect hitbox);
+void mm_samus_init(MmBody *body, int x, int y);
 void mm_move(const MmWorld *world, MmBody *body);
 void mm_tick(const MmWorld *world, MmBody *body, MmInput input);
 MmInput mm_input(MmInputState *state, unsigned short buttons,

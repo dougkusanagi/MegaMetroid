@@ -96,7 +96,18 @@ Pousos: normal 7 (5+2 por quadro), giro 1. Testes de referência no núcleo, nos
 dois lados e sob teto baixo; teste da ROM no BlastEm pela API GDB. Medições e
 limites restantes em `docs/FISICA.md`; hitboxes originais ficam para 2.8.4.
 
-**2.8.4 Hitboxes**. Larguras e alturas do original por estado.
+**2.8.4 Hitboxes** ✅. Perfil de colisão da Samus baseado nos raios arquivados:
+10×42 em pé, 10×38 no pulo/queda, 10×24 no giro, 10×32 agachada, 10×14 em bola
+e 10×20 mirando diretamente para baixo no ar. Pés são preservados no chão e
+o centro nas mudanças aéreas, com deslocamento de 9 px ao morfar no ar observado
+na referência. Expansões bloqueadas mantêm a caixa anterior até haver espaço;
+pousos sob teto tentam a caixa agachada. A desmorfagem usa 10×32 durante sua
+transição, antes de voltar à caixa do estado seguinte. `mm_samus_init` ativa o
+perfil no jogo; caixas personalizadas continuam disponíveis para testes genéricos.
+Teste: expectativas geradas das capturas versionadas, dois lados, passagens,
+expansões bloqueadas, 72 superfícies de rampa e 80 mil ticks nos mapas reais;
+ROM confere as seis dimensões pelo BlastEm via API. Sem nova execução do Mesen.
+Limites dos quadros transitórios e custo em `docs/FISICA.md`.
 
 **2.8.5 Feixe**. Velocidade inicial 4 px/tick com aceleração de 1/16.
 
@@ -107,7 +118,7 @@ limites restantes em `docs/FISICA.md`; hitboxes originais ficam para 2.8.4.
 | 3.1 ✅ | Pipeline de sprite | Pranchas originais → PNG indexado → `.res` (`scripts/extract_*.py`), convenções em `docs/SPRITES.md`. Extração feita e todos os `.res` compilam no `rescomp`; a Samus carrega no jogo desde a 3.2.1 | Sprite novo carrega seguindo o doc |
 | 3.2 ✅ | Animações atuais com os sprites originais | Folha Dread substituída pelas poses de `res/images/samus-original-sgdk/poses`. Sub-etapas 3.2.1–3.2.7 concluídas, com commits próprios | Ver a tabela da 3.2 |
 | 3.3 | Animações completas | Virar, mirar (cima/baixo/diagonal), agachar, bola, spin | Todas visíveis em sequência |
-| 3.4 | Hitbox por estado | `collision_size` varia por estado | Sem prender na parede ao trocar de estado |
+| 3.4 ✅ | Hitbox por estado | Perfil original por estado, entregue na 2.8.4 | Trocas junto a pisos, tetos e paredes sem penetrar tiles |
 | 3.5 | Orçamento de VRAM | Alocação automática de VRAM / streaming de tiles do sprite | `SPR_showVRAMUsage` dentro do orçamento |
 | 3.6 | Paletas da Samus | Varia/Gravity e ciclos de cor (charge, speed booster, screw attack, dano, Hyper Beam) por troca de paleta, sem tiles novos | Ciclos visíveis sem trocar tiles |
 
@@ -188,7 +199,7 @@ quadros, com `SMOKE PASS` via API GDB do BlastEm. Custo em `docs/SPRITES.md`.
 - A faixa da `69` diz "Facing left - aiming up-right", provável erro de digitação ("Facing right").
 
 > **Prioridade de 2026-10-12 atendida em 2026-10-18:** a 3.2 está concluída.
-> Próxima pendência após 2.8.3: 2.8.4 (hitboxes originais por estado).
+> Próxima pendência após 2.8.4: 2.8.5 (velocidade e aceleração do feixe).
 
 #### Extração (revisão de 2026-10-12)
 

@@ -4,6 +4,7 @@
 #include "core/world.h"
 #include "core/weapon.h"
 #include "out/maps.h"
+#include "out/sm_hitboxes.h"
 
 static unsigned char tiles[64 * 32];
 static MmWorld world = {tiles, 64, 32};
@@ -269,24 +270,33 @@ static void real_levels(void) {
     int starts[2][2] = {{256,1176},{1168,80}};
     MmRect hitbox = {8,8,32,48};
     unsigned int seed = 12345;
-    int level, frame;
-    for (level=0;level<2;++level) {
+    int profile, level, frame;
+    for (profile = 0; profile < 2; ++profile) for (level=0;level<2;++level) {
         MmBody b;
-        mm_body_init(&b,starts[level][0],starts[level][1],hitbox);
+        if (profile) mm_samus_init(&b, starts[level][0], starts[level][1]);
+        else mm_body_init(&b,starts[level][0],starts[level][1],hitbox);
         assert(!mm_blocked(&maps[level],&b,mm_pixel(b.x),mm_pixel(b.y)));
         for(frame=0;frame<20000;++frame) {
             MmInput input = {0};
             seed=seed*1664525u+1013904223u;
             input.axis=(frame/180)%3-1;
             input.jump_pressed=(seed%71)==0;
+            if (profile) {
+                input.jump_pressed = frame % 127 == 0;
+                input.jump_held = frame % 127 < 50;
+                input.down_pressed = frame % 233 == 0 || frame % 233 == 6;
+                input.aim_y = input.down_pressed ? 1 : 0;
+                input.up_pressed = frame % 233 == 80 || frame % 233 == 100;
+                input.shoot_pressed = input.shoot_held = frame % 109 == 0;
+            }
             mm_tick(&maps[level],&b,input);
             assert(!mm_blocked(&maps[level],&b,mm_pixel(b.x),mm_pixel(b.y)));
-            assert(b.x>=-8*MM_UNIT && b.y>=-8*MM_UNIT);
-            assert(mm_pixel(b.x)+32<=maps[level].columns*8);
-            assert(mm_pixel(b.y)+48<=maps[level].rows*8);
+            assert(mm_pixel(b.x) + b.hitbox.left >= 0 && mm_pixel(b.y) + b.hitbox.top >= 0);
+            assert(mm_pixel(b.x) + b.hitbox.right <= maps[level].columns*8);
+            assert(mm_pixel(b.y) + b.hitbox.bottom <= maps[level].rows*8);
         }
     }
-    puts("PASS 40000 simulation ticks on actual Crateria maps");
+    puts("PASS 80000 simulation ticks on actual Crateria maps: generic and production Samus profiles");
 }
 /* Ticks with the given input, appending each state change to log ("STAND WALK"). */
 static void run_states(MmBody *b, char *log, MmInput input, int ticks) {
@@ -457,6 +467,33 @@ static void slope_sweep(void) {
     assert(walked >= 70 && stalls == 0 && floats == 0);
     printf("PASS 45-degree slopes of Crateria 1: %d surfaces walked both ways, %d too narrow for the hitbox\n",
            walked, too_narrow);
+}
+
+static void samus_slope_sweep(void) {
+    MmWorld crateria = {&real_map_1[0][0], 288, 156};
+    int c, r, walked = 0, stalls = 0, floats = 0;
+    for (c = 0; c < crateria.columns; ++c) {
+        int top = -1;
+        for (r = 1; r < crateria.rows && top < 0; ++r)
+            if ((real_map_1[r][c] == 2 || real_map_1[r][c] == 3) && real_map_1[r - 1][c] == 1) top = r;
+        if (top >= 0) {
+            MmBody b;
+            int x = c * MM_TILE - 16, y, t, placed = 0;
+            for (y = top * MM_TILE - 48; y >= 0 && !placed; y -= 4) {
+                mm_samus_init(&b, x, y);
+                placed = !mm_blocked(&crateria, &b, x, y);
+            }
+            for (t = 0; placed && t < 3000 && !b.grounded; ++t) mm_tick(&crateria, &b, idle);
+            if (!placed || !b.grounded) continue;
+            ++walked;
+            sweep_walk(&crateria, &b, 1, 48, &stalls, &floats);
+            sweep_walk(&crateria, &b, -1, 96, &stalls, &floats);
+            sweep_walk(&crateria, &b, 1, 48, &stalls, &floats);
+            assert(!mm_blocked(&crateria, &b, mm_pixel(b.x), mm_pixel(b.y)));
+        }
+    }
+    assert(walked >= 70 && !stalls && !floats);
+    printf("PASS production Samus slope sweep: %d surfaces, no stalls or floating\n", walked);
 }
 /* A ball crosses a 2-tile tunnel and cannot un-morph inside it. Crouch under a 3-tile ceiling holds. */
 static void tunnels(void) {
@@ -1077,7 +1114,120 @@ static void beam_impacts(void) {
     assert(!w.beams[0].active && !w.beams[0].impact_ticks);
     puts("PASS beam impact at swept wall contact, expires after 10 ticks; no impact off screen");
 }
+static void expect_samus_box(const MmBody *b, MmHitboxKind kind) {
+    assert(b->hitbox.right - b->hitbox.left == reference_hitboxes[kind][0]);
+    assert(b->hitbox.bottom - b->hitbox.top == reference_hitboxes[kind][1]);
+}
+
+static void samus_hitboxes(void) {
+    MmBody b;
+    MmInput down = {.aim_y = 1, .down_pressed = 1}, up = {.aim_y = -1, .up_pressed = 1};
+    MmInput jump = {.jump_pressed = 1, .jump_held = 1};
+    int kind, side, t, foot, centre;
+    assert(sizeof(reference_hitboxes) / sizeof(reference_hitboxes[0]) == MM_BOX_COUNT);
+    for (kind = 0; kind < MM_BOX_COUNT; ++kind) {
+        MmRect r = mm_samus_boxes[kind];
+        assert(r.right - r.left == reference_hitboxes[kind][0] && r.bottom - r.top == reference_hitboxes[kind][1]);
+    }
+    for (side = 0; side < 2; ++side) {
+        reset(); floor_at(30);
+        mm_samus_init(&b, 100, 192); mm_tick(&world, &b, idle);
+        b.facing_left = side;
+        expect_samus_box(&b, MM_BOX_STAND);
+        foot = b.y + b.hitbox.bottom * MM_UNIT;
+        centre = b.y + (b.hitbox.top + b.hitbox.bottom) * MM_UNIT / 2;
+        mm_tick(&world, &b, down);
+        expect_samus_box(&b, MM_BOX_CROUCH);
+        assert(b.y + b.hitbox.bottom * MM_UNIT == foot);
+        assert(b.y + (b.hitbox.top + b.hitbox.bottom) * MM_UNIT / 2 == centre + 5 * MM_UNIT);
+        mm_tick(&world, &b, idle); mm_tick(&world, &b, down);
+        expect_samus_box(&b, MM_BOX_BALL);
+        assert(b.y + b.hitbox.bottom * MM_UNIT == foot);
+        for (t = 0; t < 6; ++t) mm_tick(&world, &b, idle);
+        mm_tick(&world, &b, up); expect_samus_box(&b, MM_BOX_CROUCH);
+        for (t = 0; t < 6; ++t) mm_tick(&world, &b, idle);
+        mm_tick(&world, &b, up); expect_samus_box(&b, MM_BOX_STAND);
+        assert(b.y + b.hitbox.bottom * MM_UNIT == foot);
+        mm_tick(&world, &b, jump);
+        for (t = 0; t < 6; ++t) mm_tick(&world, &b, (MmInput){.jump_held = 1});
+        expect_samus_box(&b, MM_BOX_JUMP);
+        mm_tick(&world, &b, (MmInput){.aim_y = 1, .jump_held = 1});
+        expect_samus_box(&b, MM_BOX_AIR_DOWN);
+        mm_tick(&world, &b, (MmInput){.jump_held = 1});
+        expect_samus_box(&b, MM_BOX_JUMP);
+        for (t = 0; t < 150 && !b.grounded; ++t) mm_tick(&world, &b, idle);
+        expect_samus_box(&b, MM_BOX_STAND);
+        assert(b.grounded && b.y + b.hitbox.bottom * MM_UNIT == foot);
+        for (t = 0; t < 12; ++t) mm_tick(&world, &b, (MmInput){.axis = side ? -1 : 1});
+        mm_tick(&world, &b, (MmInput){.axis = side ? -1 : 1, .jump_pressed = 1, .jump_held = 1});
+        mm_tick(&world, &b, (MmInput){.jump_held = 1});
+        expect_samus_box(&b, MM_BOX_SPIN);
+        mm_tick(&world, &b, (MmInput){.shoot_pressed = 1, .shoot_held = 1, .jump_held = 1});
+        expect_samus_box(&b, MM_BOX_JUMP);
+        assert(!mm_blocked(&world, &b, mm_pixel(b.x), mm_pixel(b.y)));
+    }
+    puts("PASS production Samus boxes match archived original radii; grounded feet, air transitions and both facings");
+}
+
+static void samus_jump_measure(void) {
+    MmBody b;
+    int ground, apex, air = 1;
+    reset(); floor_at(30);
+    mm_samus_init(&b, 100, 192); mm_tick(&world, &b, idle);
+    ground = apex = b.y;
+    mm_tick(&world, &b, (MmInput){.jump_pressed = 1, .jump_held = 1});
+    while (!b.grounded && air < 300) {
+        mm_tick(&world, &b, (MmInput){.jump_held = 1});
+        air += !b.grounded;
+        if (b.y < apex) apex = b.y;
+    }
+    printf("Production Samus jump: apex %d px, %d ticks airborne\n", (ground - apex) / MM_UNIT, air);
+    assert((ground - apex) / MM_UNIT == 111 && air == 92 && b.y == ground);
+}
+
+static void samus_tunnels(void) {
+    MmBody b;
+    MmInput down = {.aim_y = 1, .down_pressed = 1}, up = {.up_pressed = 1};
+    int gap, x, y, t;
+    for (gap = 2; gap <= 4; gap += 2) {
+        reset(); floor_at(30);
+        for (y = 0; y < 30 - gap; ++y) for (x = 10; x < 30; ++x) tiles[y * 64 + x] = 0;
+        mm_samus_init(&b, 40, 192); mm_tick(&world, &b, idle);
+        mm_tick(&world, &b, down); mm_tick(&world, &b, idle); mm_tick(&world, &b, down);
+        for (t = 0; t < 25; ++t) mm_tick(&world, &b, (MmInput){.axis = 1});
+        assert(b.ball && mm_pixel(b.x) > 90);
+        mm_tick(&world, &b, up);
+        assert(b.ball == (gap == 2));
+        if (gap == 4) {
+            expect_samus_box(&b, MM_BOX_CROUCH);
+            for (t = 0; t < 6; ++t) mm_tick(&world, &b, idle);
+            mm_tick(&world, &b, up);
+            assert(b.crouching);
+            mm_tick(&world, &b, (MmInput){.jump_pressed = 1, .jump_held = 1});
+            assert(b.grounded && !b.jumped);
+        }
+        assert(!mm_blocked(&world, &b, mm_pixel(b.x), mm_pixel(b.y)));
+    }
+    /* Unspinning under a ceiling defers growth instead of entering solid tiles. */
+    reset(); floor_at(30);
+    tiles[13 * 64 + 14] = tiles[13 * 64 + 15] = 0;
+    mm_samus_init(&b, 100, 100);
+    b.hitbox = mm_samus_boxes[MM_BOX_SPIN]; b.spin_jumping = 1; b.pose = MM_POSE_SPIN;
+    mm_tick(&world, &b, (MmInput){.shoot_pressed = 1, .shoot_held = 1});
+    expect_samus_box(&b, MM_BOX_SPIN);
+    assert(!mm_blocked(&world, &b, mm_pixel(b.x), mm_pixel(b.y)));
+    for (t = 0; t < 30; ++t) {
+        mm_tick(&world, &b, (MmInput){.axis = 1});
+        assert(!mm_blocked(&world, &b, mm_pixel(b.x), mm_pixel(b.y)));
+    }
+    expect_samus_box(&b, b.grounded ? MM_BOX_STAND : MM_BOX_JUMP);
+    puts("PASS production Samus: 14px ball tunnels, 32px crouch clearance, no clipping on blocked air expansion");
+}
+
 int main(void) {
+    samus_jump_measure();
+    samus_slope_sweep();
+    samus_hitboxes(); samus_tunnels();
     measured_postures();
     turn_animation();
     normal_jump_animation();

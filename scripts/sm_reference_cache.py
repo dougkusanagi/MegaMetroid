@@ -92,6 +92,7 @@ def import_traces(patterns, rom, state):
 def check():
     manifest = json.loads((DEST / 'manifest.json').read_text(encoding='utf-8'))
     total = 0
+    radii_by_pose = defaultdict(Counter)
     for name, item in manifest['scenarios'].items():
         data = gzip.decompress((DEST / item['file']).read_bytes())
         assert digest(data) == item['csv_sha256'], name + ': checksum mismatch'
@@ -100,7 +101,20 @@ def check():
         assert [int(r['frame']) for r in rows] == list(range(1, len(rows) + 1)), name + ': missing frames'
         sizes = Counter((int(r['pose']), int(r['xradius']), int(r['yradius'])) for r in rows)
         assert sizes == Counter({(int(s['pose'], 16), s['x'], s['y']): s['samples'] for s in item['observed_radii']}), name
+        for (pose, x, y), count in sizes.items():
+            radii_by_pose[pose][x, y] += count
         total += len(rows)
+    # Independent expected dimensions for the production C tests, from recorded RAM.
+    # Modal sizes select steady states; the archive retains every transient sample.
+    roles = [('stand', 0x01), ('jump', 0x4D), ('spin', 0x19), ('crouch', 0x27), ('ball', 0x1D), ('air_down', 0x17)]
+    expected = []
+    for role, pose in roles:
+        (x, y), _ = radii_by_pose[pose].most_common(1)[0]
+        expected.append(f'    {{{2*x}, {2*y}}}, /* {role}, pose {pose:02X}, modal observed radii */')
+    out = ROOT / 'tests/out'
+    out.mkdir(parents=True, exist_ok=True)
+    (out / 'sm_hitboxes.h').write_text('/* Generated from archived original RAM, not production constants. */\n'
+        'static const int reference_hitboxes[][2] = {\n' + '\n'.join(expected) + '\n};\n')
     print(f'PASS saved reference: {len(manifest["scenarios"])} scenarios, {total} RAM samples; no emulator needed')
 
 

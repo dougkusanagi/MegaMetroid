@@ -186,7 +186,6 @@ bool game_init(Game *g, u16 level_index)
 {
     int i;
     u16 tile = TILE_USER_INDEX;
-    MmRect hitbox = {8, 8, 32, 48};
     g->level = level_get(level_index);
     if (!g->level) return FALSE;
     g->input.previous = 0; g->pal_phase = 0; g->frame = 0;
@@ -196,8 +195,8 @@ bool game_init(Game *g, u16 level_index)
     g->world.tiles = g->level->map_collision;
     g->world.columns = g->level->map_width / MM_TILE;
     g->world.rows = g->level->map_height / MM_TILE;
-    mm_body_init(&g->player, g->level->player_initial_pos.x,
-                 g->level->player_initial_pos.y, hitbox);
+    mm_samus_init(&g->player, g->level->player_initial_pos.x,
+                 g->level->player_initial_pos.y);
     SYS_disableInts();
     VDP_setScreenWidth256();
     VDP_setScreenHeight224();

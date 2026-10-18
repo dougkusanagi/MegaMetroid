@@ -46,4 +46,8 @@ with gzip.open('tests/reference/super_metroid/jump_stand.csv.gz', 'rt') as f:
 ```
 
 Os testes do host validam checksums, sequência de quadros e os resumos de raios.
+O validador gera `tests/out/sm_hitboxes.h` com as dimensões estáveis mais
+frequentes das poses de referência; os testes C comparam o perfil real da Samus
+com esse arquivo, não com cópias dos valores do código de produção. Os dados
+transitórios permanecem nos CSVs e não são substituídos pelo resumo modal.
 Os testes do porte continuam rodando no BlastEm pela API, conforme `AGENTS.md`.

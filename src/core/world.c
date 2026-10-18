@@ -1,5 +1,12 @@
 #include "core/world.h"
 
+/* Width = 2*5; heights = 2*{21,19,12,16,7,10}, from saved Mesen RAM traces.
+   Standing/jumping/spinning share centre y+27. Ground crouch/ball keep feet y+48. */
+const MmRect mm_samus_boxes[MM_BOX_COUNT] = {
+    {15, 6, 25, 48}, {15, 8, 25, 46}, {15, 15, 25, 39},
+    {15, 16, 25, 48}, {15, 34, 25, 48}, {15, 17, 25, 37}
+};
+
 int mm_pixel(int fixed)
 {
     /* Explicit floor, including negative positions, on every compiler. */
@@ -64,45 +71,89 @@ void mm_body_init(MmBody *b, int x, int y, MmRect hitbox)
     b->state = MM_STATE_STAND;
     b->pose = MM_POSE_GROUND; b->pose_timer = 0;
     b->stand_box = hitbox;
+    b->samus_hitboxes = 0;
+}
+
+void mm_samus_init(MmBody *b, int x, int y)
+{
+    mm_body_init(b, x, y, mm_samus_boxes[MM_BOX_STAND]);
+    b->samus_hitboxes = 1;
 }
 
 /* Crouch keeps the feet and drops the top by 2/5 of the standing height (40 -> 24 px). */
-static MmRect crouch_box(MmRect s)
+static MmRect crouch_box(const MmBody *b)
 {
+    MmRect s = b->stand_box;
+    if (b->samus_hitboxes) return mm_samus_boxes[MM_BOX_CROUCH];
     s.top += (s.bottom - s.top) * 2 / 5;
     return s;
 }
 
 /* Ball is a square of 2/3 the standing width (24 -> 16 px), centred on the feet. */
-static MmRect ball_box(MmRect s)
+static MmRect ball_box(const MmBody *b)
 {
+    MmRect s = b->stand_box;
+    if (b->samus_hitboxes) return mm_samus_boxes[MM_BOX_BALL];
     int side = (s.right - s.left) * 2 / 3, cx = (s.left + s.right) / 2;
     MmRect r = {cx - side / 2, s.bottom - side, cx - side / 2 + side, s.bottom};
     return r;
 }
 
+static int box_blocked(const MmWorld *w, const MmBody *b, MmRect box, int dy)
+{
+    int x = mm_pixel(b->x), y = mm_pixel(b->y) + dy;
+    MmRect r = {x + box.left, y + box.top, x + box.right, y + box.bottom};
+    return mm_rect_blocked(w, r);
+}
+
 /* True if the body at its current position fits inside box. */
 static int fits(const MmWorld *w, const MmBody *b, MmRect box)
 {
-    MmBody probe = *b;
-    probe.hitbox = box;
-    return !mm_blocked(w, &probe, mm_pixel(b->x), mm_pixel(b->y));
+    return !box_blocked(w, b, box, 0);
 }
 
 /* Expands from a ball. On a slope the larger box's lower corners sit in the surface, so the
    body may lift by up to a tile to fit. Returns 0 if no lift up to that makes room. */
 static int expand_box(const MmWorld *w, MmBody *b, MmRect box)
 {
-    MmBody probe = *b;
-    int lift;
-    probe.hitbox = box;
+    int lift, delta = 0;
+    if (b->samus_hitboxes && !b->grounded)
+        delta = (b->hitbox.top + b->hitbox.bottom - box.top - box.bottom) / 2;
     for (lift = 0; lift <= MM_TILE; ++lift) {
-        if (!mm_blocked(w, &probe, mm_pixel(b->x), mm_pixel(b->y) - lift)) {
-            b->y -= lift * MM_UNIT;
+        if (!box_blocked(w, b, box, delta - lift)) {
+            b->y += (delta - lift) * MM_UNIT;
+            if (b->samus_hitboxes) b->hitbox = box;
             return 1;
         }
     }
     return 0;
+}
+
+/* Resize without clipping. Keep grounded feet; in the air keep the collision centre.
+   The original air morph moves the centre down 9 px (crouch radius 16 -> ball 7).
+   If an expansion cannot fit, retain the previous box until there is room. */
+static int resize_samus(const MmWorld *w, MmBody *b, MmRect box, int morphing)
+{
+    int delta = b->grounded ? b->hitbox.bottom - box.bottom :
+        (b->hitbox.top + b->hitbox.bottom - box.top - box.bottom) / 2;
+    if (!morphing && box.left == b->hitbox.left && box.top == b->hitbox.top &&
+        box.right == b->hitbox.right && box.bottom == b->hitbox.bottom) return 1;
+    if (!b->grounded && morphing) delta += 9;
+    if (box_blocked(w, b, box, delta)) return 0;
+    b->y += delta * MM_UNIT;
+    b->hitbox = box;
+    return 1;
+}
+
+static MmRect samus_box(const MmBody *b)
+{
+    if (b->ball) return mm_samus_boxes[MM_BOX_BALL];
+    if (b->pose == MM_POSE_UNMORPH && b->pose_timer) return mm_samus_boxes[MM_BOX_CROUCH];
+    if (b->grounded) return mm_samus_boxes[b->crouching ? MM_BOX_CROUCH : MM_BOX_STAND];
+    if (b->pose == MM_POSE_GROUND && !b->vy && !b->falling) return mm_samus_boxes[MM_BOX_STAND];
+    if (b->pose == MM_POSE_WALL_KICK && b->pose_timer) return mm_samus_boxes[MM_BOX_JUMP];
+    if (b->spin_jumping) return mm_samus_boxes[MM_BOX_SPIN];
+    return mm_samus_boxes[b->aim == MM_AIM_DOWN ? MM_BOX_AIR_DOWN : MM_BOX_JUMP];
 }
 
 /* True if a wall is within MM_WALL_REACH px on the side opposite to direction. */
@@ -374,23 +425,26 @@ void mm_tick(const MmWorld *w, MmBody *b, MmInput input)
        is not a press. Unmorphing only needs room for the target box. */
     if (b->down_window) --b->down_window;
     if (input.down_pressed && !input.shoot_held) {
-        if (b->down_window || (b->crouching && b->grounded)) { b->ball = 1; b->down_window = b->crouch_latch = 0; }
+        if (b->down_window || (b->crouching && b->grounded)) {
+            b->ball = 1; b->spin_jumping = 0; b->down_window = b->crouch_latch = 0;
+        }
         else b->down_window = MM_DOUBLE_TAP_TICKS;
     }
     /* Up or jump unmorphs without adding a jump impulse. On the ground it ends
        crouched; another up press stands up.
        Only the target box must fit, so low ceilings can allow crouch but forbid standing. */
     if (b->ball && (input.up_pressed || input.jump_pressed) &&
-        expand_box(w, b, b->grounded ? crouch_box(b->stand_box) : b->stand_box)) {
+        expand_box(w, b, b->grounded || b->samus_hitboxes ? crouch_box(b) : b->stand_box)) {
         b->ball = 0;
         b->crouch_latch = b->grounded;
         b->down_window = 0;
+        if (b->samus_hitboxes) { b->pose = MM_POSE_UNMORPH; b->pose_timer = MM_UNMORPH_TICKS; }
     }
     /* Crouch needs no direction for a hold, and holds while a standing box would hit a ceiling. */
     b->crouching = b->grounded && !b->ball &&
         ((input.aim_y > 0 && !direction) || b->crouch_latch || (b->crouching && !fits(w, b, b->stand_box)));
-    b->hitbox = b->ball ? ball_box(b->stand_box) :
-                b->crouching ? crouch_box(b->stand_box) : b->stand_box;
+    if (!b->samus_hitboxes)
+        b->hitbox = b->ball ? ball_box(b) : b->crouching ? crouch_box(b) : b->stand_box;
     if (b->jumped && !wall_jump) b->takeoff = b->spin_jumping ? 1 : MM_JUMP_STILL;
     steer(b, direction, input.run_held);
     if (b->jumped) {
@@ -409,11 +463,19 @@ void mm_tick(const MmWorld *w, MmBody *b, MmInput input)
     if (!input.jump_held) { if (b->vy < 0) b->vy = 0; b->takeoff = 0; }
     /* A takeoff still moves along the ground, slopes included, and rises once it ends. */
     if (b->takeoff) b->grounded = 1;
+    if (b->samus_hitboxes) {
+        b->aim = body_aim(b, input);
+        resize_samus(w, b, samus_box(b), b->ball && !was_ball);
+    }
     mm_move(w, b);
     if (b->takeoff) {
         b->grounded = 0;
         if (!--b->takeoff) b->vy = -MM_JUMP;
     } else if (!b->grounded) fall(b);
+    if (b->samus_hitboxes && b->grounded && !resize_samus(w, b, samus_box(b), 0) && !b->ball) {
+        b->crouching = b->crouch_latch = 1;
+        resize_samus(w, b, crouch_box(b), 0);
+    }
     /* A wall stops the body; so does a landing, which then accelerates again from rest. Walking off a
        ledge is a fall, slower in the air than a jump. */
     if (!b->vx || (b->grounded && !was_grounded)) { b->speed = b->run_extra = b->slide = b->walking = 0; }

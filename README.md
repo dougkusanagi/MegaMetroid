@@ -29,11 +29,14 @@ usa o sprite original nas oito direções e mostra um impacto animado ao atingir
 ↓ no chão agacha, com hitbox e pose menores; a Samus continua agachada ao soltar,
 independentemente do tempo segurado. Para levantar, dê um novo toque de ↑, ande ou pule,
 desde que haja espaço.
-Dois toques de ↓ em até 1/3 de segundo, sem atirar, entram em bola, no chão ou no ar (hitbox de 16 px).
+Dois toques de ↓ em até 1/3 de segundo, sem atirar, entram em bola, no chão ou no ar (hitbox de 10×14 px).
 Agachada, um novo toque de ↓ também entra em bola, sem pressa. Um toque no ar não faz nada. A bola não
 atira e só gira enquanto se move. ↑ ou C desfaz a bola sem dar impulso de pulo;
 no chão, volta para agachada se houver espaço. Outro toque de ↑ levanta. Segurar ↑
 não conta como um segundo toque; em túneis que só comportam a bola, ela permanece bola.
+
+As hitboxes seguem as dimensões medidas no original: 10×42 px em pé, 10×38 no
+pulo normal, 10×24 no giro e 10×32 agachada. A caixa só cresce quando há espaço.
 
 A caminhada acelera 0,1875 px/tick por tick até 2,75 px/tick (11 ticks); soltar o direcional desliza
 a 0,5 px/tick por tick e virar leva 7 ticks. A corrida acrescenta 0,0625 px/tick a cada tick
