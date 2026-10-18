@@ -6,6 +6,7 @@
 
 /* Read by scripts/smoke_test.py through BlastEm's GDB protocol: 0 running, 1 pass, 2 fail. */
 volatile u16 mm_smoke_result;
+volatile u32 mm_smoke_failure; /* Failure bitmask, printed through the GDB API. */
 __attribute__((noinline, used, externally_visible)) void mm_smoke_finish(void)
 {
     while (1) SYS_doVBlankProcess();
@@ -48,6 +49,7 @@ int main(bool hardReset)
     int frame, failed = 0, start, after_right = 0, after_left = 0, jumped = 0, poses_seen = 0;
     static u8 rows_seen[PLAYER_ANIM_COUNT];
     int kept = 0, stood = 0, released = 0, morphed = 0, unmorphed = 0, spin_sound = 0, beam_sound = 0, music = 0;
+    int morph_frames = 0, unmorph_frames = 0;
     /* A standing jump shows its takeoff, rise, fall and landing; a jump from a run spins and lands spinning. */
     const int standing_jump_poses = 1 << MM_POSE_TAKEOFF | 1 << MM_POSE_JUMP_UP |
                                     1 << MM_POSE_FALL | 1 << MM_POSE_LAND;
@@ -73,16 +75,18 @@ int main(bool hardReset)
         /* A shot on the ground plays the beam sound (channel 3); the spin jump at 400 loops channel 2. */
         input.shoot_pressed = input.shoot_held = frame == 470;
         input.aim_y = frame >= 445 && frame < 460;
-        /* Crouch: a 3-tick tap keeps it, up stands up, a 20-tick hold stands up on release.
-           Ball: two taps of down (600 and 606) morph, and up stands up again. */
+        if (frame == 465) input.aim_y = -1;
+        /* Crouch persists after both a tap and a long hold. Up stands up.
+           Ball: down twice morphs; up unmorphs to crouch, another up stands up. */
         if (frame >= 480 && frame < 483) input.aim_y = 1;
         if (frame == 540) input.aim_y = -1;
         if (frame >= 560 && frame < 580) input.aim_y = 1;
+        if (frame == 590) input.aim_y = -1;
         if (frame >= 600 && frame < 603) input.aim_y = 1;
         if (frame >= 606 && frame < 609) input.aim_y = 1;
         if (frame == 621) input.aim_y = -1;
         input.down_pressed = frame == 480 || frame == 600 || frame == 606;
-        input.up_pressed = frame == 540 || frame == 621;
+        input.up_pressed = frame == 465 || frame == 540 || frame == 590 || frame == 621 || frame == 650;
         /* Aiming (3.2.5): up held standing, a walk while shooting, a walk aiming up-forward, then a
            short running jump with a shot (the shot stops the spin) still aiming up-forward. */
         if (frame >= 650 && frame < 670) input.aim_y = -1;
@@ -100,9 +104,11 @@ int main(bool hardReset)
         if (frame == 299) after_left = g.player.x;
         if (frame == 539) kept = g.player.crouching;
         if (frame == 559) stood = !g.player.crouching;
-        if (frame == 599) released = !g.player.crouching;
+        if (frame == 589) released = g.player.crouching;
         if (frame == 620) morphed = g.player.ball;
-        if (frame == 639) unmorphed = !g.player.ball;
+        if (frame == 639) unmorphed = !g.player.ball && g.player.crouching;
+        if ((g.animation & ~1) == PLAYER_ANIM_MORPH_R) morph_frames |= 1 << g.sprite->frameInd;
+        if ((g.animation & ~1) == PLAYER_ANIM_UNMORPH_R) unmorph_frames |= 1 << g.sprite->frameInd;
         if (g.player.jumped) jumped = 1;
         poses_seen |= 1 << g.player.pose;
         rows_seen[g.animation] = 1;
@@ -110,17 +116,18 @@ int main(bool hardReset)
             mm_pixel(g.player.x), mm_pixel(g.player.y))) failed = 1;
         SYS_doVBlankProcess();
     }
-    if (after_right <= start || after_left >= after_right || !jumped || !g.player.grounded) failed = 1;
-    if ((poses_seen & standing_jump_poses) != standing_jump_poses) failed = 1;
-    if ((poses_seen & spin_jump_poses) != spin_jump_poses) failed = 1;
-    if ((poses_seen & crouch_poses) != crouch_poses) failed = 1;
-    if ((poses_seen & ball_poses) != ball_poses) failed = 1;
-    if (!kept || !stood || !released || !morphed || !unmorphed) failed = 1;
-    if (!spin_sound || !beam_sound || !music) failed = 1;
+    if (after_right <= start || after_left >= after_right || !jumped || !g.player.grounded) failed |= 2;
+    if ((poses_seen & standing_jump_poses) != standing_jump_poses) failed |= 4;
+    if ((poses_seen & spin_jump_poses) != spin_jump_poses) failed |= 8;
+    if ((poses_seen & crouch_poses) != crouch_poses) failed |= 16;
+    if ((poses_seen & ball_poses) != ball_poses) failed |= 32;
+    if (!kept || !stood || !released || !morphed || !unmorphed) failed |= 64;
+    if (morph_frames != 3 || unmorph_frames != 3) failed |= 128;
+    if (!spin_sound || !beam_sound || !music) failed |= 256;
     if (!rows_seen[PLAYER_ANIM_AIM_UP_R] || !rows_seen[PLAYER_ANIM_WALK_SHOOT_L] ||
-        !rows_seen[PLAYER_ANIM_WALK_AIM_UP_R] || !rows_seen[PLAYER_ANIM_JUMP_AIM_DIAG_UP_R]) failed = 1;
+        !rows_seen[PLAYER_ANIM_WALK_AIM_UP_R] || !rows_seen[PLAYER_ANIM_JUMP_AIM_DIAG_UP_R]) failed |= 512;
     /* PAL adds one tick in every five game_update calls: 760 calls become 912 ticks. */
-    if (g.frame != 760 + (SYS_isPAL() ? 152 : 0)) failed = 1;
+    if (g.frame != 760 + (SYS_isPAL() ? 152 : 0)) failed |= 1024;
     /* Both facings keep the normal-jump strip throughout descent, with no frame loop. */
     {
         int side;
@@ -131,16 +138,16 @@ int main(bool hardReset)
                 game_update(&g, (MmInput){.jump_pressed = frame == 0, .jump_held = 1});
                 if (g.player.pose == MM_POSE_FALL && !g.player.falling) {
                     if (g.animation != PLAYER_ANIM_JUMP_UP_R + side ||
-                        g.sprite->frameInd != g.player.jump_frame || g.player.jump_frame < last) failed = 1;
+                        g.sprite->frameInd != g.player.jump_frame || g.player.jump_frame < last) failed |= 2048;
                     last = g.player.jump_frame;
                     seen |= 1 << last;
                 }
                 SYS_doVBlankProcess();
             }
-            if ((seen & 60) != 60 || !g.player.grounded) failed = 1;
+            if ((seen & 60) != 60 || !g.player.grounded) failed |= 2048;
         }
     }
-    failed |= turns(&g);
+    if (turns(&g)) failed |= 4096;
     /* A downward beam just above the floor must render all five impact frames, then hide. */
     mm_weapon_init(&g.weapon);
     g.weapon.beams[0] = (MmBeam){.active = 1, .x = g.player.x + 20 * MM_UNIT,
@@ -148,7 +155,7 @@ int main(bool hardReset)
         .vy = MM_BEAM_SPEED, .life = 60};
     game_update(&g, (MmInput){0});
     if (!g.weapon.beams[0].impact_ticks ||
-        g.beam_sprites[0]->definition != &beam_impact_sprite) failed = 1;
+        g.beam_sprites[0]->definition != &beam_impact_sprite) failed |= 8192;
     {
         int impact_frames = 0;
         for (frame = 0; frame < MM_IMPACT_TICKS; ++frame) {
@@ -157,13 +164,14 @@ int main(bool hardReset)
             SYS_doVBlankProcess();
             game_update(&g, (MmInput){0});
         }
-        if (impact_frames != 31 || g.weapon.beams[0].impact_ticks) failed = 1;
+        if (impact_frames != 31 || g.weapon.beams[0].impact_ticks) failed |= 8192;
     }
     /* Window plane keeps the result on screen; plane A scrolls with the camera. */
     VDP_setWindowVPos(FALSE, 2);
     VDP_setTextPlane(WINDOW);
     VDP_drawText(failed ? "SMOKE FAIL" : "SMOKE PASS", 1, 0);
     VDP_drawText("MOVE L/R JUMP CAMERA", 1, 1);
+    mm_smoke_failure = failed;
     mm_smoke_result = failed ? 2 : 1;
     mm_smoke_finish();
     return 0;

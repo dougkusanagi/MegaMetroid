@@ -134,7 +134,13 @@ static void render(Game *g)
             SPR_setAnim(g->sprite, animation);
         g->animation = animation;
     }
-    if ((animation & ~1) == PLAYER_ANIM_TURN_R || (animation & ~1) == PLAYER_ANIM_TURN_AIR_R) {
+    if ((animation & ~1) == PLAYER_ANIM_MORPH_R || (animation & ~1) == PLAYER_ANIM_UNMORPH_R) {
+        SPR_setAutoAnimation(g->sprite, FALSE);
+        SPR_setFrame(g->sprite, (MM_MORPH_TICKS - g->player.pose_timer) / 3);
+    } else if ((animation & ~1) == PLAYER_ANIM_LAND_R || (animation & ~1) == PLAYER_ANIM_SPIN_LAND_R) {
+        SPR_setAutoAnimation(g->sprite, FALSE);
+        SPR_setFrame(g->sprite, g->player.pose == MM_POSE_LAND && g->player.pose_timer <= 2 ? 1 : 0);
+    } else if ((animation & ~1) == PLAYER_ANIM_TURN_R || (animation & ~1) == PLAYER_ANIM_TURN_AIR_R) {
         SPR_setAutoAnimation(g->sprite, FALSE);
         SPR_setFrame(g->sprite, (MM_TURN_POSE_TICKS - g->player.turn_pose_ticks) / 2);
     } else if (animation == PLAYER_ANIM_JUMP_UP_R + side) {

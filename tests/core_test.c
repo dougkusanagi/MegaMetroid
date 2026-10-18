@@ -317,7 +317,7 @@ static void states(void) {
     run_states(&b, log, spin, 1);
     run_states(&b, log, spin_hold, 20);
     run_states(&b, log, idle, 100);
-    run_states(&b, log, down, MM_TAP_TICKS + 1);
+    run_states(&b, log, down, 30);
     run_states(&b, log, idle, 2);
     run_states(&b, log, jump, 1);
     run_states(&b, log, hold, 4);
@@ -326,7 +326,7 @@ static void states(void) {
     run_states(&b, log, down_press, 1);
     run_states(&b, log, down, 100);
     run_states(&b, log, up_press, 1);
-    assert(strcmp(log, "STAND WALK STAND JUMP FALL STAND WALK SPIN WALK STAND CROUCH STAND JUMP BALL STAND") == 0);
+    assert(strcmp(log, "STAND WALK STAND JUMP FALL STAND WALK SPIN WALK STAND CROUCH JUMP BALL CROUCH") == 0);
     printf("PASS state transitions: %s\n", log);
 }
 /* Measures a standing jump and a running jump; bounds follow docs/FISICA.md. */
@@ -482,7 +482,10 @@ static void tunnels(void) {
     for (i = 0; i < 60; ++i) { mm_tick(&world, &b, right); if (!b.vx) ++stuck; }
     assert(stuck == 0 && mm_pixel(b.x) > 330);
     mm_tick(&world, &b, up_press);
-    assert(!b.ball && b.state == MM_STATE_STAND);
+    assert(!b.ball && b.state == MM_STATE_CROUCH);
+    for (i = 0; i < MM_UNMORPH_TICKS; ++i) mm_tick(&world, &b, idle_in);
+    mm_tick(&world, &b, up_press);
+    assert(b.state == MM_STATE_STAND);
     reset(); floor_at(20);
     for (y = 0; y <= 16; ++y) for (x = 20; x <= 40; ++x) tiles[y * 64 + x] = 0;
     mm_body_init(&b, 200, 112, real);
@@ -556,7 +559,7 @@ static void poses(void) {
     mm_tick(&world, &b, jump);
     assert(hold_ticks(&b, held, MM_POSE_TAKEOFF) == MM_TAKEOFF_TICKS);
     while (!b.grounded) mm_tick(&world, &b, held);
-    assert(b.pose == MM_POSE_LAND && hold_ticks(&b, idle, MM_POSE_LAND) == MM_LAND_TICKS);
+    assert(b.pose == MM_POSE_LAND && hold_ticks(&b, idle, MM_POSE_LAND) == 7);
 
     reset(); floor_at(20);
     mm_body_init(&b, 80, 144, box);
@@ -601,13 +604,16 @@ static void crouch_poses(void) {
     MmBody b;
     char log[256];
     MmRect real = {8, 8, 32, 48};
-    MmInput down = {.aim_y = 1}, up = {.aim_y = -1}, right = {.axis = 1}, idle_in = {0};
+    MmInput down = {.aim_y = 1}, up = {.aim_y = -1, .up_pressed = 1}, right = {.axis = 1}, idle_in = {0};
     /* The standing box is 48 px tall: y 112 puts its feet on the floor at y 160. */
     reset(); floor_at(20);
     mm_body_init(&b, 80, 112, real);
     strcpy(log, "GROUND");
     run_poses(&b, log, idle_in, 1);
     run_poses(&b, log, down, 20);
+    run_poses(&b, log, idle_in, 20);
+    assert(b.crouching);
+    run_poses(&b, log, up, 1);
     run_poses(&b, log, idle_in, 20);
     assert(strcmp(log, "GROUND CROUCH_DOWN CROUCH STAND_UP GROUND") == 0);
     mm_body_init(&b, 80, 112, real); mm_tick(&world, &b, idle_in);
@@ -623,9 +629,7 @@ static void crouch_poses(void) {
     assert(strcmp(log, "GROUND CROUCH_DOWN CROUCH GROUND") == 0);
     puts("PASS crouch: crouch-down, crouched loop and stand-up hold their frames; walking out ends the stand-up");
 }
-/* A tap of down keeps the crouch after release (up to MM_TAP_TICKS held); one tick more is a hold
-   that stands up on release. Up, a direction or a jump ends a kept crouch, and aiming down with the
-   shot is never a tap. */
+/* Both taps and long holds keep the crouch. Up, a direction or a jump ends it. */
 static void crouch_tap(void) {
     MmBody b;
     MmRect real = {8, 8, 32, 48};
@@ -636,7 +640,7 @@ static void crouch_tap(void) {
     reset(); floor_at(20);
     mm_body_init(&b, 80, 112, real); mm_tick(&world, &b, idle_in);
     mm_tick(&world, &b, down_press);
-    for (t = 1; t < MM_TAP_TICKS; ++t) mm_tick(&world, &b, down_held);
+    for (t = 1; t < 12; ++t) mm_tick(&world, &b, down_held);
     mm_tick(&world, &b, idle_in);
     assert(b.crouching && b.crouch_latch && b.hitbox.top == 24 && b.state == MM_STATE_CROUCH);
     for (t = 0; t < 60; ++t) { mm_tick(&world, &b, idle_in); assert(b.crouching); }
@@ -645,9 +649,9 @@ static void crouch_tap(void) {
 
     mm_body_init(&b, 80, 112, real); mm_tick(&world, &b, idle_in);
     mm_tick(&world, &b, down_press);
-    for (t = 1; t <= MM_TAP_TICKS; ++t) mm_tick(&world, &b, down_held);
+    for (t = 1; t <= 60; ++t) mm_tick(&world, &b, down_held);
     mm_tick(&world, &b, idle_in);
-    assert(!b.crouching && !b.crouch_latch && b.state == MM_STATE_STAND);
+    assert(b.crouching && b.crouch_latch && b.state == MM_STATE_CROUCH);
 
     mm_body_init(&b, 80, 112, real); mm_tick(&world, &b, idle_in);
     mm_tick(&world, &b, down_press); mm_tick(&world, &b, idle_in);
@@ -667,7 +671,7 @@ static void crouch_tap(void) {
     mm_tick(&world, &b, aim_down); mm_tick(&world, &b, aim_down);
     mm_tick(&world, &b, idle_in);
     assert(!b.crouching && !b.crouch_latch);
-    puts("PASS crouch tap: a tap keeps the crouch, one tick more is a hold; up, a direction or a jump ends it");
+    puts("PASS crouch: taps and long holds persist; up, direction or jump ends the crouch");
 }
 /* Two presses of down less than MM_DOUBLE_TAP_TICKS apart morph, on the ground or in the air, and so does
    a press while crouched. One press does nothing, a late second press after standing up starts a new
@@ -687,13 +691,18 @@ static void double_tap(void) {
     assert(b.ball && !b.crouch_latch && b.state == MM_STATE_BALL);
     mm_tick(&world, &b, up_press);
     assert(!b.ball);
+    assert(b.crouching);
+    for (t = 0; t < 10; ++t) mm_tick(&world, &b, idle_in);
+    mm_tick(&world, &b, up_press);
     for (t = 0; t < 30; ++t) { mm_tick(&world, &b, idle_in); assert(!b.ball && !b.crouching); }
 
     mm_body_init(&b, 80, 112, real); mm_tick(&world, &b, idle_in);
-    /* A hold stands up on release, so a late second press finds the body standing: no morph. */
+    /* A long hold also stays crouched; a new up press first stands up. */
     mm_tick(&world, &b, down_press);
     for (t = 1; t < MM_DOUBLE_TAP_TICKS; ++t) mm_tick(&world, &b, (MmInput){.aim_y = 1});
     mm_tick(&world, &b, idle_in);
+    assert(b.crouching);
+    mm_tick(&world, &b, up_press);
     assert(!b.crouching);
     mm_tick(&world, &b, down_press);
     assert(!b.ball);
@@ -804,10 +813,10 @@ static void ball_stand_real(void) {
     assert(slopes >= 100 && stuck * 10 <= slopes);
     printf("PASS ball stands up on Crateria 1 slopes: %d of %d landings still ball (narrow spots)\n", stuck, slopes);
 }
-/* Ball poses: curling up (also straight from a crouch), the rolling loop, uncurling. Landing as a
-   ball and jumping as a ball keep the ball pose. */
+/* Ball poses: curling up, rolling, and uncurling to crouch without a jump impulse. */
 static void ball_poses(void) {
     MmBody b;
+    int t;
     char log[256];
     MmRect real = {8, 8, 32, 48};
     MmInput down_press = {.aim_y = 1, .down_pressed = 1}, up_press = {.aim_y = -1, .up_pressed = 1};
@@ -822,7 +831,10 @@ static void ball_poses(void) {
     assert(b.pose == MM_POSE_MORPH && hold_ticks(&b, idle_in, MM_POSE_MORPH) == MM_MORPH_TICKS);
     run_poses(&b, log, jump, 1);
     run_poses(&b, log, idle_in, 100);
-    assert(b.ball && b.grounded && b.pose == MM_POSE_BALL);
+    assert(!b.ball && b.grounded && b.pose == MM_POSE_CROUCH);
+    /* Jump while in a grounded ball unmorphs, without leaving the floor. */
+    mm_tick(&world, &b, down_press);
+    for (t = 0; t < MM_MORPH_TICKS; ++t) mm_tick(&world, &b, idle_in);
     run_poses(&b, log, up_press, 1);
     assert(b.pose == MM_POSE_UNMORPH && hold_ticks(&b, idle_in, MM_POSE_UNMORPH) == MM_UNMORPH_TICKS);
     mm_body_init(&b, 80, 112, real);
@@ -836,8 +848,8 @@ static void ball_poses(void) {
     run_poses(&b, log, idle_in, 100);
     run_poses(&b, log, up_press, 1);
     run_poses(&b, log, idle_in, 20);
-    assert(strcmp(log, "GROUND CROUCH_DOWN CROUCH MORPH BALL UNMORPH GROUND") == 0);
-    puts("PASS ball poses: morph (also from a crouch), rolling loop through a jump and a landing, unmorph");
+    assert(strcmp(log, "GROUND CROUCH_DOWN CROUCH MORPH BALL UNMORPH CROUCH STAND_UP GROUND") == 0);
+    puts("PASS ball poses: morph and unmorph take six ticks; jump unmorphs to crouch without lifting");
 }
 /* A wall jump needs all three: a spin jump, a wall touched (up to MM_WALL_REACH px behind) and the
    d-pad pressed away from it. Pressing into the wall, no direction or a jump without spin do nothing. */
@@ -933,6 +945,59 @@ static void beam_from_muzzle(void) {
     assert(!w.beams[0].active);
     puts("PASS beam leaves from the muzzle along the aim, never from inside a wall");
 }
+/* Reference: Mesen crouch_morph, down_hold, morph_jump and morph_up_hold. */
+static void measured_postures(void) {
+    MmBody b;
+    MmInput down = {.aim_y = 1, .down_pressed = 1};
+    MmInput up = {.aim_y = -1, .up_pressed = 1};
+    MmInput jump = {.jump_pressed = 1, .jump_held = 1};
+    MmRect real = {8, 8, 32, 48};
+    int side, t, x, y;
+    for (side = 0; side < 2; ++side) {
+        reset(); floor_at(20);
+        mm_body_init(&b, 80, 112, real); mm_tick(&world, &b, idle);
+        b.facing_left = side;
+        mm_tick(&world, &b, down);
+        assert(hold_ticks(&b, idle, MM_POSE_CROUCH_DOWN) == 3);
+        mm_tick(&world, &b, down);
+        assert(hold_ticks(&b, idle, MM_POSE_MORPH) == 6);
+        y = b.y;
+        mm_tick(&world, &b, jump);
+        assert(!b.ball && b.crouching && b.grounded && !b.jumped && b.y == y && b.vy == 0);
+        assert(hold_ticks(&b, (MmInput){.jump_held = 1}, MM_POSE_UNMORPH) == 6);
+        for (t = 0; t < 30; ++t) mm_tick(&world, &b, (MmInput){.jump_held = 1});
+        assert(b.crouching && b.grounded);
+        mm_tick(&world, &b, up);
+        assert(hold_ticks(&b, idle, MM_POSE_STAND_UP) == 3);
+        mm_tick(&world, &b, down); mm_tick(&world, &b, idle); mm_tick(&world, &b, down);
+        for (t = 0; t < 10; ++t) mm_tick(&world, &b, idle);
+        /* Ceiling allows crouch (24 px) but not standing (40 px). */
+        for (t = 0; t <= 16; ++t) for (x = 8; x <= 16; ++x) tiles[t * 64 + x] = 0;
+        mm_tick(&world, &b, up);
+        assert(!b.ball && b.crouching && !mm_blocked(&world, &b, mm_pixel(b.x), mm_pixel(b.y)));
+        for (t = 0; t < 30; ++t) mm_tick(&world, &b, (MmInput){.aim_y = -1});
+        assert(b.crouching); /* Held up does not become another press. */
+        mm_tick(&world, &b, up);
+        assert(b.crouching); /* Standing is still blocked. */
+        mm_tick(&world, &b, jump);
+        assert(!b.jumped && b.grounded && !mm_blocked(&world, &b, mm_pixel(b.x), mm_pixel(b.y)));
+        reset(); floor_at(30);
+        mm_body_init(&b, 100, 192, real); mm_tick(&world, &b, idle);
+        for (t = 0; t < 12; ++t) mm_tick(&world, &b, (MmInput){.axis = 1});
+        mm_tick(&world, &b, (MmInput){.axis = 1, .jump_pressed = 1, .jump_held = 1});
+        for (t = 0; t < 150 && !b.grounded; ++t) mm_tick(&world, &b, (MmInput){.jump_held = 1});
+        assert(b.pose == MM_POSE_SPIN_LAND && hold_ticks(&b, idle, MM_POSE_SPIN_LAND) == 1);
+        /* In the air jump also unmorphs without adding upward speed. */
+        reset(); floor_at(30);
+        mm_body_init(&b, 80, 40, real);
+        mm_tick(&world, &b, down); mm_tick(&world, &b, idle); mm_tick(&world, &b, down);
+        for (t = 0; t < 10; ++t) mm_tick(&world, &b, idle);
+        y = b.vy;
+        mm_tick(&world, &b, jump);
+        assert(!b.ball && !b.jumped && !b.grounded && b.vy >= y);
+    }
+    puts("PASS measured postures: 3/6/6/3 tick transitions, jump unmorphs without lift, crouch fits under low ceilings");
+}
 static void turn_animation(void) {
     int side, air, t;
     for (side = 0; side < 2; ++side) for (air = 0; air < 2; ++air) {
@@ -1013,6 +1078,7 @@ static void beam_impacts(void) {
     puts("PASS beam impact at swept wall contact, expires after 10 ticks; no impact off screen");
 }
 int main(void) {
+    measured_postures();
     turn_animation();
     normal_jump_animation();
     slope_spin_takeoff();

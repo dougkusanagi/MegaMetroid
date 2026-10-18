@@ -97,11 +97,12 @@ então px/quadro e px/tick são comparáveis. `python scripts/sm_reference_repor
 | Quando gira | só se já andava ao pular (também no deslize sem direcional); direção + pulo parado é pulo normal (pose 51) | igual | sim |
 | Pulo de parede, subida | 4,625 px/quadro | 4,625 | sim |
 | Pulo de parede, lado | 1,375 px/quadro, direcional livre | igual | sim (2.8.2) |
-| Pouso | pulo normal: 7 quadros (A4); giro: 1 quadro (A6/A7) | 10 / 15 ticks | não |
-| Agachar (↓) | transição de 3 quadros; fica agachada ao soltar, mesmo segurando ↓ por muito tempo | 5 ticks; segurar ↓ mais de 12 ticks levanta ao soltar | não |
-| ↓ agachada | vira bola, transição de 6 quadros | igual, 10 ticks | lógica sim, tempo não |
+| Pouso | pulo normal: 7 quadros (A4); giro: 1 quadro (A6/A7) | 7 / 1 ticks | sim (2.8.3) |
+| Agachar (↓) | transição de 3 quadros; fica agachada ao soltar, mesmo segurando ↓ por muito tempo | igual | sim (2.8.3) |
+| ↓ agachada | vira bola, transição de 6 quadros | igual | sim (2.8.3) |
 | ↓ no ar | o 1º mira para baixo, o 2º vira bola | dois toques em até 20 ticks | sim |
-| ↑ na bola | volta para agachada (6 quadros); outro ↑ levanta (3 quadros) | levanta direto (10 ticks) | não |
+| ↑ na bola | volta para agachada (6 quadros); outro ↑ levanta (3 quadros) | igual, segurado não conta como novo aperto | sim (2.8.3) |
+| Pulo na bola, sem Spring Ball | desfaz a bola, sem impulso de pulo, no chão ou no ar | igual; no chão termina agachada | sim (2.8.3) |
 | Bola rolando | 3,25 px/quadro, acelera +0,75 por quadro | igual | sim (2.8.2) |
 | Hitbox (largura × altura) | em pé 10×42, pulo 10×38, giro 10×24, agachada 10×32, bola 10×14 | 24×40, 24×24 agachada, 16×16 bola; giro usa a de pé | não |
 | Feixe (Power Beam) | sai a 4 px/quadro e acelera até ~6 em ~28 quadros | 12 px/tick constante | não |
@@ -112,6 +113,27 @@ Os quadros de pose (`4B`, `A4`, …) são os números de pose do Super Metroid (
 folha de sprites. As velocidades batem com `SamusXSpeedTable_Normal` em `bank_90.asm`: aceleração
 `$0030`, máxima 2,75 no chão, 1,25 no pulo normal, 1,375 no giro e no pulo de parede, 1,0 na queda
 e 3,25 na bola; desaceleração 0,5.
+
+## Agachar, bola e pousos (2.8.3)
+
+Conferido no Mesen em 18/10/2026, com os cenários `crouch_morph`, `down_hold`,
+`morph_jump`, `morph_up_hold`, `morph_air_jump`, `jump_stand` e `walk_spin`.
+Exemplo: `./scripts/sm_reference.ps1 -Scenario morph_up_hold -Out tests/out/ref_morph_up_hold.csv`.
+
+- `35/36` (abaixar) e `3B/3C` (levantar): 3 ticks cada.
+- `37/38` (morfar) e `3D/3E` (desmorfar): 6 ticks, 3 por quadro.
+- `A4/A5` (pouso normal): 7 ticks, quadro 0 por 5 e quadro 1 por 2.
+- `A6/A7` (pouso do giro): 1 tick, antes de voltar ao movimento.
+- ↓ mantém agachada depois de soltar, tanto após um toque quanto após segurar.
+- ↑ ou pulo desfaz a bola sem impulso vertical. No chão, termina agachada;
+  segurar ↑ não levanta até haver outro aperto. No ar, volta à caixa normal.
+- A caixa de destino precisa caber. No chão, basta espaço para agachar;
+  tentar levantar ou pular sob teto que impede a caixa em pé mantém agachada.
+
+`measured_postures()` e `poses()` fixam os tempos medidos e verificam os dois
+lados, botão segurado, teto baixo e desmorfagem sem pulo. A ROM testa retenção
+da agachada, retorno da bola para agachada e os quadros de morfar/desmorfar
+pelo BlastEm via API. As larguras e alturas ainda são as do porte (2.8.4 pendente).
 
 ## Rampas (45°)
 
@@ -135,16 +157,15 @@ e 3,25 na bola; desaceleração 0,5.
 | Estado | Caixa (px, relativa ao corpo) | Regra |
 |---|---|---|
 | Em pé | 24 x 40 (`stand_box`) | Padrão |
-| Agachada | 24 x 24 (topo desce 2/5 da altura, pés ficam) | No chão, ↓ segurado sem direção; continua agachada enquanto a caixa em pé não cabe |
-| Bola | 16 x 16 (2/3 da largura, centrada, apoiada nos pés) | ↓ apertado no ar; ↑ sai só onde a caixa em pé cabe |
+| Agachada | 24 x 24 (topo desce 2/5 da altura, pés ficam) | ↓ sem direção mantém ao soltar; ↑, andar ou pular levanta onde cabe |
+| Bola | 16 x 16 (2/3 da largura, centrada, apoiada nos pés) | ↓ duas vezes; ↑/C desfaz onde a caixa de destino cabe (agachada no chão, em pé no ar) |
 
 - O teste `tunnels()` faz a bola atravessar um túnel de 2 tiles (16 px) sem parar e
   mostra que ↑ não sai dentro dele. A caixa em pé não cabe ali.
 - O plano pede um túnel de 1 tile (8 px). Uma bola de 16 px não passa por 8 px, então
   o túnel de teste tem 2 tiles. Se a bola precisar ser menor, esse número muda junto.
-- Sprites: agachar usa a pose de pé e a bola usa os quadros de giro, até a fase 3.
-- Pular a partir de agachado sob teto baixo não é tratado: o corpo volta à caixa em
-  pé já no tick seguinte ao pulo, e a colisão empurra a Samus para baixo do teto.
+- Agachar, bola e suas transições têm poses próprias desde a fase 3.
+- Sob teto baixo, um pulo agachado só é aceito se a caixa em pé couber (2.8.3).
 
 ## Pulo giratório e pulo de parede (2.7)
 

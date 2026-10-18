@@ -18,6 +18,7 @@ O plano de trabalho está em [`docs/PLANO.md`](docs/PLANO.md) — siga as etapas
 
 1. Trabalhe em uma etapa do plano por vez.
 2. Compile e teste a etapa até estar funcionando.
+   - **Fidelidade ao Super Metroid:** há um Mesen 2 com a ROM original e save state de referência disponíveis neste ambiente. Antes de ajustar física, controles ou tempos de animação, meça o comportamento original com `scripts/sm_reference.ps1` (`--testrunner`, sem interface) e registre a comparação. Caminhos e instruções em `docs/BUILD.md`; resultados em `docs/FISICA.md` e `docs/SPRITES.md`. Não presuma valores quando for possível medi-los no original.
    - **Os testes da ROM devem ser feitos no BlastEm via API/protocolo GDB**, usando `python scripts/smoke_test.py` após a build `-SmokeTest` (ver `docs/BUILD.md`). Não use skills de controle do computador, cliques, teclado ou automação da interface do emulador. Execute a sessão de teste oculta e encerre apenas o processo iniciado pelo teste, sem interferir no uso do PC. Testes do núcleo no host complementam, mas não substituem, a validação da ROM no BlastEm.
 3. **A cada etapa testada e funcionando, faça commit e push.** Não acumule várias etapas em um único commit e não faça commit de etapa quebrada ou não testada.
    - Mensagem de commit clara, descrevendo a etapa (ex.: `Etapa 0.3: corrige recursão em stopSoundJump`).

@@ -86,8 +86,15 @@ Só gira quem já se movia ao pular (também no deslize). Teste: `movement()`, `
 demais em `tests/core_test.c`, com as sequências px a px medidas no Mesen (`scripts/sm_reference.lua`);
 o smoke da ROM passa no BlastEm.
 
-**2.8.3 Agachar, bola e pousos**. Agachada fica ao soltar ↓, ↑ na bola volta a agachada, bola não
-pula, tempos das transições e dos pousos do original.
+**2.8.3 Agachar, bola e pousos** ✅. As ações já existiam; esta etapa corrige a
+fidelidade ao original, medida no Mesen: agachada permanece após soltar ↓,
+independentemente da duração. ↑ ou C desfaz a bola sem impulso de pulo; no chão
+termina agachada, e um novo ↑ levanta. A expansão respeita o espaço para agachar,
+sem exigir que caiba em pé, e não permite pular agachada para dentro de um teto.
+Transições: abaixar/levantar 3 ticks, morfar/desmorfar 6 (3 por quadro).
+Pousos: normal 7 (5+2 por quadro), giro 1. Testes de referência no núcleo, nos
+dois lados e sob teto baixo; teste da ROM no BlastEm pela API GDB. Medições e
+limites restantes em `docs/FISICA.md`; hitboxes originais ficam para 2.8.4.
 
 **2.8.4 Hitboxes**. Larguras e alturas do original por estado.
 
@@ -105,6 +112,10 @@ pula, tempos das transições e dos pousos do original.
 | 3.6 | Paletas da Samus | Varia/Gravity e ciclos de cor (charge, speed booster, screw attack, dano, Hyper Beam) por troca de paleta, sem tiles novos | Ciclos visíveis sem trocar tiles |
 
 #### Detalhe da 3.2: o que o código já faz e que pose usar
+
+Os relatos das sub-etapas abaixo preservam o histórico da importação dos
+sprites. Tempos de agachar/bola/pousos e retenção da agachada foram refinados
+na 2.8.3 em 18/10/2026; os valores atuais estão nessa etapa e em `docs/FISICA.md`.
 
 Levantamento de `src/game.c` (`render`) e `src/core/world.c` / `weapon.c` em 2026-10-12. Antes da 3.2.1 existiam 3 animações (`ANIM_STAND`, `ANIM_WALK`, `ANIM_JUMP`) da folha Dread 40×48, com `SPR_setHFlip` para a esquerda. O tiro congelava a Samus no quadro `shoot_frame` de `ANIM_STAND` por 10 ticks. Poses no formato direita/esquerda; os números são os do jogo (`manifest_poses.csv`).
 
@@ -177,7 +188,7 @@ quadros, com `SMOKE PASS` via API GDB do BlastEm. Custo em `docs/SPRITES.md`.
 - A faixa da `69` diz "Facing left - aiming up-right", provável erro de digitação ("Facing right").
 
 > **Prioridade de 2026-10-12 atendida em 2026-10-18:** a 3.2 está concluída.
-> Retomar a próxima pendência na ordem do plano: 2.8.3 (agachar, bola e pousos).
+> Próxima pendência após 2.8.3: 2.8.4 (hitboxes originais por estado).
 
 #### Extração (revisão de 2026-10-12)
 

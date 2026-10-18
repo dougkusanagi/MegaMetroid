@@ -42,7 +42,11 @@ def main():
         commands = [args.gdb, '-nx', '-batch', '-ex', 'set confirm off',
             '-ex', 'target remote localhost:1234', '-ex', f'break *0x{finish:x}',
             '-ex', 'continue', '-ex', f'printf "MM_SMOKE_RESULT=%d\\n", *(unsigned short*)0x{result:x}',
-            '-ex', 'disconnect']
+            ]
+        if 'mm_smoke_failure' in symbols:
+            failure = int(symbols['mm_smoke_failure'], 16) & 0xFFFFFF
+            commands += ['-ex', f'printf "MM_SMOKE_FAILURE=0x%x\\n", *(unsigned int*)0x{failure:x}']
+        commands += ['-ex', 'disconnect']
         completed = subprocess.run(commands, capture_output=True, text=True, timeout=args.timeout,
                                    creationflags=flags)
         output = completed.stdout + completed.stderr

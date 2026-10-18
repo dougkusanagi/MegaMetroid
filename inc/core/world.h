@@ -25,17 +25,16 @@
 #define MM_JUMP_STILL 2 /* A standing jump rises from its third tick; a spin or wall jump from its second. */
 #define MM_WALL_JUMP 1184 /* 4.625 px/tick (SM $04A0). */
 #define MM_WALL_REACH 8 /* A wall up to 8 px behind still counts as touched. */
-/* One-shot poses last whole frames of the sheet, which play 5 ticks each (SPRITE ... 5 in res/resources.res). */
+/* Pose durations in simulation ticks; short transitions use measured timings, not the SGDK default. */
 #define MM_TAKEOFF_TICKS 5 /* 4B: one frame. */
 #define MM_WALL_KICK_TICKS 10 /* 83/84: two frames, then the spin. */
-#define MM_LAND_TICKS 10 /* A4/A5, standing landing: two frames; ends at once when the body starts walking. */
-#define MM_SPIN_LAND_TICKS 15 /* A6/A7, landing from a spin jump: three frames. */
-#define MM_CROUCH_DOWN_TICKS 5 /* 35/36, crouching: one frame. */
-#define MM_STAND_UP_TICKS 5 /* 3B/3C, standing up from a crouch: one frame. */
-#define MM_TAP_TICKS 12 /* Down held for up to 12 ticks (0.2 s) is a tap: the crouch stays after release. */
+#define MM_LAND_TICKS 7 /* A4/A5: first frame 5 ticks, second 2; ends when walking starts. */
+#define MM_SPIN_LAND_TICKS 1 /* A6/A7: one tick before returning to movement. */
+#define MM_CROUCH_DOWN_TICKS 3 /* 35/36, measured in the original. */
+#define MM_STAND_UP_TICKS 3 /* 3B/3C, measured in the original. */
 #define MM_DOUBLE_TAP_TICKS 20 /* Two presses of down less than this (1/3 s) apart morph into the ball. */
-#define MM_MORPH_TICKS 10 /* 37/38, curling into the ball: two frames. */
-#define MM_UNMORPH_TICKS 10 /* 3D/3E, uncurling from the ball: two frames. */
+#define MM_MORPH_TICKS 6 /* 37/38: two frames, three ticks each. */
+#define MM_UNMORPH_TICKS 6 /* 3D/3E: two frames, three ticks each; ends crouched on the ground. */
 #define MM_SHOOT_POSE_TICKS 10 /* The cannon stays out this long after the shot button is let go. */
 
 typedef struct { int left, top, right, bottom; } MmRect;
@@ -69,7 +68,6 @@ typedef struct {
     int spin_jumping;
     int shoot_pose_timer; /* Ticks the shooting pose still shows; refilled while the shot is held. */
     int ball, crouching; /* Toggled by down/up presses and the d-pad. */
-    int down_ticks; /* Ticks down has been held, capped just past MM_TAP_TICKS. */
     int crouch_latch; /* Crouch kept after a tap on the ground; a jump, a direction or up ends it. */
     int down_window; /* Ticks left in which a second press of down morphs the body. */
     int takeoff; /* Ticks a jump from the ground still waits, walking on the ground, before it rises. */

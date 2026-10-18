@@ -91,6 +91,18 @@ A paleta é `pal_samus_power_suit` (um `PALETTE` no `res/resources.res`). A folh
 
 ## Outras pranchas
 
+### Tempos de agachar, bola e pousos (2.8.3)
+
+As tiras existentes foram mantidas. Os tempos agora seguem a medição do Mesen:
+abaixar/levantar duram 3 ticks, morfar/desmorfar 6 (3 por quadro), pouso normal
+7 (5+2 por quadro) e pouso do giro 1. Para as transições de dois quadros e os
+pousos, o render seleciona o quadro pelo contador da simulação, sem depender
+dos 5 ticks padrão do SGDK. Desmorfar no chão termina na pose agachada.
+
+Sem tiles, sprites ou paletas adicionais. O contador antigo de duração de ↓
+foi removido: menos 4 bytes de RAM no núcleo do 68000. A hitbox original por
+estado ainda será tratada na 2.8.4. Medidas e testes em `docs/FISICA.md`.
+
 ### Virada (3.2.7)
 
 A folha inclui `TURN` (`25/26`, pés alinhados) e `TURN_AIR` (`2F/30`).

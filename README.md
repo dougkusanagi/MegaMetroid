@@ -26,12 +26,14 @@ Segure cima para mirar acima; cima + esquerda/direita mira na diagonal, parado o
 de mira aparece mesmo sem atirar. Baixo + esquerda/direita anda mirando na diagonal abaixo. No ar,
 baixo mira para baixo. Tocar A dispara; segurar repete. O tiro sai da boca do canhão da pose,
 usa o sprite original nas oito direções e mostra um impacto animado ao atingir paredes.
-Segurar ↓ no chão agacha: a hitbox fica menor e a Samus abaixa (pose de agachada); tiro agachado ainda usa o quadro de pé.
-Um toque rápido de ↓ (até 0,2 s) mantém a Samus agachada depois de soltar. Para levantar, aperte ↑ ou um direcional, ou pule.
-Segurar ↓ por mais tempo levanta ao soltar.
+↓ no chão agacha, com hitbox e pose menores; a Samus continua agachada ao soltar,
+independentemente do tempo segurado. Para levantar, dê um novo toque de ↑, ande ou pule,
+desde que haja espaço.
 Dois toques de ↓ em até 1/3 de segundo, sem atirar, entram em bola, no chão ou no ar (hitbox de 16 px).
 Agachada, um novo toque de ↓ também entra em bola, sem pressa. Um toque no ar não faz nada. A bola não
-atira e só gira enquanto se move. ↑ sai da bola só onde a Samus cabe em pé, então não sai dentro de túnel baixo.
+atira e só gira enquanto se move. ↑ ou C desfaz a bola sem dar impulso de pulo;
+no chão, volta para agachada se houver espaço. Outro toque de ↑ levanta. Segurar ↑
+não conta como um segundo toque; em túneis que só comportam a bola, ela permanece bola.
 
 A caminhada acelera 0,1875 px/tick por tick até 2,75 px/tick (11 ticks); soltar o direcional desliza
 a 0,5 px/tick por tick e virar leva 7 ticks. A corrida acrescenta 0,0625 px/tick a cada tick

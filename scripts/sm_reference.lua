@@ -47,6 +47,8 @@ local SCENARIOS = {
    steps = after_prep({1, "down"}, {40, ""}, {1, "down"}, {40, ""}, {1, "up"}, {40, ""}, {1, "up"}, {40, ""})},
   {name = "down_hold", steps = after_prep({30, "down"}, {40, ""})},
   {name = "morph_jump", setup = "morph", steps = after_prep({1, "down"}, {10, ""}, {1, "down"}, {20, ""}, {40, "jump"})},
+  {name = "morph_up_hold", setup = "morph", steps = after_prep({1, "down"}, {10, ""}, {1, "down"}, {20, ""}, {30, "up"}, {1, ""}, {10, "up"})},
+  {name = "morph_air_jump", setup = "morph", steps = after_prep({10, "jump"}, {1, "down"}, {1, ""}, {1, "down"}, {8, ""}, {1, "jump"}, {60, ""})},
   {name = "spin_release", steps = after_prep({20, "right"}, {10, "right jump"}, {60, "jump"})},
   {name = "spin_reverse", steps = after_prep({20, "right"}, {10, "right jump"}, {60, "left jump"})},
   {name = "jump_release_dir", steps = after_prep({6, "jump"}, {20, "right jump"}, {60, "jump"})},

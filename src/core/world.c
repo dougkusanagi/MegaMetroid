@@ -59,7 +59,7 @@ void mm_body_init(MmBody *b, int x, int y, MmRect hitbox)
     b->aim = MM_AIM_FORWARD;
     b->jump_frame = 0; b->jump_frame_ticks = 3;
     b->ball = b->crouching = 0;
-    b->down_ticks = b->crouch_latch = b->down_window = 0;
+    b->crouch_latch = b->down_window = 0;
     b->takeoff = 0;
     b->state = MM_STATE_STAND;
     b->pose = MM_POSE_GROUND; b->pose_timer = 0;
@@ -89,13 +89,13 @@ static int fits(const MmWorld *w, const MmBody *b, MmRect box)
     return !mm_blocked(w, &probe, mm_pixel(b->x), mm_pixel(b->y));
 }
 
-/* Stands up from a ball. On a slope the standing box's lower corners sit in the surface, so the
+/* Expands from a ball. On a slope the larger box's lower corners sit in the surface, so the
    body may lift by up to a tile to fit. Returns 0 if no lift up to that makes room. */
-static int stand_up(const MmWorld *w, MmBody *b)
+static int expand_box(const MmWorld *w, MmBody *b, MmRect box)
 {
     MmBody probe = *b;
     int lift;
-    probe.hitbox = b->stand_box;
+    probe.hitbox = box;
     for (lift = 0; lift <= MM_TILE; ++lift) {
         if (!mm_blocked(w, &probe, mm_pixel(b->x), mm_pixel(b->y) - lift)) {
             b->y -= lift * MM_UNIT;
@@ -348,7 +348,8 @@ void mm_tick(const MmWorld *w, MmBody *b, MmInput input)
     int was_ball = b->ball;
     if (b->pose_timer) --b->pose_timer;
     if (b->turn_pose_ticks) --b->turn_pose_ticks;
-    b->jumped = input.jump_pressed && b->grounded;
+    b->jumped = input.jump_pressed && b->grounded && !b->ball &&
+        (!b->crouching || fits(w, b, b->stand_box));
     /* As in Super Metroid, only a jump while walking spins: from rest, even with a direction pressed on
        the same tick, the jump is a standing one. A jump during a slide, with no direction, still spins. */
     if (b->jumped) b->spin_jumping = moving_before_jump && (direction || b->slide);
@@ -364,25 +365,27 @@ void mm_tick(const MmWorld *w, MmBody *b, MmInput input)
     if (input.shoot_pressed) b->spin_jumping = 0;
     if (input.shoot_held && !b->ball) b->shoot_pose_timer = MM_SHOOT_POSE_TICKS;
     else if (b->shoot_pose_timer) --b->shoot_pose_timer;
-    /* A tap of down (held up to MM_TAP_TICKS, and never while aiming with the shot) keeps the crouch
-       after release on the ground. A longer hold stands the body up when it is released. */
-    if (input.aim_y > 0) {
-        if (b->down_ticks <= MM_TAP_TICKS) ++b->down_ticks;
-        if (input.shoot_held) b->down_ticks = MM_TAP_TICKS + 1;
-    } else if (b->down_ticks) {
-        b->crouch_latch = b->grounded && !b->ball && b->down_ticks <= MM_TAP_TICKS;
-        b->down_ticks = 0;
-    }
-    if (b->jumped || !b->grounded || direction || input.aim_y < 0) b->crouch_latch = 0;
+    /* Crouching persists after releasing down, however long it was held. */
+    if (b->grounded && !b->ball && input.aim_y > 0 && !direction && !input.shoot_held)
+        b->crouch_latch = 1;
+    if (b->jumped || !b->grounded || direction || input.up_pressed) b->crouch_latch = 0;
     /* Down pressed while crouched morphs, however long the crouch lasted, as in Super Metroid. Two presses
        less than MM_DOUBLE_TAP_TICKS apart also morph, on the ground or in the air. A shot that aims down
-       is not a press. Up stands the body up where stand_up finds room. */
+       is not a press. Unmorphing only needs room for the target box. */
     if (b->down_window) --b->down_window;
     if (input.down_pressed && !input.shoot_held) {
         if (b->down_window || (b->crouching && b->grounded)) { b->ball = 1; b->down_window = b->crouch_latch = 0; }
         else b->down_window = MM_DOUBLE_TAP_TICKS;
     }
-    if (input.up_pressed && stand_up(w, b)) b->ball = 0;
+    /* Up or jump unmorphs without adding a jump impulse. On the ground it ends
+       crouched; another up press stands up.
+       Only the target box must fit, so low ceilings can allow crouch but forbid standing. */
+    if (b->ball && (input.up_pressed || input.jump_pressed) &&
+        expand_box(w, b, b->grounded ? crouch_box(b->stand_box) : b->stand_box)) {
+        b->ball = 0;
+        b->crouch_latch = b->grounded;
+        b->down_window = 0;
+    }
     /* Crouch needs no direction for a hold, and holds while a standing box would hit a ceiling. */
     b->crouching = b->grounded && !b->ball &&
         ((input.aim_y > 0 && !direction) || b->crouch_latch || (b->crouching && !fits(w, b, b->stand_box)));

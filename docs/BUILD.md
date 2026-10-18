@@ -61,6 +61,9 @@ Não usa cliques, teclado ou captura da área de trabalho. Se a porta já estive
 ocupada, recusa executar para não interferir em outra sessão. Ajuste os caminhos
 com `--blastem` e `--gdb`; `--timeout` limita a espera (padrão: 45 segundos).
 O `out/symbol.txt` deve pertencer à mesma build `-SmokeTest`.
+O log também imprime `MM_SMOKE_FAILURE`, uma máscara dos grupos que falharam
+(zero quando todos passaram). Os bits são definidos junto às verificações em
+`tests/rom_smoke.c`, para localizar falhas pela API sem abrir a interface.
 
 ## Medidas do Super Metroid original (Mesen 2)
 

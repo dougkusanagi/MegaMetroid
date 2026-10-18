@@ -10,6 +10,32 @@ O registro detalhado começa em 18/10/2026. A entrada anterior abaixo foi
 reconstituída do commit indicado; o histórico anterior completo permanece no Git
 (`git log`) e as entregas por etapa estão em [docs/PLANO.md](docs/PLANO.md).
 
+## 2026-10-18 16:03:11 −03:00 — Fidelidade de agachar, bola e pousos (2.8.3)
+
+### Corrigido
+
+- A Samus permanece agachada após soltar ↓, inclusive depois de segurá-lo por
+  mais tempo. ↑, movimento ou pulo permitem levantar quando há espaço.
+- ↑ ou C desfaz a bola sem impulso de pulo. No chão, termina agachada e só
+  outro aperto de ↑ levanta; segurar o botão não conta como um novo aperto.
+- Sair da bola no chão exige espaço para agachar, sem exigir a altura em pé.
+  Teto baixo também impede um pulo agachado que colocaria a Samus dentro dele.
+- Transições de abaixar/levantar passam a 3 ticks; morfar/desmorfar a 6.
+  Pouso normal dura 7 ticks e pouso de giro 1, com quadros controlados pela
+  simulação, conforme medição no original.
+
+### Melhorado
+
+- `AGENTS.md` registra a disponibilidade do Mesen 2, ROM e save state original,
+  e exige medir o original antes de ajustar comportamentos de fidelidade.
+- O teste pela API GDB informa uma máscara dos grupos que falharam.
+- Documentação distingue as ações já implementadas dos ajustes de fidelidade;
+  hitboxes originais continuam reservadas para a etapa 2.8.4.
+
+**Validação:** sete cenários no Mesen, regressões do núcleo com gcc (tempos,
+dois lados, tetos, botões segurados e mapas reais), build SGDK e teste da ROM
+no BlastEm via API GDB.
+
 ## 2026-10-18 15:47:57 −03:00 — Virada da Samus (etapa 3.2.7)
 
 ### Adicionado
