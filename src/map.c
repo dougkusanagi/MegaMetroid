@@ -1,6 +1,6 @@
 #include "map.h"
-const level_def *level_get(u16 index)
+const room_def *room_get(u16 index)
 {
-    static const level_def * const levels[LEVEL_COUNT] = {&level_crateria_1, &level_crateria_2};
-    return index < LEVEL_COUNT ? levels[index] : NULL;
+    static const room_def * const rooms[ROOM_COUNT] = {&room_crateria_1, &room_crateria_2};
+    return index < ROOM_COUNT ? rooms[index] : NULL;
 }

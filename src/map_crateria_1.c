@@ -169,7 +169,14 @@ static const MmCameraZone camera_zones[] = {
     {{0, 960, 608, 1248}, {0, 1024, 768, 1248}},
     {{0, 480, 608, 736}, {0, 512, 768, 736}}
 };
-const level_def level_crateria_1 = {
+static const RoomDoorDef room_crateria_1_doors[] = {
+	{{0, 608}, ROOM_NO_CONNECTION, {0, 0}, ROOM_DOOR_BLUE, ROOM_DOOR_FACING_RIGHT},
+	{{0, 1120}, ROOM_NO_CONNECTION, {0, 0}, ROOM_DOOR_BLUE, ROOM_DOOR_FACING_RIGHT},
+	{{2272, 352}, ROOM_NO_CONNECTION, {0, 0}, ROOM_DOOR_BLUE, ROOM_DOOR_FACING_LEFT},
+	{{2272, 1120}, ROOM_NO_CONNECTION, {0, 0}, ROOM_DOOR_BLUE, ROOM_DOOR_FACING_LEFT}
+};
+
+const room_def room_crateria_1 = {
 	.tileset_fg = &crateria_1_fg_tileset,
 	.tileset_bg = &crateria_1_bg_tileset,
 
@@ -194,7 +201,10 @@ const level_def level_crateria_1 = {
 
     .camera_zones = camera_zones,
     .camera_zone_count = sizeof(camera_zones) / sizeof(camera_zones[0]),
-	// .level_limits,
+	.enemy_spawns = NULL,
+	.enemy_spawn_count = 0,
+	.doors = room_crateria_1_doors,
+	.door_count = sizeof(room_crateria_1_doors) / sizeof(room_crateria_1_doors[0]),
 };
 
 

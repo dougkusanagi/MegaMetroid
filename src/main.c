@@ -4,8 +4,8 @@ int main(bool hardReset)
 {
     static Game game;
     (void)hardReset;
-    if (!game_init(&game, 0)) {
-        VDP_drawText("Unable to initialize level", 1, 1);
+    if (!game_init(&game, ROOM_CRATERIA_1)) {
+        VDP_drawText("Unable to initialize room", 1, 1);
         while (1) SYS_doVBlankProcess();
     }
     /* Single loop: simulate and draw, then wait for VBlank to flush DMA and sprites. */

@@ -4,7 +4,7 @@
 #include "core/weapon.h"
 
 typedef struct {
-    const level_def *level;
+    const room_def *room;
     MmWorld world;
     MmBody player;
     MmCamera camera;
@@ -19,7 +19,7 @@ typedef struct {
     u32 frame; /* 60 Hz simulation ticks since game_init, same on NTSC and PAL. */
 } Game;
 
-bool game_init(Game *game, u16 level_index);
+bool game_init(Game *game, u16 room_index);
 /* One video frame: read input, simulate (1 tick, or 2 every fifth PAL frame), draw. */
 void game_frame(Game *game);
 

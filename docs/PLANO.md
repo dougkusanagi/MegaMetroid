@@ -12,21 +12,17 @@ Cada etapa é pequena, testável no emulador e termina em **commit + push** (ver
 **Já funciona**
 - Cenário de Crateria (fg + bg) como `MAP` do SGDK, com scroll de câmera seguindo a Samus (`updateCamera`).
 - Sprite da Samus (5x6 tiles) com animações parada / andando / pulando e flip horizontal.
-- Colisão com tiles 8x8 (AABB horizontal + vertical) contra um mapa de colisão de 288x156 tiles.
-- Rampas (tile 2 = direita, tile 3 = esquerda) em estado inicial — último commit "Improve slope collision handling".
+- Colisão com tiles 8x8 (AABB horizontal + vertical) nas salas de Crateria 1 (288x156) e 2 (160x160).
+- Rampas com tile 2 para a direita e tile 3 para a esquerda, incluindo subida e descida.
 - Pulo (botão C) com gravidade e SFX PCM via XGM.
-- Duas salas definidas via `level_def` (`level_crateria_1`, `map_crateria_2`), mas só a primeira é carregada.
+- Duas salas têm `room_def`; Crateria 1 é a inicial e ambas carregam pelo mesmo caminho de `game_init`.
 
-**Limitações / dívida técnica identificadas**
-- `src/main.c` (~580 linhas) concentra boot, input, física, colisão, câmera e animação.
-- `main.c` consulta `map_collision` (definido em `src/map.c`, declarado em `inc/map.h`) em vez do `map_collision_crateria_1` do `level_def`; o campo `level_def.map_collision` é um `u8*` que não é usado.
-- `control` é uma variável global definida dentro de `inc/types.h` (risco de definição múltipla ao crescer o número de `.c`).
-- Direcional ↑/↓ move a Samus livremente (debug) em `playerUpdate`; o pulo é disparado só no evento de input (`handleInput`): sem pulo variável.
-- `stopSoundJump()` chama a si mesma (recursão infinita) — bug a corrigir.
-- Sem máquina de estados do player, tiros, inimigos, itens, portas, HUD, save ou música.
-- `out/` (artefatos de build) está versionado e o `.gitignore` está vazio.
-- `src/better-org` e `src/working-v-col` são cópias antigas de `main.c`, fora do build.
-- A variável de ambiente `GDK` precisa apontar para o SGDK para compilar (o shell dos agentes pode não tê-la definida).
+**Limitações / dívida técnica atual**
+- A ROM normal começa em Crateria 1. Crateria 2 já carrega como sala independente, mas não há transição entre as salas (6.3).
+- As quatro portas visuais da sala 1 têm posições e cores, mas seus destinos e interação ainda não foram definidos (6.3/6.6).
+- Listas de inimigos estão vazias; comportamento e instâncias entram nas fases 5 e 6.2.
+- A exportação de mapa e colisão ainda não é automática (6.2); mapas maiores pedem avaliação de RAM, ROM e streaming (6.4).
+- A nave segue decorativa, sem plataforma, save/recarga ou escotilha interativa (fases 6/7).
 
 ## 2. Princípios
 
@@ -253,7 +249,7 @@ Para a 3.2: o tamanho de quadro é 64×64 (8×8 tiles); com a Samus em pé, os p
 |---|-------|---------|-------|
 | 6.0 ✅ | Integração visual do Landing Site e da nave | Cenário da referência, céu original, quatro portas azuis fechadas, blocos e nave estática | Seis vistas da ROM verificadas pela VRAM/CRAM no BlastEm |
 | 6.0.1 ✅ | Revisão do scroll e relatos de física | Y contínuo no MAP; métricas de CPU/DMA/VInt e novas referências do original | Sem quadros perdidos nos dois saltos medidos; seis vistas validadas |
-| 6.1 | Formato de sala | `room_def`: tilemap, colisão, spawn, inimigos, portas, tamanho | Crateria 1 e 2 carregadas via `room_def` |
+| 6.1 ✅ | Formato de sala | `room_def`: tilemaps, colisão, spawn, inimigos, portas, zonas de câmera e tamanho | Crateria 1 e 2 inicializadas pelo carregador comum |
 | 6.2 | Ferramenta de exportação | Script (Tiled/Aseprite → `.c`/`.res`) para colisão e entidades | Regenerar sala sem editar array à mão |
 | 6.3 | Transição de sala | Portas, fade/scroll, trocar tiles e paletas | Crateria 1 → 2 e volta |
 | 6.4 | Streaming do mapa | Verificar limites de ROM/RAM; compressão/tiles de colisão 16x16 | Sem estouro em salas grandes |
@@ -291,6 +287,15 @@ confirmada no original na câmera alta; sem alteração arbitrária da arte.
 Tiro segurado sem Charge repete no original; wall jump sustenta 1,375 px/quadro,
 como o port. Poses/saída do chute permanecem na 3.3. Referências e limites em
 `docs/FISICA.md` e `docs/SPRITES.md`; cache reutilizável sem novas sessões Mesen.
+
+**6.1 Formato de sala** ✅ (2026-10-18). `level_def` passa a `room_def`,
+com os MAPs, tilesets, paletas, colisão, dimensões, spawn, zonas de câmera,
+spawns de inimigos e descritores de portas. Crateria 1 registra as quatro
+portas azuis visuais com posições conferidas; destino fica sem conexão até a
+etapa 6.3 confirmar rotas. As listas de inimigos continuam vazias até a fase 5.
+Crateria 1 e 2 são inicializadas pelo mesmo `game_init` e catálogo `room_get`;
+a ROM normal ainda começa na sala 1. Smoke do BlastEm iniciou cada sala em
+processo/build separado e confirmou colisão e spawn válidos.
 
 ### Fase 7 — Itens, progressão e HUD
 

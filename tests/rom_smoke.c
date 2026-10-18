@@ -4,6 +4,10 @@
 #include "player_anim.h"
 #include "resources.h"
 
+#ifndef MM_SMOKE_ROOM
+#define MM_SMOKE_ROOM ROOM_CRATERIA_1
+#endif
+
 /* Read by scripts/smoke_test.py through BlastEm's GDB protocol: 0 running, 1 pass, 2 fail. */
 volatile u16 mm_smoke_result;
 volatile u32 mm_smoke_failure; /* Failure bitmask, printed through the GDB API. */
@@ -13,6 +17,37 @@ volatile u16 mm_smoke_video[4096];
 volatile u16 mm_smoke_video_header[76];
 volatile u16 mm_smoke_video_chunk;
 volatile u16 mm_smoke_perf[10]; /* CPU/DMA/missed VInts per jump, then initial/minimum camera Y. */
+
+static int room_catalog_valid(void)
+{
+    u16 i;
+    for (i = 0; i < ROOM_COUNT; ++i) {
+        const room_def *room = room_get(i);
+        MmWorld world;
+        MmBody player;
+        int door;
+        if (!room || !room->tileset_fg || !room->tileset_bg || !room->map_fg || !room->map_bg ||
+            !room->palette_fg || !room->palette_bg || !room->map_collision ||
+            !room->map_width || !room->map_height || room->map_width % MM_TILE || room->map_height % MM_TILE ||
+            (room->camera_zone_count && !room->camera_zones) ||
+            (room->enemy_spawn_count && !room->enemy_spawns) || (room->door_count && !room->doors)) return 0;
+        world.tiles = room->map_collision;
+        world.columns = room->map_width / MM_TILE;
+        world.rows = room->map_height / MM_TILE;
+        mm_samus_init(&player, room->player_initial_pos.x, room->player_initial_pos.y);
+        if (mm_blocked(&world, &player, mm_pixel(player.x), mm_pixel(player.y)) ||
+            mm_pixel(player.x) + player.hitbox.right > room->map_width ||
+            mm_pixel(player.y) + player.hitbox.bottom > room->map_height) return 0;
+        for (door = 0; door < room->door_count; ++door) {
+            const RoomDoorDef *entry = &room->doors[door];
+            if (entry->position.x < 0 || entry->position.y < 0 ||
+                entry->position.x + 32 > room->map_width || entry->position.y + 64 > room->map_height ||
+                entry->color > ROOM_DOOR_GREEN || entry->facing > ROOM_DOOR_FACING_DOWN ||
+                (entry->target_room != ROOM_NO_CONNECTION && entry->target_room >= ROOM_COUNT)) return 0;
+        }
+    }
+    return room_get(ROOM_COUNT) == NULL && room_get(ROOM_CRATERIA_1)->door_count == 4;
+}
 
 static int jump_performance(Game *g)
 {
@@ -173,11 +208,30 @@ int main(bool hardReset)
     const int crouch_poses = 1 << MM_POSE_CROUCH_DOWN | 1 << MM_POSE_CROUCH | 1 << MM_POSE_STAND_UP;
     const int ball_poses = 1 << MM_POSE_MORPH | 1 << MM_POSE_BALL | 1 << MM_POSE_UNMORPH;
     (void)hardReset;
-    if (!game_init(&g, 0)) {
+    if (!room_catalog_valid() || !game_init(&g, MM_SMOKE_ROOM)) {
         mm_smoke_result = 2;
         VDP_drawText("SMOKE INIT FAIL", 1, 1);
         mm_smoke_finish();
     }
+#if MM_SMOKE_ROOM == ROOM_CRATERIA_2
+    /* Separate smoke build: prove room 2 loads its art, spawn and collision in production code. */
+    VDP_setWindowVPos(FALSE, 2);
+    VDP_setTextPlane(WINDOW);
+    VDP_drawText("CRATERIA 2 LOADED", 1, 0);
+    for (frame = 0; frame < 60; ++frame) {
+        game_update(&g, (MmInput){0});
+        SYS_doVBlankProcess();
+    }
+    failed = g.room != room_get(ROOM_CRATERIA_2) ||
+        g.world.tiles != room_crateria_2.map_collision ||
+        g.world.columns != room_crateria_2.map_width / MM_TILE ||
+        g.world.rows != room_crateria_2.map_height / MM_TILE ||
+        mm_blocked(&g.world, &g.player, mm_pixel(g.player.x), mm_pixel(g.player.y));
+    VDP_drawText(failed ? "SMOKE FAIL" : "SMOKE PASS", 1, 1);
+    mm_smoke_failure = failed ? 1 : 0;
+    mm_smoke_result = failed ? 2 : 1;
+    mm_smoke_finish();
+#endif
     start = g.player.x;
     for (frame = 0; frame < 760; ++frame) {
         MmInput input = {0};

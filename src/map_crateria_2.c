@@ -168,7 +168,7 @@ const u8 map_collision_crateria_2[160][160] = {
   {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}
 };
 
-const level_def level_crateria_2 = {
+const room_def room_crateria_2 = {
 	.map_width = 1280,
   .map_height = 1280,
 
@@ -190,7 +190,9 @@ const level_def level_crateria_2 = {
   },
 
 	.map_collision = &map_collision_crateria_2[0][0],
-	// .room_size,
-	// .level_limits,
+	.enemy_spawns = NULL,
+	.enemy_spawn_count = 0,
+	.doors = NULL,
+	.door_count = 0,
 };
 

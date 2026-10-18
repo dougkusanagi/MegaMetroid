@@ -116,9 +116,9 @@ static void render(Game *g)
 {
     int i;
     int x = mm_pixel(g->player.x), y = mm_pixel(g->player.y);
-    MmRect world_bounds = {0, 0, g->level->map_width, g->level->map_height};
+    MmRect world_bounds = {0, 0, g->room->map_width, g->room->map_height};
     MmRect bounds = mm_camera_bounds(x + 20, y + 28, world_bounds,
-        g->level->camera_zones, g->level->camera_zone_count);
+        g->room->camera_zones, g->room->camera_zone_count);
     /* Left is its own row, not a flip: the facing picks the row of the action. */
     u16 side = g->player.facing_left ? 1 : 0;
     u16 animation = player_row(&g->player);
@@ -127,7 +127,7 @@ static void render(Game *g)
     MAP_scrollTo(g->foreground, g->camera.x, g->camera.y);
     /* MAP wraps source blocks itself. Modulo here makes a one-pixel crossing
        look like a 511-pixel teleport and queues a full plane redraw. */
-    MAP_scrollTo(g->background, 0, g->level->background_scroll_height ? g->camera.y : 0);
+    MAP_scrollTo(g->background, 0, g->room->background_scroll_height ? g->camera.y : 0);
     SPR_setPosition(g->sprite, x - g->camera.x - SAMUS_DRAW_X, y - g->camera.y - SAMUS_DRAW_Y);
     if (animation != g->animation) {
         if (g->animation != 0xFFFF && walk_row(animation) && walk_row(g->animation))
@@ -184,34 +184,34 @@ static void render(Game *g)
 #endif
 }
 
-bool game_init(Game *g, u16 level_index)
+bool game_init(Game *g, u16 room_index)
 {
     int i;
     u16 tile = TILE_USER_INDEX;
-    g->level = level_get(level_index);
-    if (!g->level) return FALSE;
+    g->room = room_get(room_index);
+    if (!g->room) return FALSE;
     g->input.previous = 0; g->pal_phase = 0; g->frame = 0;
     g->music_looping = FALSE;
     mm_weapon_init(&g->weapon);
     g->animation = 0xFFFF;
-    g->world.tiles = g->level->map_collision;
-    g->world.columns = g->level->map_width / MM_TILE;
-    g->world.rows = g->level->map_height / MM_TILE;
-    mm_samus_init(&g->player, g->level->player_initial_pos.x,
-                 g->level->player_initial_pos.y);
+    g->world.tiles = g->room->map_collision;
+    g->world.columns = g->room->map_width / MM_TILE;
+    g->world.rows = g->room->map_height / MM_TILE;
+    mm_samus_init(&g->player, g->room->player_initial_pos.x,
+                 g->room->player_initial_pos.y);
     SYS_disableInts();
     VDP_setScreenWidth256();
     VDP_setScreenHeight224();
     JOY_init();
     SPR_init();
     /* CPU transfers during setup avoid queuing data across buffer resizing. */
-    PAL_setPalette(PAL0, g->level->palette_fg->data, CPU);
-    VDP_loadTileSet(g->level->tileset_fg, tile, CPU);
-    g->foreground = MAP_create(g->level->map_fg, BG_A, TILE_ATTR_FULL(PAL0, FALSE, FALSE, FALSE, tile));
-    tile += g->level->tileset_fg->numTile;
-    PAL_setPalette(PAL1, g->level->palette_bg->data, CPU);
-    VDP_loadTileSet(g->level->tileset_bg, tile, CPU);
-    g->background = MAP_create(g->level->map_bg, BG_B, TILE_ATTR_FULL(PAL1, FALSE, FALSE, FALSE, tile));
+    PAL_setPalette(PAL0, g->room->palette_fg->data, CPU);
+    VDP_loadTileSet(g->room->tileset_fg, tile, CPU);
+    g->foreground = MAP_create(g->room->map_fg, BG_A, TILE_ATTR_FULL(PAL0, FALSE, FALSE, FALSE, tile));
+    tile += g->room->tileset_fg->numTile;
+    PAL_setPalette(PAL1, g->room->palette_bg->data, CPU);
+    VDP_loadTileSet(g->room->tileset_bg, tile, CPU);
+    g->background = MAP_create(g->room->map_bg, BG_B, TILE_ATTR_FULL(PAL1, FALSE, FALSE, FALSE, tile));
     PAL_setPalette(PAL2, pal_samus_power_suit.data, CPU);
     g->sprite = SPR_addSprite(&player_sprite, 0, 0, TILE_ATTR(PAL2, TRUE, FALSE, FALSE));
     if (!g->foreground || !g->background || !g->sprite) {

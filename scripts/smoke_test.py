@@ -95,12 +95,14 @@ def main():
     parser.add_argument('--blastem', default='D:/emuladores/blastem/blastem-win64-1.0.0/blastem.exe')
     parser.add_argument('--timeout', type=float, default=45)
     parser.add_argument('--gdb', default='D:/apps/sgdk/bin/gdb.exe')
+    parser.add_argument('--rom', default='tests/out/smoke.bin', help='ROM path relative to the project root')
+    parser.add_argument('--symbols', default='out/symbol.txt', help='SGDK symbol table relative to the project root')
     parser.add_argument('--capture-scenes', action='store_true', help='Read back VDP video memory through GDB')
     parser.add_argument('--hidden', action='store_true', help='Keep the emulator hidden even with a secondary monitor')
     args = parser.parse_args()
     root = Path(__file__).resolve().parents[1]
     symbols = {}
-    for line in (root / 'out/symbol.txt').read_text().splitlines():
+    for line in (root / args.symbols).read_text().splitlines():
         parts = line.split()
         if len(parts) >= 3:
             symbols[parts[2]] = parts[0]
@@ -119,7 +121,7 @@ def main():
         startup = subprocess.STARTUPINFO()
         startup.dwFlags = subprocess.STARTF_USESHOWWINDOW
         startup.wShowWindow = subprocess.SW_HIDE
-    process = subprocess.Popen([args.blastem, '-D', str(root / 'tests/out/smoke.bin')],
+    process = subprocess.Popen([args.blastem, '-D', str(root / args.rom)],
         cwd=Path(args.blastem).parent, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL,
         creationflags=flags, startupinfo=startup)
     if monitor:
@@ -168,8 +170,9 @@ end
         if completed.returncode or 'MM_SMOKE_RESULT=1' not in output:
             raise SystemExit('Smoke test failed; see tests/out/smoke-gdb.log\n' + output)
         print('SMOKE PASS (BlastEm GDB API, no desktop input)')
-        for line in output.splitlines():
-            if line.startswith(('NORMAL_', 'SPIN_')): print(line)
+        metrics = [line for line in output.splitlines() if line.startswith(('NORMAL_', 'SPIN_'))]
+        if any(int(line.split('=', 1)[1]) for line in metrics):
+            for line in metrics: print(line)
         if args.capture_scenes:
             subprocess.run(['python', str(root/'scripts/check_room_video.py')], cwd=root, check=True)
     finally:

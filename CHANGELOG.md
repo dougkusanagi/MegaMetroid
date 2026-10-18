@@ -10,6 +10,29 @@ O registro detalhado começa em 18/10/2026. A entrada anterior abaixo foi
 reconstituída do commit indicado; o histórico anterior completo permanece no Git
 (`git log`) e as entregas por etapa estão em [docs/PLANO.md](docs/PLANO.md).
 
+## 2026-10-18 18:53:45 −03:00 (America/Sao_Paulo) — Formato de sala (6.1)
+
+### Adicionado
+
+- `room_def` reúne MAPs, tilesets, paletas, colisão, dimensões, spawn, câmera,
+  inimigos e portas. O catálogo contém Crateria 1 e 2; a inicialização comum
+  agora carrega qualquer uma das duas.
+- Quatro descritores de portas azuis registram as posições visuais de Crateria 1.
+  Rotas ainda não confirmadas ficam sem destino; listas de inimigos permanecem vazias.
+- `smoke_test.py` aceita ROM/tabela de símbolos próprios, e o build aceita
+  diretório de saída específico para validar uma variante em separado.
+
+### Corrigido
+
+- A validação não presume mais que todas as salas têm 288×156 tiles: verifica
+  dimensões, colisão, spawn e descritores de porta para ambas as salas.
+- Cada conjunto de `-Define` usa uma pasta própria de objetos, evitando reutilizar
+  objetos compilados com flags diferentes.
+
+**Validação:** regressões do host; smoke completo de Crateria 1 e inicialização
+de Crateria 2 no BlastEm via GDB, ambos visíveis no monitor secundário. Em cada
+sala, a ROM conferiu recursos, dimensões e spawn sem colisão.
+
 ## 2026-10-18 17:47:59 −03:00 (America/Sao_Paulo) — Scroll contínuo e auditoria dos relatos (6.0.1)
 
 ### Corrigido

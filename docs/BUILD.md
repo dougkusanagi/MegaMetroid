@@ -65,7 +65,8 @@ força o teste oculto. Apenas a janela pertencente ao processo do teste é movid
 Não usa cliques, teclado ou captura da área de trabalho. Se a porta já estiver
 ocupada, recusa executar para não interferir em outra sessão. Ajuste os caminhos
 com `--blastem` e `--gdb`; `--timeout` limita a espera (padrão: 45 segundos).
-O `out/symbol.txt` deve pertencer à mesma build `-SmokeTest`.
+O `out/symbol.txt` deve pertencer à mesma build `-SmokeTest`. Para uma ROM em
+outro diretório, passe os caminhos correspondentes com `--rom` e `--symbols`.
 O log também imprime `MM_SMOKE_FAILURE`, uma máscara dos grupos que falharam
 (zero quando todos passaram). Os bits são definidos junto às verificações em
 `tests/rom_smoke.c`, para localizar falhas pela API sem abrir a interface.
@@ -135,6 +136,14 @@ portas e a base de blocos em `tests/out/blastem-*.png`. Os pixels dos planos,
 paletas e scroll são conferidos automaticamente. Não captura a área de trabalho.
 Pode combinar com `--hidden`. As leituras reservam um buffer de 8 KB na ROM de
 smoke, sem afetar a ROM padrão.
+
+Para conferir separadamente o carregamento da segunda sala, gere uma variante
+com diretório de saída próprio e use a tabela de símbolos correspondente:
+
+```powershell
+./scripts/build.ps1 -Sgdk D:/apps/sgdk -Java D:/apps/jre/bin/java.exe -SmokeTest -Define '-DMM_SMOKE_ROOM=1' -OutDir out/room2-smoke
+python scripts/smoke_test.py --rom tests/out/smoke.bin --symbols out/room2-smoke/symbol.txt --timeout 60
+```
 
 Somente se faltar referência visual, o coletor de cena roda uma vez no Mesen:
 
