@@ -3,7 +3,8 @@ param(
     [string]$Rom = 'D:/roms/snes/Super Metroid (Japan, USA) (En,Ja).zip',
     [string]$State = "$([Environment]::GetFolderPath('MyDocuments'))/Mesen2/SaveStates/Super Metroid (Japan, USA) (En,Ja)_1.mss",
     [string]$Out = 'tests/out/sm_reference.csv',
-    [string]$Scenario
+    [string]$Scenario,
+    [string]$Script = (Join-Path $PSScriptRoot 'sm_reference.lua')
 )
 # Mede a física do Super Metroid original no Mesen 2, sem janela (ver scripts/sm_reference.lua).
 $ErrorActionPreference = 'Stop'
@@ -23,7 +24,12 @@ try {
     if ($Scenario) { $env:MM_SM_SCENARIO = $Scenario } else { Remove-Item Env:MM_SM_SCENARIO -ErrorAction SilentlyContinue }
     # O script precisa de io/os para ler o state e gravar o CSV; a opção vale só nesta execução.
     & $Mesen --testrunner --timeout=300 --debug.scriptWindow.allowIoOsAccess=true `
-        (Join-Path $PSScriptRoot 'sm_reference.lua') $Rom | Out-Null
+        $Script $Rom | Out-Null
     if ($LASTEXITCODE -ne 0) { throw "Mesen terminou com código $LASTEXITCODE." }
+    @{
+        rom_sha256 = (Get-FileHash -LiteralPath $Rom -Algorithm SHA256).Hash.ToLower()
+        state_sha256 = (Get-FileHash -LiteralPath $State -Algorithm SHA256).Hash.ToLower()
+        script_sha256 = (Get-FileHash -LiteralPath $Script -Algorithm SHA256).Hash.ToLower()
+    } | ConvertTo-Json | Set-Content -LiteralPath "$env:MM_SM_OUT.source.json" -Encoding utf8
     Write-Output "Medidas em $Out"
 } finally { Pop-Location }

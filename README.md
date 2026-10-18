@@ -12,6 +12,13 @@ Pipeline de extração e importação de sprites: [`docs/SPRITES.md`](docs/SPRIT
 
 Histórico de correções, melhorias e adições: [`CHANGELOG.md`](CHANGELOG.md).
 
+O Landing Site usa a arte nova de Crateria: paredes e vegetação restauradas,
+céu baseado no original, quatro portas azuis fechadas, base de blocos e a nave.
+Esta integração é visual: portas não abrem, blocos não quebram e a nave ainda
+não tem colisão, save ou recarga. O ponto inicial da Samus foi mantido; caminhe
+para a direita até o centro da sala para ver a nave. Há adaptação de cores às
+quatro paletas do Mega Drive. Regeneração e capturas da ROM em `docs/BUILD.md`.
+
 A Samus usa animações originais de movimento, pulo, agachar, bola, mira e virada.
 A virada tem três quadros, tanto no chão quanto no ar, preservando a física do movimento.
 

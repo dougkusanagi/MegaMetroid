@@ -1,0 +1,33 @@
+{
+  "scenario": "landing_site_saved_game",
+  "emulator": "Mesen 2.1.1 --testrunner",
+  "captured_at": "2026-10-18T16:49:46-03:00",
+  "source_map": "res\\images\\original-references\\maps\\SNES - Super Metroid - Maps - Crateria.png",
+  "source_map_sha256": "fbdc935324a70fcd3aeff56c7950f83dfaed2ce550cd863b1fb57988f4d6c2a4",
+  "crop_xywh": [
+    4615,
+    1,
+    2304,
+    1248
+  ],
+  "files": {
+    "state.txt.gz": "471528c59a303c37b5d6190c9e9a17319662ced807d680e74a9dbacc4f124c9e",
+    "snesVideoRam.gz": "879b29b4bef73c0df84f6806d35223382cacfd551b5614529ff91560e1a6488e",
+    "snesCgRam.gz": "1b1d51adbeb197d584088b9fd4fae9e52e84a6ef96c47ef9fe1078fac223857c",
+    "snesSpriteRam.gz": "f2169a2ab4e28ee8c51ac0cf67bfed09e64acb9004349ca29a5910cfa457f2fd",
+    "snesWorkRam.gz": "a937a86e38977dc3e9fc3193fbace6765f77b25486aa9bdbd39a9fafd7cc234c",
+    "png.gz": "3889ec2003e3d3d3efb5ae6a6b53bbe2c27f7ae942b6d21d21e51c6464fc8ba5",
+    "foreground.png": "25e0a313365129df580fd2460dbe5396c9637f9a3c6294f60e318b2de1d9c845"
+  },
+  "limits": [
+    "One saved-game state, not the arrival cutscene or every lighting/weather phase.",
+    "Map sheet provides room geometry; sky blue is a transparency placeholder.",
+    "Current room retains its existing 1248-pixel height and collision grid.",
+    "Ship art origin (1057,1101) matches the screenshot within one pixel; no animation measurement."
+  ],
+  "reference": {
+    "rom_sha256": "12b77c4bc9c1832cee8881244659065ee1d84c70c3d29e6eaf92e6798cc2ca72",
+    "state_sha256": "19fc0e06e192cf66662e18b9853de096065b950092ee02fed3b005329bd1366c",
+    "script_sha256": "e6c67ef0c72f44fe9f063f26e11a3d4f9500002e24363ed69c3861acecbb5554"
+  }
+}

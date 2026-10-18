@@ -10,6 +10,35 @@ O registro detalhado começa em 18/10/2026. A entrada anterior abaixo foi
 reconstituída do commit indicado; o histórico anterior completo permanece no Git
 (`git log`) e as entregas por etapa estão em [docs/PLANO.md](docs/PLANO.md).
 
+## 2026-10-18 17:06:19 −03:00 (America/Sao_Paulo) — Landing Site e nave (6.0)
+
+### Adicionado
+
+- Nave estática no centro do Landing Site e quatro portas azuis fechadas com
+  os recortes originais. Integradas ao MAP, sem sprites de hardware adicionais.
+- Captura visual pontual do Mesen arquivada com checksums, origem e limites;
+  regenerador da sala usa esses dados, sem repetir a execução do emulador.
+- `--capture-scenes`: readback de VRAM/CRAM/SAT pela API GDB do BlastEm,
+  reconstrução de seis vistas e conferência de pixels, paletas e scroll.
+
+### Corrigido
+
+- A sala deixa de carregar o cenário editado anterior. O recorte da prancha
+  nova restaura paredes, vegetação, cavernas, plataformas e base de blocos.
+- Céu claro substituído pelo BG2 medido no original, com nuvens neutras e
+  repetição vertical de 512 px. Cores de nave/portas adaptadas por tile aos
+  quatro bancos; feixe e impacto conservam exatamente suas cores no VDP.
+
+**Validação:** regressões completas do núcleo com gcc, checksums do cache,
+limites de paleta, transparência/cores do feixe, build SGDK sem novos avisos e
+`SMOKE PASS` no BlastEm. Seis vistas aprovadas com comparação dos planos e CRAM;
+janela de teste no monitor secundário, sem ativação. Cenário: 437 tiles / 13.984
+bytes de VRAM, nenhum sprite adicional; ROM alinhada em 1.441.792 bytes.
+
+**Limites:** entrega visual; mantidos spawn, colisão e tamanho atuais. Portas
+não abrem, blocos não quebram e a nave ainda não tem plataforma, save/recarga,
+escotilha ou animação de luzes. Chuva e demais fases de iluminação ficam pendentes.
+
 ## 2026-10-18 17:01:00 −03:00 (America/Sao_Paulo) — Smoke no monitor secundário (0.5)
 
 ### Melhorado

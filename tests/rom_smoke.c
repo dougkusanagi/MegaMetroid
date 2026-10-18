@@ -7,6 +7,57 @@
 /* Read by scripts/smoke_test.py through BlastEm's GDB protocol: 0 running, 1 pass, 2 fail. */
 volatile u16 mm_smoke_result;
 volatile u32 mm_smoke_failure; /* Failure bitmask, printed through the GDB API. */
+/* Chunked VDP readback stays within RAM. The GDB runner optionally saves these
+   checkpoints to reconstruct video from the emulator's VRAM, CRAM and SAT. */
+volatile u16 mm_smoke_video[4096];
+volatile u16 mm_smoke_video_header[76];
+volatile u16 mm_smoke_video_chunk;
+__attribute__((noinline, used, externally_visible)) void mm_smoke_video_ready(void)
+{
+    __asm__ volatile ("nop");
+}
+
+static void room_video(Game *g)
+{
+    static const s16 views[][2] = {{1024, 976}, {0, 1024}, {2048, 1024},
+                                  {0, 512}, {2048, 256}, {1664, 1024}};
+    vu32 *control = (vu32 *)VDP_CTRL_PORT;
+    vu16 *data = (vu16 *)VDP_DATA_PORT;
+    int scene, i, chunk;
+    for (scene = 0; scene < 6; ++scene) {
+        mm_samus_init(&g->player, views[scene][0] + 108, views[scene][1] + 84);
+        mm_weapon_init(&g->weapon);
+        /* Load all newly visible rows/columns, then finish sprite DMA. */
+        game_update(g, (MmInput){0});
+        SYS_doVBlankProcess();
+        game_update(g, (MmInput){0});
+        SYS_doVBlankProcess();
+        SYS_disableInts();
+        VDP_setAutoInc(2);
+        *control = VDP_READ_CRAM_ADDR(0);
+        for (i = 0; i < 64; ++i) mm_smoke_video_header[i] = *data;
+        mm_smoke_video_header[64] = VDP_getBGAAddress();
+        mm_smoke_video_header[65] = VDP_getBGBAddress();
+        mm_smoke_video_header[66] = VDP_getPlaneWidth();
+        mm_smoke_video_header[67] = VDP_getPlaneHeight();
+        mm_smoke_video_header[68] = g->camera.x;
+        mm_smoke_video_header[69] = g->camera.y;
+        mm_smoke_video_header[70] = VDP_getSpriteListAddress();
+        mm_smoke_video_header[71] = scene;
+        mm_smoke_video_header[72] = VDP_getHScrollTableAddress();
+        *control = VDP_READ_VSRAM_ADDR(0);
+        mm_smoke_video_header[73] = *data;
+        mm_smoke_video_header[74] = *data;
+        mm_smoke_video_header[75] = 0;
+        for (chunk = 0; chunk < 8; ++chunk) {
+            *control = VDP_READ_VRAM_ADDR((u32)chunk * 8192);
+            for (i = 0; i < 4096; ++i) mm_smoke_video[i] = *data;
+            mm_smoke_video_chunk = chunk;
+            mm_smoke_video_ready();
+        }
+        SYS_enableInts();
+    }
+}
 __attribute__((noinline, used, externally_visible)) void mm_smoke_finish(void)
 {
     while (1) SYS_doVBlankProcess();
@@ -207,6 +258,7 @@ int main(bool hardReset)
         }
         if (impact_frames != 31 || g.weapon.beams[0].impact_ticks) failed |= 8192;
     }
+    room_video(&g);
     /* Window plane keeps the result on screen; plane A scrolls with the camera. */
     VDP_setWindowVPos(FALSE, 2);
     VDP_setTextPlane(WINDOW);

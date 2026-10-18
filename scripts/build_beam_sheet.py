@@ -1,18 +1,32 @@
-"""Pack the original beam and its five orange impact frames into shared PAL3."""
+"""Pack original beam/impact pixels into Landing Site's shared PAL3.
+
+The nine distinct VDP beam colors retain their original hardware values;
+duplicate SNES shades leave six slots for scenery.
+"""
 from pathlib import Path
 from PIL import Image
 
-root = Path(__file__).resolve().parents[1]
-source = root / 'res/images/weapons-original-sgdk'
-beam = Image.open(source / 'weapons_power_beam.png')
-impact = Image.open(source / 'weapons_impact_r00.png').crop((0, 0, 80, 16))
-colors = [tuple(beam.getpalette()[i:i+3]) for i in range(0, 48, 3)]
-colors[15] = (255, 255, 255)
-palette = [c for color in colors for c in color] + [0] * (768 - 48)
-target = root / 'res/images/player'
-for name, image in [('beam', beam), ('beam_impact', impact)]:
-    rgb = image.convert('RGB')
-    result = Image.new('P', image.size)
-    result.putpalette(palette)
-    result.putdata([colors.index(pixel) for pixel in rgb.get_flattened_data()])
-    result.save(target / (name + '.png'))
+ROOT = Path(__file__).resolve().parents[1]
+
+
+def build(colors):
+    target = ROOT / 'res/images/player'
+    source = ROOT / 'res/images/weapons-original-sgdk'
+    for name, filename in [('beam', 'weapons_power_beam.png'), ('beam_impact', 'weapons_impact_r00.png')]:
+        image = Image.open(source / filename)
+        if name == 'beam_impact': image = image.crop((0, 0, 80, 16))
+        values = []
+        for pixel in image.convert('RGB').get_flattened_data():
+            if pixel == (0, 136, 255): values.append(0)
+            else:
+                hardware = tuple((channel >> 5) * 32 for channel in pixel)
+                values.append(colors.index(hardware))
+        result = Image.new('P', image.size)
+        result.putpalette([v for c in colors for v in c] + [0] * (768 - len(colors)*3))
+        result.putdata(values)
+        result.save(target / (name + '.png'), transparency=0)
+
+
+if __name__ == '__main__':
+    palette = Image.open(ROOT / 'res/images/maps/landing_site/foreground.png').getpalette()[144:192]
+    build([tuple(palette[i:i+3]) for i in range(0,48,3)])

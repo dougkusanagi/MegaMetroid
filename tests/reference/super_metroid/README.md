@@ -59,3 +59,10 @@ direção e tipo por slot); capturas anteriores preservam seu formato original.
 cenários `beam_up` e `beam_up_right`. Os testes usam esses dados para conferir
 aceleração e trajetórias. Componentes herdadas de Samus/câmera e impactos devem
 ser separados da velocidade base; a análise e os limites estão em `docs/FISICA.md`.
+
+
+`landing_site/` arquiva também uma referência visual pontual: vídeo/PPU do save
+no Mesen, screenshot e recorte da prancha nova de Crateria. Seu manifesto separa
+origem, cenário, precisão da posição da nave e limitações. Os checksums são
+conferidos pelo mesmo `sm_reference_cache.py check`; a regeneração de arte não
+executa o Mesen. Não confundir a cor azul de transparência do mapa com o céu real.

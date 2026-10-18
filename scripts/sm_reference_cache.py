@@ -89,6 +89,37 @@ def import_traces(patterns, rom, state):
     print(f'Archived {len(chosen)} scenarios (existing scenarios retained).')
 
 
+def import_scene(prefix):
+    """Preserve a visual sample and its origin; do not retain a ROM or save state."""
+    from PIL import Image
+    source = Path(prefix)
+    origin = json.loads(Path(str(source) + '.source.json').read_text(encoding='utf-8-sig'))
+    target = DEST / 'landing_site'
+    target.mkdir(exist_ok=True)
+    files = {}
+    for suffix in ('', '.snesVideoRam', '.snesCgRam', '.snesSpriteRam', '.snesWorkRam', '.png'):
+        path = Path(str(source) + suffix)
+        data = path.read_bytes()
+        name = ('state.txt' if not suffix else suffix[1:]) + '.gz'
+        (target / name).write_bytes(gzip.compress(data, mtime=0))
+        files[name] = digest(data)
+    # This map sheet has a one-pixel border between rooms. Keep a lossless crop,
+    # including its original door frames and the block tower, before conversion.
+    sheet = ROOT / 'res/images/original-references/maps/SNES - Super Metroid - Maps - Crateria.png'
+    Image.open(sheet).crop((4615, 1, 6919, 1249)).save(target / 'foreground.png')
+    files['foreground.png'] = digest((target / 'foreground.png').read_bytes())
+    metadata = {'scenario': 'landing_site_saved_game', 'emulator': 'Mesen 2.1.1 --testrunner',
+        'captured_at': datetime.fromtimestamp(source.stat().st_mtime).astimezone().isoformat(timespec='seconds'),
+        'source_map': str(sheet.relative_to(ROOT)), 'source_map_sha256': digest(sheet.read_bytes()),
+        'crop_xywh': [4615, 1, 2304, 1248], 'files': files,
+        'limits': ['One saved-game state, not the arrival cutscene or every lighting/weather phase.',
+                   'Map sheet provides room geometry; sky blue is a transparency placeholder.',
+                   'Current room retains its existing 1248-pixel height and collision grid.',
+                   'Ship art origin (1057,1101) matches the screenshot within one pixel; no animation measurement.']}
+    metadata['reference'] = origin
+    (target / 'manifest.json').write_text(json.dumps(metadata, indent=2) + '\n')
+
+
 def check():
     manifest = json.loads((DEST / 'manifest.json').read_text(encoding='utf-8'))
     total = 0
@@ -129,15 +160,25 @@ def check():
         beam_header += ''.join(f'    {{{x}, {y}}},\n' for x, y in vectors) + '};\n'
     (out / 'sm_beams.h').write_text(beam_header)
     print(f'PASS saved reference: {len(manifest["scenarios"])} scenarios, {total} RAM samples; no emulator needed')
+    scene = DEST / 'landing_site'
+    if scene.exists():
+        metadata = json.loads((scene / 'manifest.json').read_text())
+        for name, expected in metadata['files'].items():
+            data = (scene / name).read_bytes()
+            if name.endswith('.gz'): data = gzip.decompress(data)
+            assert digest(data) == expected, 'scene checksum: ' + name
+        print('PASS saved Landing Site graphics and video memory; no emulator needed')
 
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('action', choices=['import', 'check'])
+    parser.add_argument('action', choices=['import', 'import-scene', 'check'])
     parser.add_argument('patterns', nargs='*')
     parser.add_argument('--rom')
     parser.add_argument('--state')
     args = parser.parse_args()
     if args.action == 'import':
         import_traces(args.patterns, args.rom, args.state)
+    elif args.action == 'import-scene':
+        import_scene(args.patterns[0])
     check()

@@ -186,4 +186,53 @@ Ficam como referência em RGB, sem entrada no `.res` (`sgdk_ready = no` no manif
 - Quadros maiores que 128×128, que o SGDK não monta como sprite (limite de 16 sprites de hardware por quadro).
 - `starship_tiles_and_palettes`: amostras de paleta e tiles da escotilha da prancha da nave.
 
-Ainda não extraídas: tilesets e mapas das salas (fase 6), chefes, cenas, título e fontes. Cada uma entra em `SHEETS` quando a etapa correspondente começar.
+Ainda não extraídos de forma geral: tilesets e mapas das demais salas (fase 6), chefes, cenas, título e fontes. Cada uma entra em `SHEETS` quando a etapa correspondente começar.
+
+
+## Landing Site: integração visual 6.0
+
+`python scripts/build_landing_site.py` regenera os recursos versionados em
+`res/images/maps/landing_site/`, usando Pillow e numpy. A origem é o recorte
+sem perdas da prancha nova de mapas de Crateria arquivado em
+`tests/reference/super_metroid/landing_site/foreground.png`; não usa a imagem
+editada anterior. O manifesto registra a prancha, checksum e recorte
+(4615,1,2304,1248). O azul da prancha é transparência, não a cor do céu.
+
+O fundo de 256×512 foi decodificado do BG2/VRAM e CGRAM originais arquivados,
+com CHR 4bpp, atributos, espelhamentos e tilemap vertical duplo. É uma amostra
+do save disponível, não uma referência de todas as condições meteorológicas.
+O scroll vertical usa o período de 512 px; outros níveis podem conservar fundo
+fixo (`background_scroll_height = 0`). Não há chuva nesta entrega.
+
+As portas usam o primeiro quadro fechado de `doors_door_r00`, espelhado na
+parede direita: (0,608), (0,1120), (2272,352), (2272,1120). A nave usa
+`starship_hatch_00` em (1057,1101), com precisão visual de um pixel contra a
+captura do save. Toda a arte é composta no MAP de BG_A; o scroll do SGDK mantém
+os objetos visíveis ao entrar e sair da tela. Nave/portas são estáticas e não
+mudam colisão, spawn ou progressão. A base de blocos vem do próprio mapa novo;
+blocos ainda não podem ser destruídos.
+
+**Paletas.** PAL0: terreno; PAL1: céu e tons de porta; PAL2: Power Suit sem
+alteração; PAL3: nove cores distintas do feixe no VDP, mais seis tons de nave.
+Cada tile escolhe uma única paleta por erro de cor ponderado, sem dithering ou
+redimensionamento. Assim, a forma dos pixels é preservada, mas há aproximações
+nas cores de nave/portas. As nuvens mantêm tons neutros em vez de ficarem
+avermelhadas pelo truncamento isolado de canais. As 15 cores SNES da prancha do
+feixe já se reduziam a nove no VDP; a nova indexação mantém exatamente essas
+cores e a transparência. `build_beam_sheet.py` reutiliza essa PAL3 e não repõe
+a paleta antiga ao regenerar os tiros.
+
+**Custo.** Tiles de cenário: 311 de foreground e 126 de background na build
+validada, 437 tiles / 13.984 bytes de VRAM. Quatro bancos de 16 cores no total,
+nenhum sprite adicional de hardware ou entidade alocada. A composição e escolha
+de paletas são feitas no host; por frame permanece o scroll de dois MAPs. A ROM
+continua alinhada em 1.441.792 bytes. A colisão conserva sua grade de 44.928 bytes
+em ROM. O novo campo do nível usa dois bytes por definição. O readback de vídeo
+reserva cerca de 8,4 KB apenas na ROM de smoke; não entra na ROM normal.
+
+**Validação.** `scripts/test.ps1` confere dimensões, uma paleta por tile e as
+cores efetivas do feixe/impacto, além das regressões do núcleo.
+`python scripts/smoke_test.py --capture-scenes` reconstrói seis vistas a partir
+da VRAM, CRAM, scroll e SAT lidos pela própria ROM no BlastEm, via GDB. Confere
+os pixels dos planos, bancos de paleta e scroll contra os recursos compilados;
+não é uma comparação automática com todas as cenas possíveis do SNES.

@@ -8,6 +8,7 @@ typedef struct level_def {
     const MapDefinition *map_fg, *map_bg;
     const Palette *palette_fg, *palette_bg;
     u16 map_width, map_height;
+    u16 background_scroll_height; /* 0: fixed backdrop; otherwise vertical repeat in pixels. */
     const u8 *map_collision;
     Vect2D_s16 player_initial_pos;
     const MmCameraZone *camera_zones;

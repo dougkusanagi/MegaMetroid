@@ -117,3 +117,32 @@ L e R chegam ao jogo como Z e Y do controle de 6 botões (ainda sem uso).
 
 - Build atual com avisos de `const` em `src/map_crateria_1.c` e `src/map_crateria_2.c`. Serão tratados na etapa 0.3.
 - Se uma build antiga deixou `out/` com arquivos `.d` que apontam para outro caminho (ex.: `D:/MegaDrive/Projects/MegaMetroid`), a build falha com `No rule to make target ...`. Solução: apague `out/` e compile de novo.
+
+
+## Arte e verificação visual do Landing Site
+
+Os PNGs e dados de referência necessários estão versionados. Para regenerar
+com Pillow e numpy, sem abrir emulador:
+
+```powershell
+python scripts/build_landing_site.py
+./scripts/build.ps1 -Sgdk D:/apps/sgdk -Java D:/apps/jre/bin/java.exe -SmokeTest
+python scripts/smoke_test.py --capture-scenes --timeout 60
+```
+
+`--capture-scenes` salva o readback da VRAM/CRAM e reconstrói a nave, as quatro
+portas e a base de blocos em `tests/out/blastem-*.png`. Os pixels dos planos,
+paletas e scroll são conferidos automaticamente. Não captura a área de trabalho.
+Pode combinar com `--hidden`. As leituras reservam um buffer de 8 KB na ROM de
+smoke, sem afetar a ROM padrão.
+
+Somente se faltar referência visual, o coletor de cena roda uma vez no Mesen:
+
+```powershell
+./scripts/sm_reference.ps1 -Script "$PWD/scripts/sm_scene_reference.lua" -Out tests/out/scene-state.txt
+python scripts/sm_reference_cache.py import-scene tests/out/scene-state.txt
+```
+
+O cache inclui screenshot original, memória de vídeo, CGRAM, OAM, WRAM e estado
+PPU comprimidos, com checksums, origem e limites em seu manifesto. Não distribui
+ROM nem save state. Não repetir a captura para ajustes comuns no cenário.

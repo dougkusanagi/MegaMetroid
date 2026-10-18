@@ -95,6 +95,7 @@ def main():
     parser.add_argument('--blastem', default='D:/emuladores/blastem/blastem-win64-1.0.0/blastem.exe')
     parser.add_argument('--timeout', type=float, default=45)
     parser.add_argument('--gdb', default='D:/apps/sgdk/bin/gdb.exe')
+    parser.add_argument('--capture-scenes', action='store_true', help='Read back VDP video memory through GDB')
     parser.add_argument('--hidden', action='store_true', help='Keep the emulator hidden even with a secondary monitor')
     args = parser.parse_args()
     root = Path(__file__).resolve().parents[1]
@@ -133,14 +134,37 @@ def main():
         if 'mm_smoke_failure' in symbols:
             failure = int(symbols['mm_smoke_failure'], 16) & 0xFFFFFF
             commands += ['-ex', f'printf "MM_SMOKE_FAILURE=0x%x\\n", *(unsigned int*)0x{failure:x}']
+        if args.capture_scenes:
+            # Install capture commands before continuing to the final breakpoint.
+            video = int(symbols['mm_smoke_video'], 16) & 0xFFFFFF
+            header = int(symbols['mm_smoke_video_header'], 16) & 0xFFFFFF
+            chunk = int(symbols['mm_smoke_video_chunk'], 16) & 0xFFFFFF
+            ready = int(symbols['mm_smoke_video_ready'], 16) & 0xFFFFFF
+            for name in ('scene-vram.bin', 'scene-headers.bin'):
+                (root / 'tests/out' / name).unlink(missing_ok=True)
+            script = root / 'tests/out/scene-capture.gdb'
+            script.write_text(f'''break *0x{ready:x}
+commands
+silent
+if *(unsigned short*)0x{chunk:x} == 0
+append binary memory scene-headers.bin 0x{header:x} 0x{header+152:x}
+end
+append binary memory scene-vram.bin 0x{video:x} 0x{video+8192:x}
+continue
+end
+''')
+            index = commands.index('continue') - 1
+            commands[index:index] = ['-ex', 'source scene-capture.gdb']
         commands += ['-ex', 'disconnect']
         completed = subprocess.run(commands, capture_output=True, text=True, timeout=args.timeout,
-                                   creationflags=flags)
+                                   creationflags=flags, cwd=root/'tests/out')
         output = completed.stdout + completed.stderr
         (root / 'tests/out/smoke-gdb.log').write_text(output)
         if completed.returncode or 'MM_SMOKE_RESULT=1' not in output:
             raise SystemExit('Smoke test failed; see tests/out/smoke-gdb.log\n' + output)
         print('SMOKE PASS (BlastEm GDB API, no desktop input)')
+        if args.capture_scenes:
+            subprocess.run(['python', str(root/'scripts/check_room_video.py')], cwd=root, check=True)
     finally:
         if process.poll() is None:
             process.terminate()

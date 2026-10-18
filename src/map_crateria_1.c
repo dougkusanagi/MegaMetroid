@@ -184,6 +184,7 @@ const level_def level_crateria_1 = {
 
 	.map_width = 2304,
   .map_height = 1248,
+    .background_scroll_height = 512,
 	.map_collision = &map_collision_crateria_1[0][0],
 
 	.player_initial_pos = {

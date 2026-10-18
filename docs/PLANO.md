@@ -3,7 +3,7 @@
 Plano para continuar o port de Super Metroid para Mega Drive / Genesis usando o [SGDK](https://github.com/Stephane-D/SGDK).
 Cada etapa é pequena, testável no emulador e termina em **commit + push** (ver `AGENTS.md`).
 
-Última revisão: 2026-10-12.
+Última revisão: 2026-10-18.
 
 > **Nota (revisão da refatoração `codex/refactor-game-core`)**: o código dessa branch foi incorporado a esta. Avaliação: o núcleo (`src/core/`) é C portátil sem SGDK, em ponto fixo Q24.8, com colisão varrida por pixel, pool estático de projéteis, `src/game.c` como única camada SGDK e testes de regressão em `tests/` (`scripts/test.ps1`, exige MSVC/gcc/clang no host). Isso adianta as etapas 0.3, 0.4, 1.1, 1.2, 2.4, 4.1 e 4.2 e a câmera por zonas. As etapas ✅ acima foram validadas por compilação; o teste de comportamento no emulador ainda deve ser repetido a cada etapa. Não vale aproveitar: `dev` (versão anterior da mesma refatoração, com `player.c`/`physics.c` maiores), `0.54` (reescrita abandonada com arquivos vazios) e as cópias `better-org` / `working-v-col`.
 
@@ -250,12 +250,35 @@ Para a 3.2: o tamanho de quadro é 64×64 (8×8 tiles); com a Samus em pé, os p
 
 | # | Etapa | Entrega | Teste |
 |---|-------|---------|-------|
+| 6.0 ✅ | Integração visual do Landing Site e da nave | Cenário da referência, céu original, quatro portas azuis fechadas, blocos e nave estática | Seis vistas da ROM verificadas pela VRAM/CRAM no BlastEm |
 | 6.1 | Formato de sala | `room_def`: tilemap, colisão, spawn, inimigos, portas, tamanho | Crateria 1 e 2 carregadas via `room_def` |
 | 6.2 | Ferramenta de exportação | Script (Tiled/Aseprite → `.c`/`.res`) para colisão e entidades | Regenerar sala sem editar array à mão |
 | 6.3 | Transição de sala | Portas, fade/scroll, trocar tiles e paletas | Crateria 1 → 2 e volta |
 | 6.4 | Streaming do mapa | Verificar limites de ROM/RAM; compressão/tiles de colisão 16x16 | Sem estouro em salas grandes |
 | 6.5 | Mapa do mundo | Tabela de salas e conexões de Crateria | Percorrer a região inteira |
 | 6.6 | Portas e blocos | Portas azul/vermelha/verde, blocos destrutíveis | Abrir com o tiro correto |
+
+**6.0 Integração visual antecipada, incluindo a nave** ✅ (2026-10-18).
+Antecipada a pedido do mantenedor. `scripts/build_landing_site.py` usa a sala
+extraída da prancha nova de Crateria e a captura arquivada do céu no Mesen.
+Restaurados paredes, vegetação, cavernas, plataformas e a base de blocos;
+integradas quatro portas azuis fechadas e `starship_hatch_00` em (1057,1101),
+com origem conferida na captura original (precisão de um pixel). Nave e portas
+são tiles do cenário, sem consumir sprites de hardware adicionais.
+
+As quatro paletas são compartilhadas por tile; as cores de objetos sofrem
+aproximação, enquanto as cores efetivas do feixe/impacto são preservadas.
+O céu acompanha o scroll vertical e repete a cada 512 px. Mantidos o spawn,
+a grade de colisão e os limites atuais de 2304×1248; esta entrega é visual.
+Não inclui plataforma/colisão da nave, escotilha, save/recarga, luzes, chuva,
+transições, abertura de portas ou destruição. As interações continuam pendentes
+nas fases correspondentes. Não se declara equivalência completa ao SNES.
+
+Validação: regressões do host, build SGDK e `SMOKE PASS` no BlastEm via GDB.
+`--capture-scenes` lê VRAM/CRAM/SAT pela API e confere cada pixel dos planos
+e suas paletas em seis vistas: nave, quatro portas e base de blocos. Capturas
+reconstruídas do vídeo ficam em `tests/out/blastem-*.png`. Detalhes e custo em
+`docs/SPRITES.md`.
 
 ### Fase 7 — Itens, progressão e HUD
 
