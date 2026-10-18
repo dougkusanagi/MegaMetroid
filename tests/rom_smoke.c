@@ -90,6 +90,25 @@ int main(bool hardReset)
         !rows_seen[PLAYER_ANIM_WALK_AIM_UP_R] || !rows_seen[PLAYER_ANIM_JUMP_AIM_DIAG_UP_R]) failed = 1;
     /* PAL adds one tick in every five game_update calls: 760 calls become 912 ticks. */
     if (g.frame != 760 + (SYS_isPAL() ? 152 : 0)) failed = 1;
+    /* Both facings keep the normal-jump strip throughout descent, with no frame loop. */
+    {
+        int side;
+        for (side = 0; side < 2; ++side) {
+            int seen = 0, last = 0;
+            g.player.facing_left = side;
+            for (frame = 0; frame < 110; ++frame) {
+                game_update(&g, (MmInput){.jump_pressed = frame == 0, .jump_held = 1});
+                if (g.player.pose == MM_POSE_FALL && !g.player.falling) {
+                    if (g.animation != PLAYER_ANIM_JUMP_UP_R + side ||
+                        g.sprite->frameInd != g.player.jump_frame || g.player.jump_frame < last) failed = 1;
+                    last = g.player.jump_frame;
+                    seen |= 1 << last;
+                }
+                SYS_doVBlankProcess();
+            }
+            if ((seen & 60) != 60 || !g.player.grounded) failed = 1;
+        }
+    }
     /* A downward beam just above the floor must render all five impact frames, then hide. */
     mm_weapon_init(&g.weapon);
     g.weapon.beams[0] = (MmBeam){.active = 1, .x = g.player.x + 20 * MM_UNIT,

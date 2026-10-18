@@ -10,6 +10,25 @@ O registro detalhado começa em 18/10/2026. A entrada anterior abaixo foi
 reconstituída do commit indicado; o histórico anterior completo permanece no Git
 (`git log`) e as entregas por etapa estão em [docs/PLANO.md](docs/PLANO.md).
 
+## 2026-10-18 15:41:13 −03:00 — Descida do pulo sem giro
+
+### Corrigido
+
+- O pulo sem giro mantém a animação própria de pulo durante a descida,
+  em vez de trocar no ápice para a pose de queda de borda.
+- Os quadros deixam de repetir em loop: o quadro de subida fica até iniciar
+  a descida; os três quadros seguintes duram quatro ticks cada, e o último
+  permanece até pousar. O avanço segue os ticks da simulação também em PAL.
+
+### Melhorado
+
+- A medição do original no Mesen agora registra também quadro e contador da
+  animação, permitindo reproduzir a comparação com o SNES.
+
+**Validação:** sequência medida no Mesen (`jump_stand`), regressões do núcleo
+para ambos os lados e pulos longos/curtos, build SGDK e teste da ROM pela API
+GDB do BlastEm verificando a tira e os quadros renderizados para os dois lados.
+
 ## 2026-10-18 15:38:07 −03:00 — Pulo giratório em rampas
 
 ### Corrigido

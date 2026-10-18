@@ -148,13 +148,14 @@ emu.addEventCallback(function()
                                                     r16(0x0B78 + i * 2))
     end
   end
-  out:write(string.format("%s,%d,%d,%s,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%s,%04X\n",
+  out:write(string.format("%s,%d,%d,%s,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%s,%04X,%d,%d\n",
     s.name, frame, step_of[frame], (buttons_for(frame):gsub(" ", "+")),
     r16(0x0AF6), r16(0x0AF8), r16(0x0AFA), r16(0x0AFC),
     r16(0x0B2E), r16(0x0B2C), r16(0x0B36),
     r16(0x0B46), r16(0x0B48), r16(0x0B42), r16(0x0B44),
     r16(0x0A1C), emu.read(0x0A1F, WR, false), r16(0x0AFE), r16(0x0B00),
-    r16(0x0CCE), r16(0x0CCC), table.concat(projectiles, " "), r16(0x008B)))
+    r16(0x0CCE), r16(0x0CCC), table.concat(projectiles, " "), r16(0x008B),
+    r16(0x0A96), r16(0x0A94)))
   if frame >= #inputs then next_scenario() end
 end, emu.eventType.endFrame)
 
@@ -163,5 +164,5 @@ state_data = f:read("a")
 f:close()
 out = assert(io.open(OUT, "w"))
 out:write("scenario,frame,step,buttons,x,xsub,y,ysub,vy,vysub,ydir,vx_base,vx_basesub,vx_extra,vx_extrasub," ..
-          "pose,movement,xradius,yradius,projectiles,cooldown,shots,pad\n")
+          "pose,movement,xradius,yradius,projectiles,cooldown,shots,pad,anim_frame,anim_timer\n")
 next_scenario()

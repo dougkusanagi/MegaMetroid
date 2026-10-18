@@ -91,6 +91,28 @@ A paleta é `pal_samus_power_suit` (um `PALETTE` no `res/resources.res`). A folh
 
 ## Outras pranchas
 
+### Pulo normal: sequência de quadros (correção de 18/10/2026)
+
+O pulo normal usa a tira `4D/4E` na subida e na descida. `29/2A` é a queda
+ao sair de uma borda. No Mesen, `jump_stand` mantém a pose `4D` por 91 ticks:
+quadro 0 por 3 ticks, quadro 1 por 43, quadros 2, 3 e 4 por 4 ticks cada,
+quadro 5 até pousar (33 ticks nessa medição). Esses tempos dependem da altura
+do salto: o quadro 1 aguarda a descida, e o 5 aguarda o chão.
+
+O núcleo controla `jump_frame` e `jump_frame_ticks`; o render escolhe esse
+quadro, sem o loop automático do SGDK. A saída `4B/4C` continua com o tempo
+de transição já existente no porte. Nenhum tile novo: os seis quadros estavam
+na folha. Custo adicional: dois inteiros (8 bytes de RAM no 68000), um contador
+atualizado por tick; ciclos de CPU ainda não medidos em hardware.
+
+Para reproduzir a medida: `./scripts/sm_reference.ps1 -Scenario jump_stand
+-Out tests/out/sm_jump_animation.csv`. O CSV inclui `anim_frame` e `anim_timer`,
+lidos de `$0A96` e `$0A94`, conforme o
+[mapa de RAM do disassembly](https://github.com/InsaneFirebat/sm_disassembly/blob/master/src/memory.asm).
+`normal_jump_animation()` verifica os tempos na subida/descida, em ambos os
+lados e com pulo curto; a ROM confere tira e quadros renderizados nos dois lados
+pelo teste da API GDB do BlastEm.
+
 ### Power Beam em jogo (3.2.6)
 
 `python scripts/build_beam_sheet.py` gera `res/images/player/beam.png` (8 direções,

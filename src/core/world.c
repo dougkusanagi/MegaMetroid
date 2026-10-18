@@ -56,6 +56,7 @@ void mm_body_init(MmBody *b, int x, int y, MmRect hitbox)
     b->speed = b->run_extra = b->turn = b->slide = b->walking = b->falling = 0;
     b->spin_jumping = b->shoot_pose_timer = 0;
     b->aim = MM_AIM_FORWARD;
+    b->jump_frame = 0; b->jump_frame_ticks = 3;
     b->ball = b->crouching = 0;
     b->down_ticks = b->crouch_latch = b->down_window = 0;
     b->takeoff = 0;
@@ -227,6 +228,23 @@ static void update_pose(MmBody *b, int was_grounded, int was_crouching, int was_
 static int min_int(int a, int b) { return a < b ? a : b; }
 static int max_int(int a, int b) { return a > b ? a : b; }
 
+/* Original normal-jump pose 4D/4E: the rise holds frame 1 until descending;
+   frames 2, 3 and 4 last four ticks each, then frame 5 stays until landing.
+   Fall pose 29/2A is reserved for walking off a ledge. */
+static void update_jump_animation(MmBody *b)
+{
+    if (b->grounded || b->takeoff || b->spin_jumping || b->pose == MM_POSE_TAKEOFF) {
+        b->jump_frame = 0; b->jump_frame_ticks = 3;
+    } else if (b->vy <= 0) {
+        if (b->jump_frame_ticks) --b->jump_frame_ticks;
+        else b->jump_frame = 1;
+    } else if (b->jump_frame < 2) {
+        b->jump_frame = 2; b->jump_frame_ticks = 4;
+    } else if (b->jump_frame < 5 && !--b->jump_frame_ticks) {
+        ++b->jump_frame; b->jump_frame_ticks = 4;
+    }
+}
+
 /* Horizontal speed, as measured in Super Metroid (docs/FISICA.md). speed is the base speed along the
    facing direction and run_extra the dash bonus on top of it; vx is their sum. */
 static void steer(MmBody *b, int direction, int run_held)
@@ -395,6 +413,7 @@ void mm_tick(const MmWorld *w, MmBody *b, MmInput input)
     if (b->grounded) b->falling = 0;
     /* Before the spin flag is cleared: a landing needs to know whether it came from a spin. */
     update_pose(b, was_grounded, was_crouching, was_ball);
+    update_jump_animation(b);
     if (b->grounded) b->spin_jumping = 0;
     b->state = body_state(b);
     b->aim = body_aim(b, input);

@@ -933,6 +933,33 @@ static void beam_from_muzzle(void) {
     assert(!w.beams[0].active);
     puts("PASS beam leaves from the muzzle along the aim, never from inside a wall");
 }
+static void normal_jump_animation(void) {
+    int side, short_hop;
+    for (side = 0; side < 2; ++side) for (short_hop = 0; short_hop < 2; ++short_hop) {
+        MmBody b;
+        int t, descent[6] = {0}, seen_ascent_hold = 0, previous = 0;
+        reset(); floor_at(30);
+        mm_body_init(&b, 100, 192, (MmRect){8, 8, 32, 48});
+        mm_tick(&world, &b, idle);
+        b.facing_left = side;
+        mm_tick(&world, &b, (MmInput){.jump_pressed = 1, .jump_held = 1});
+        for (t = 0; t < 150 && !b.grounded; ++t) {
+            mm_tick(&world, &b, (MmInput){.jump_held = !short_hop || t < 10});
+            if (b.grounded) break;
+            if (b.pose == MM_POSE_JUMP_UP && b.jump_frame == 1) seen_ascent_hold = 1;
+            if (b.vy > 0) {
+                assert(b.pose == MM_POSE_FALL && !b.falling);
+                assert(b.jump_frame >= 2 && b.jump_frame <= 5 && b.jump_frame >= previous);
+                previous = b.jump_frame;
+                ++descent[b.jump_frame];
+            }
+        }
+        assert(b.grounded && seen_ascent_hold);
+        assert(descent[2] == 4 && descent[3] == 4 && descent[4] == 4 && descent[5] > 4);
+        assert(b.jump_frame == 0);
+    }
+    puts("PASS normal jump frames: held ascent, four ticks each on descent 2/3/4, held final frame; both facings and short hop");
+}
 static void beam_impacts(void) {
     MmBody b;
     MmWeapon w;
@@ -957,6 +984,7 @@ static void beam_impacts(void) {
     puts("PASS beam impact at swept wall contact, expires after 10 ticks; no impact off screen");
 }
 int main(void) {
+    normal_jump_animation();
     slope_spin_takeoff();
     beam_impacts();
     movement(); air_steering(); collisions(); jump_and_ledge(); states(); physics(); variable_jump(); ledge_jump();

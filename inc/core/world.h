@@ -74,6 +74,7 @@ typedef struct {
     MmState state; /* Derived at the end of every mm_tick. */
     MmPose pose; /* Derived at the end of every mm_tick, like state. */
     MmAim aim; /* Derived at the end of every mm_tick, while the d-pad is held, shot or not. */
+    int jump_frame, jump_frame_ticks; /* Normal jump: rise 0/1, descend 2/3/4, hold 5. */
     int pose_timer; /* Ticks left in a one-shot pose (takeoff, wall kick, landing); 0 for looping poses. */
 } MmBody;
 typedef struct {

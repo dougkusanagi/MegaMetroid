@@ -53,7 +53,7 @@ static u16 plain_row(const MmBody *p)
     switch (p->pose) {
     case MM_POSE_TAKEOFF: return PLAYER_ANIM_TAKEOFF_R;
     case MM_POSE_JUMP_UP: return PLAYER_ANIM_JUMP_UP_R;
-    case MM_POSE_FALL: return PLAYER_ANIM_FALL_R;
+    case MM_POSE_FALL: return p->falling ? PLAYER_ANIM_FALL_R : PLAYER_ANIM_JUMP_UP_R;
     case MM_POSE_SPIN: return PLAYER_ANIM_SPIN_R;
     case MM_POSE_WALL_KICK: return PLAYER_ANIM_WALL_KICK_R;
     case MM_POSE_LAND: return PLAYER_ANIM_LAND_R;
@@ -129,7 +129,11 @@ static void render(Game *g)
             SPR_setAnim(g->sprite, animation);
         g->animation = animation;
     }
-    if (rolling) {
+    if (animation == PLAYER_ANIM_JUMP_UP_R + side) {
+        /* These frames follow the simulation, including PAL's extra ticks, rather than looping. */
+        SPR_setAutoAnimation(g->sprite, FALSE);
+        SPR_setFrame(g->sprite, g->player.jump_frame);
+    } else if (rolling) {
         /* The ball only turns while it moves, and a turn takes about the time it rolls its own
            circumference (16 px * pi at 2.75 px/tick): 2 ticks a frame. */
         SPR_setAutoAnimation(g->sprite, g->player.vx != 0);
