@@ -898,7 +898,31 @@ static void beam_from_muzzle(void) {
     assert(!w.beams[0].active);
     puts("PASS beam leaves from the muzzle along the aim, never from inside a wall");
 }
+static void beam_impacts(void) {
+    MmBody b;
+    MmWeapon w;
+    MmCamera camera = {0, 0};
+    int y, t;
+    reset();
+    mm_body_init(&b, 80, 64, (MmRect){8, 8, 32, 48});
+    for (y = 0; y < 20; ++y) tiles[y * 64 + 16] = 0;
+    mm_weapon_init(&w);
+    mm_weapon_tick(&w, &world, &b, (MmInput){.shoot_held = 1}, camera, 33, 21);
+    for (t = 0; t < 2; ++t) mm_weapon_tick(&w, &world, &b, idle, camera, 33, 21);
+    assert(!w.beams[0].active && w.beams[0].impact_ticks == MM_IMPACT_TICKS);
+    assert(w.beams[0].impact_x == 127 && w.beams[0].impact_y == 85);
+    for (t = 0; t < MM_IMPACT_TICKS; ++t) mm_weapon_tick(&w, &world, &b, idle, camera, 33, 21);
+    assert(!w.beams[0].impact_ticks);
+    /* Leaving the screen is not a wall impact. */
+    mm_weapon_init(&w);
+    w.beams[0] = (MmBeam){.active = 1, .x = 260 * MM_UNIT, .y = 40 * MM_UNIT,
+                         .vx = MM_BEAM_SPEED, .life = 60};
+    mm_weapon_tick(&w, &world, &b, idle, camera, 33, 21);
+    assert(!w.beams[0].active && !w.beams[0].impact_ticks);
+    puts("PASS beam impact at swept wall contact, expires after 10 ticks; no impact off screen");
+}
 int main(void) {
+    beam_impacts();
     movement(); air_steering(); collisions(); jump_and_ledge(); states(); physics(); variable_jump(); ledge_jump();
     slopes(); slope_sweep(); tunnels(); wall_climb(); wall_jump_rules(); poses(); crouch_poses(); crouch_tap(); double_tap(); ball_poses(); aiming(); beam_from_muzzle(); morph_rules(); ball_stands_on_slope();
     ball_stand_real(); camera_and_input(); real_levels();

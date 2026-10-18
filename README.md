@@ -19,7 +19,8 @@ cancelar item. Ainda não implementado. Para jogar com um controle Xbox no layou
 remap do RetroArch descrito em `docs/BUILD.md`.
 Segure cima para mirar acima; cima + esquerda/direita mira na diagonal, parado ou andando, e a pose
 de mira aparece mesmo sem atirar. Baixo + esquerda/direita anda mirando na diagonal abaixo. No ar,
-baixo mira para baixo. Tocar A dispara; segurar repete. O tiro sai da boca do canhão da pose.
+baixo mira para baixo. Tocar A dispara; segurar repete. O tiro sai da boca do canhão da pose,
+usa o sprite original nas oito direções e mostra um impacto animado ao atingir paredes.
 Segurar ↓ no chão agacha: a hitbox fica menor e a Samus abaixa (pose de agachada); tiro agachado ainda usa o quadro de pé.
 Um toque rápido de ↓ (até 0,2 s) mantém a Samus agachada depois de soltar. Para levantar, aperte ↑ ou um direcional, ou pule.
 Segurar ↓ por mais tempo levanta ao soltar.

@@ -10,5 +10,7 @@ extern const u8 music_crateria_arrival_intro[256000];
 extern const u8 music_crateria_arrival_loop[887040];
 extern const Palette pal_samus_power_suit;
 extern const SpriteDefinition player_sprite;
+extern const SpriteDefinition beam_sprite;
+extern const SpriteDefinition beam_impact_sprite;
 
 #endif // _RES_RESOURCES_H_

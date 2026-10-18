@@ -91,6 +91,24 @@ A paleta é `pal_samus_power_suit` (um `PALETTE` no `res/resources.res`). A folh
 
 ## Outras pranchas
 
+### Power Beam em jogo (3.2.6)
+
+`python scripts/build_beam_sheet.py` gera `res/images/player/beam.png` (8 direções,
+na ordem do manifesto) e `beam_impact.png` (os cinco primeiros quadros laranja de
+`weapons_impact_r00`; os dois últimos são azuis). A paleta compartilhada ocupa PAL3:
+as 15 cores da tira do tiro, incluindo transparência, mais branco no índice 15.
+Nenhuma cor é quantizada pelo script. Os PNGs gerados são versionados.
+
+O impacto fica no primeiro pixel bloqueado pela varredura, por 10 ticks (2 por
+quadro), inclusive quando há parede entre o corpo e a boca do canhão. Sair da tela
+ou esgotar a vida do tiro não gera impacto. Cada uma das três entradas do pool
+fica ocupada até seu impacto terminar. O render reserva 4 tiles por entrada
+(12 tiles / 384 bytes de VRAM, contra 3 tiles antes), sem realocar durante a troca
+de definição; usa até 3 sprites de hardware. O núcleo acrescenta 36 bytes de RAM
+no 68000 (três inteiros de 32 bits por entrada); a cópia da definição do tiro
+reserva os mesmos 4 tiles do impacto. A varredura existente mantém seu limite
+de 12 passos por tick por tiro; não houve medição de ciclos no hardware.
+
 ```powershell
 python scripts/extract_sheet_sprites.py            # todas
 python scripts/extract_sheet_sprites.py weapons    # só uma

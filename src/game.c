@@ -1,6 +1,5 @@
 #include "game.h"
 #include "resources.h"
-#include "beam_sprite.h"
 #include "player_anim.h"
 
 #define VIEW_WIDTH 256
@@ -9,6 +8,9 @@
    the body on the hitbox centre (x + 20) and the feet on its bottom row (y + 47). */
 #define SAMUS_DRAW_X 12
 #define SAMUS_DRAW_Y 11
+
+/* Both definitions reserve four tiles, so switching to an impact never reallocates VRAM. */
+static SpriteDefinition beam_definition;
 
 /* Build with -DMM_DEBUG_OVERLAY=1 to draw position, velocity, floor and foot tiles. */
 #ifndef MM_DEBUG_OVERLAY
@@ -140,10 +142,21 @@ static void render(Game *g)
         g->sprite->timer = 3;
     for (i = 0; i < MM_BEAM_COUNT; ++i) {
         const MmBeam *beam = &g->weapon.beams[i];
-        SPR_setVisibility(g->beam_sprites[i], beam->active ? AUTO_FAST : HIDDEN);
-        if (beam->active)
-            SPR_setPosition(g->beam_sprites[i], mm_pixel(beam->x) - g->camera.x - 4,
-                            mm_pixel(beam->y) - g->camera.y - 4);
+        Sprite *sprite = g->beam_sprites[i];
+        bool hit = beam->impact_ticks != 0;
+        const SpriteDefinition *definition = hit ? &beam_impact_sprite : &beam_definition;
+        SPR_setVisibility(sprite, beam->active || hit ? AUTO_FAST : HIDDEN);
+        if (beam->active || hit) {
+            if (sprite->definition != definition) SPR_setDefinition(sprite, definition);
+            SPR_setAutoAnimation(sprite, FALSE);
+            /* Source order: up-left, up, up-right, left, right, down-left, down, down-right. */
+            SPR_setFrame(sprite, hit ? (MM_IMPACT_TICKS - beam->impact_ticks) / 2 :
+                beam->vy < 0 ? (beam->vx < 0 ? 0 : beam->vx > 0 ? 2 : 1) :
+                beam->vy > 0 ? (beam->vx < 0 ? 5 : beam->vx > 0 ? 7 : 6) :
+                beam->vx < 0 ? 3 : 4);
+            SPR_setPosition(sprite, (hit ? beam->impact_x : mm_pixel(beam->x)) - g->camera.x - (hit ? 8 : 4),
+                            (hit ? beam->impact_y : mm_pixel(beam->y)) - g->camera.y - (hit ? 8 : 4));
+        }
     }
     SPR_update();
 #if MM_DEBUG_OVERLAY
@@ -189,9 +202,12 @@ bool game_init(Game *g, u16 level_index)
         SYS_enableInts();
         return FALSE;
     }
-    PAL_setPalette(PAL3, beam_palette, CPU);
+    PAL_setPalette(PAL3, beam_sprite.palette->data, CPU);
+    beam_definition = beam_sprite;
+    beam_definition.maxNumTile = beam_impact_sprite.maxNumTile;
     for (i = 0; i < MM_BEAM_COUNT; ++i) {
-        g->beam_sprites[i] = SPR_addSprite(&beam_sprite, 0, 0, TILE_ATTR(PAL3, TRUE, FALSE, FALSE));
+        /* Reserve the larger impact up front; changing definition then needs no larger block. */
+        g->beam_sprites[i] = SPR_addSprite(&beam_impact_sprite, 0, 0, TILE_ATTR(PAL3, TRUE, FALSE, FALSE));
         if (!g->beam_sprites[i]) {
             while (i > 0) SPR_releaseSprite(g->beam_sprites[--i]);
             SPR_releaseSprite(g->sprite);

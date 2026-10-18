@@ -8,9 +8,11 @@
 #define MM_BEAM_DAMAGE 20
 #define MM_BEAM_COOLDOWN 15
 #define MM_BEAM_REPEAT 25
+#define MM_IMPACT_TICKS 10
 
 typedef struct {
     int active, x, y, vx, vy, life, damage;
+    int impact_ticks, impact_x, impact_y;
 } MmBeam;
 typedef struct {
     MmBeam beams[MM_BEAM_COUNT];

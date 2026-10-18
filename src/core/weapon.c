@@ -6,6 +6,13 @@ static int beam_blocked(const MmWorld *w, int x, int y)
     return mm_rect_blocked(w, bounds);
 }
 
+static void impact(MmBeam *b, int x, int y)
+{
+    b->active = 0;
+    b->impact_ticks = MM_IMPACT_TICKS;
+    b->impact_x = x; b->impact_y = y;
+}
+
 static void advance(MmBeam *b, const MmWorld *w, MmCamera camera)
 {
     int x = mm_pixel(b->x), y = mm_pixel(b->y);
@@ -14,7 +21,7 @@ static void advance(MmBeam *b, const MmWorld *w, MmCamera camera)
     while (x != nx || y != ny) {
         if (x != nx) x += x < nx ? 1 : -1;
         if (y != ny) y += y < ny ? 1 : -1;
-        if (beam_blocked(w, x, y)) { b->active = 0; return; }
+        if (beam_blocked(w, x, y)) { impact(b, x, y); return; }
     }
     b->x += b->vx; b->y += b->vy;
     if (--b->life <= 0 || x < camera.x - 8 || x >= camera.x + 264 ||
@@ -42,12 +49,14 @@ void mm_weapon_tick(MmWeapon *w, const MmWorld *world, const MmBody *player,
     w->fired = 0;
     if (w->cooldown) --w->cooldown;
     if (!input.shoot_held || input.shoot_pressed) w->repeating = 0;
-    for (i = 0; i < MM_BEAM_COUNT; ++i)
+    for (i = 0; i < MM_BEAM_COUNT; ++i) {
+        if (w->beams[i].impact_ticks) --w->beams[i].impact_ticks;
         if (w->beams[i].active) advance(&w->beams[i], world, camera);
+    }
     /* The morph ball has no beam. */
     if (!input.shoot_held || w->cooldown || player->ball) return;
     for (i = 0; i < MM_BEAM_COUNT; ++i) {
-        if (!w->beams[i].active) {
+        if (!w->beams[i].active && !w->beams[i].impact_ticks) {
             MmBeam *b = &w->beams[i];
             MmAim aim = player->aim;
             int dx = aim == MM_AIM_UP || aim == MM_AIM_DOWN ? 0 : player->facing_left ? -1 : 1;
@@ -62,7 +71,11 @@ void mm_weapon_tick(MmWeapon *w, const MmWorld *world, const MmBody *player,
             /* Trace from the body centre to the muzzle; never spawn beyond a wall. */
             for (step = 1; step <= steps; ++step) {
                 if (beam_blocked(world, px + CANNON_BASE_X + ex * step / steps,
-                                 py + CANNON_BASE_Y + ey * step / steps)) { b->active = 0; break; }
+                                 py + CANNON_BASE_Y + ey * step / steps)) {
+                    impact(b, px + CANNON_BASE_X + ex * step / steps,
+                           py + CANNON_BASE_Y + ey * step / steps);
+                    break;
+                }
             }
             b->x = x * MM_UNIT; b->y = y * MM_UNIT;
             b->vx = dx * speed; b->vy = dy * speed;

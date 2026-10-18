@@ -7,6 +7,8 @@ SPRITE		player_sprite		"images/player/samus_sheet.png"		8			8			FAST		5		NONE
 # SPRITE		player_sprite		"images/penitent_full_anim.png"		10		10		NONE		5
 
 # Sound effects from Super Metroid (res/sound/Sound-Effects); rescomp converts them to 13.3 kHz PCM.
+SPRITE beam_sprite "images/player/beam.png" 1 1 FAST 0 NONE
+SPRITE beam_impact_sprite "images/player/beam_impact.png" 2 2 FAST 0 NONE
 WAV				beam_sfx				"sound/Sound-Effects/beam_shot.wav"							XGM2
 WAV				spin_sfx				"sound/Sound-Effects/samus_flip.wav"						XGM2
 WAV				land_sfx				"sound/Sound-Effects/samus_land.wav"						XGM2

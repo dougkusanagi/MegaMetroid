@@ -2,6 +2,7 @@
    timing-sensitive desktop key injection. Not linked into the release ROM. */
 #include "game.h"
 #include "player_anim.h"
+#include "resources.h"
 
 int main(bool hardReset)
 {
@@ -81,6 +82,24 @@ int main(bool hardReset)
         !rows_seen[PLAYER_ANIM_WALK_AIM_UP_R] || !rows_seen[PLAYER_ANIM_JUMP_AIM_DIAG_UP_R]) failed = 1;
     /* PAL adds one tick in every five game_update calls: 760 calls become 912 ticks. */
     if (g.frame != 760 + (SYS_isPAL() ? 152 : 0)) failed = 1;
+    /* A downward beam just above the floor must render all five impact frames, then hide. */
+    mm_weapon_init(&g.weapon);
+    g.weapon.beams[0] = (MmBeam){.active = 1, .x = g.player.x + 20 * MM_UNIT,
+        .y = g.player.y + (g.player.hitbox.bottom - 8) * MM_UNIT,
+        .vy = MM_BEAM_SPEED, .life = 60};
+    game_update(&g, (MmInput){0});
+    if (!g.weapon.beams[0].impact_ticks ||
+        g.beam_sprites[0]->definition != &beam_impact_sprite) failed = 1;
+    {
+        int impact_frames = 0;
+        for (frame = 0; frame < MM_IMPACT_TICKS; ++frame) {
+            if (g.weapon.beams[0].impact_ticks)
+                impact_frames |= 1 << g.beam_sprites[0]->frameInd;
+            SYS_doVBlankProcess();
+            game_update(&g, (MmInput){0});
+        }
+        if (impact_frames != 31 || g.weapon.beams[0].impact_ticks) failed = 1;
+    }
     /* Window plane keeps the result on screen; plane A scrolls with the camera. */
     VDP_setWindowVPos(FALSE, 2);
     VDP_setTextPlane(WINDOW);

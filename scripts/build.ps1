@@ -6,7 +6,7 @@ Push-Location (Split-Path $PSScriptRoot -Parent)
 try {
     $extra = @()
     if ($SmokeTest) {
-        $extra = @('SRC_C=src/game.c src/beam_sprite.c src/map.c src/map_crateria_1.c src/map_crateria_2.c src/core/world.c src/core/weapon.c src/core/input.c src/core/camera.c tests/rom_smoke.c')
+        $extra = @('SRC_C=src/game.c src/map.c src/map_crateria_1.c src/map_crateria_2.c src/core/world.c src/core/weapon.c src/core/input.c src/core/camera.c tests/rom_smoke.c')
     }
     # A define changes objects without changing their sources, so variants get their own objects.
     $out = if ($Define) { 'out/variant' } else { 'out' }

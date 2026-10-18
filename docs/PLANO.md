@@ -150,7 +150,15 @@ Correção depois do teste no emulador: a agachada flutuava 11 px (e abaixar/lev
 
 **3.2.5 Mira e tiro** ✅. O núcleo calcula `MmAim` a cada tick (frente, cima, diagonal acima, baixo no ar, diagonal abaixo), enquanto o direcional estiver segurado, com ou sem tiro. ↓ + direção no chão anda mirando na diagonal abaixo; ↓ sozinho no chão continua agachando. A pose de tiro (`shoot_pose_timer`) fica enquanto A estiver segurado e 10 ticks depois. `player_row()` em `src/game.c` escolhe a linha pela pose, mira, tiro e movimento: 15 ações novas (30 linhas), da tabela acima. Mirar ou atirar substitui as poses curtas (pouso, levantar), mas não a bola, o giro e o chute de parede. As linhas de andar compartilham o ciclo das pernas: trocar entre elas mantém o quadro. As tiras de mira da prancha começam com um quadro de transição, então a folha usa só o quadro mantido (`'03:1'` em `ANIMATIONS`); a pose `16` são os quadros 2–3 da tira `15`. `scripts/build_player_sheet.py` acha a boca do canhão em cada linha (o pixel cinza-verde mais distante na direção da mira) e gera `player_muzzle[]` em `inc/player_anim.h`; `mm_weapon_tick` recebe essa posição e traça do centro do corpo até ela, sem nascer dentro de parede. Teste: `aiming()` e `beam_from_muzzle()` em `tests/core_test.c` (que agora compila `weapon.c`); `tests/rom_smoke.c` passa pelas linhas de mira para cima, tiro andando, diagonal andando e diagonal no pulo, e as capturas do BlastEm mostram essas poses.
 
-**3.2.6 Sprite do tiro.** Trocar o tile do `beam_sprite.c` pela tira de 8 direções e mostrar o impacto ao bater na parede.
+**3.2.6 Sprite do tiro** ✅. O tile manual foi substituído pelos oito quadros de
+`weapons_power_beam`, escolhidos pela direção da velocidade. Os cinco quadros
+laranja de `weapons_impact_r00` aparecem no primeiro contato com a parede,
+por 10 ticks; colisão entre corpo e canhão também gera impacto. Cada entrada
+do pool reserva quatro tiles e permanece ocupada até o impacto terminar.
+`scripts/build_beam_sheet.py` gera as duas tiras com PAL3 compartilhada, sem
+perda de cores (ver custo em `docs/SPRITES.md`). Teste: regressões do núcleo
+com gcc, `beam_impacts()` para contato varrido/expiração/saída da tela, build
+SGDK e `SMOKE PASS` no BlastEm, incluindo os cinco quadros do impacto na ROM.
 
 **3.2.7 Virar.** Animação curta de virada antes de trocar a pose de lado.
 
