@@ -10,6 +10,32 @@ O registro detalhado começa em 18/10/2026. A entrada anterior abaixo foi
 reconstituída do commit indicado; o histórico anterior completo permanece no Git
 (`git log`) e as entregas por etapa estão em [docs/PLANO.md](docs/PLANO.md).
 
+## 2026-10-18 17:47:59 −03:00 (America/Sao_Paulo) — Scroll contínuo e auditoria dos relatos (6.0.1)
+
+### Corrigido
+
+- Fundo deixa de receber Y com módulo 512. O MAP já repete os blocos; o módulo
+  provocava um salto artificial de 511 px e redraw completo nas emendas.
+- Nos dois saltos medidos no BlastEm NTSC, VInts perdidos caíram de 2 para 0.
+  Fila DMA máxima: normal 4.368 → 912 bytes; giro 4.872 → 1.032 bytes. As maiores
+  médias de carga em oito quadros caíram de 42/46% para 28/32%, respectivamente.
+- Documentação do wall jump deixa de citar o antigo impulso de 2,75 px/tick
+  e um bloqueio de direção que já não existia no código.
+
+### Adicionado
+
+- Regressão na ROM mede os saltos e rejeita VInts perdidos e DMA acima de 2 KB;
+  verifica que a câmera atravessou a emenda e que o giro realmente aconteceu.
+- Quatro probes do céu original e um wall jump sem teto arquivados com origem
+  e limites. O tiro segurado sem Charge já se repetia na referência existente;
+  o wall jump sustenta 1,375 px/quadro, como o port. Forças não foram alteradas.
+
+**Validação:** regressões do host, cache e ROM no BlastEm via GDB; seis vistas
+comparadas por VRAM/CRAM. Medições limitadas aos trajetos descritos nos docs.
+O horizonte também repete na captura original com câmera Y=43; arte preservada.
+Chuva/HDMA e tempos/poses do chute continuam pendentes, sem declarar equivalência
+completa ao SNES.
+
 ## 2026-10-18 17:06:19 −03:00 (America/Sao_Paulo) — Landing Site e nave (6.0)
 
 ### Adicionado

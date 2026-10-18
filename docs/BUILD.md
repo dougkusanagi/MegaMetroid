@@ -146,3 +146,17 @@ python scripts/sm_reference_cache.py import-scene tests/out/scene-state.txt
 O cache inclui screenshot original, memória de vídeo, CGRAM, OAM, WRAM e estado
 PPU comprimidos, com checksums, origem e limites em seu manifesto. Não distribui
 ROM nem save state. Não repetir a captura para ajustes comuns no cenário.
+
+
+O smoke também imprime `NORMAL_CPU/DMA/MISSED` e `SPIN_CPU/DMA/MISSED` para dois
+saltos atravessando a emenda do fundo. CPU é o maior valor da média de oito
+quadros do SGDK; DMA é a maior fila em bytes; MISSED conta VInts além de um por
+frame. A fase faz 40 quadros de aquecimento e mede 110 quadros por salto.
+
+Para preencher uma lacuna de referência de céu, o coletor específico é
+`scripts/sm_sky_reference.lua`, usando o mesmo wrapper headless. Os probes já
+estão arquivados; não executar novamente para ajustar o port. A opção
+`sm_reference_cache.py import-sky prefixo1 prefixo2` preserva CSV, screenshots,
+VRAM/CGRAM e hashes da ROM/state/script de cada captura. O cenário `wall_open`
+no coletor de física documenta seu reposicionamento, para não confundir uma
+amostra controlada com uma travessia normal da sala.

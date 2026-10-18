@@ -205,6 +205,7 @@ quadros, com `SMOKE PASS` via API GDB do BlastEm. Custo em `docs/SPRITES.md`.
 
 **Fora da 3.2.** Ficam para a 3.3:
 - Mira diagonal parado (`05`–`08`) e agachado (`71`–`74`): no SNES vem de L/R, e o controle de 3 botões não tem botões livres. **Decidido:** no controle de 6 botões, L = Z (mirar para baixo) e R = Y (mirar para cima); X fica livre para cancelar item. Ainda não implementado no código.
+- Revisar saída e duração da pose do wall jump: a auditoria 6.0.1 confirmou o limite lateral, mas não equivalência dos tempos visuais.
 - Moonwalk, pouso atirando (`E6`/`E7`), pouco HP, space jump e screw attack.
 
 **Lacunas da prancha.**
@@ -251,6 +252,7 @@ Para a 3.2: o tamanho de quadro é 64×64 (8×8 tiles); com a Samus em pé, os p
 | # | Etapa | Entrega | Teste |
 |---|-------|---------|-------|
 | 6.0 ✅ | Integração visual do Landing Site e da nave | Cenário da referência, céu original, quatro portas azuis fechadas, blocos e nave estática | Seis vistas da ROM verificadas pela VRAM/CRAM no BlastEm |
+| 6.0.1 ✅ | Revisão do scroll e relatos de física | Y contínuo no MAP; métricas de CPU/DMA/VInt e novas referências do original | Sem quadros perdidos nos dois saltos medidos; seis vistas validadas |
 | 6.1 | Formato de sala | `room_def`: tilemap, colisão, spawn, inimigos, portas, tamanho | Crateria 1 e 2 carregadas via `room_def` |
 | 6.2 | Ferramenta de exportação | Script (Tiled/Aseprite → `.c`/`.res`) para colisão e entidades | Regenerar sala sem editar array à mão |
 | 6.3 | Transição de sala | Portas, fade/scroll, trocar tiles e paletas | Crateria 1 → 2 e volta |
@@ -279,6 +281,16 @@ Validação: regressões do host, build SGDK e `SMOKE PASS` no BlastEm via GDB.
 e suas paletas em seis vistas: nave, quatro portas e base de blocos. Capturas
 reconstruídas do vídeo ficam em `tests/out/blastem-*.png`. Detalhes e custo em
 `docs/SPRITES.md`.
+
+**6.0.1 Scroll contínuo e auditoria dos relatos** ✅ (2026-10-18).
+O fundo recebia Y com módulo 512, causando redraw completo nas emendas e dois
+VInts perdidos por salto nos cenários medidos. Passa a receber o Y contínuo:
+zero VInts perdidos, DMA máxima de 912 bytes no normal e 1.032 no giro.
+O smoke inclui os trajetos e recusa regressões. Repetição do horizonte também
+confirmada no original na câmera alta; sem alteração arbitrária da arte.
+Tiro segurado sem Charge repete no original; wall jump sustenta 1,375 px/quadro,
+como o port. Poses/saída do chute permanecem na 3.3. Referências e limites em
+`docs/FISICA.md` e `docs/SPRITES.md`; cache reutilizável sem novas sessões Mesen.
 
 ### Fase 7 — Itens, progressão e HUD
 

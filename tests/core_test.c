@@ -6,6 +6,7 @@
 #include "out/maps.h"
 #include "out/sm_hitboxes.h"
 #include "out/sm_beams.h"
+#include "out/sm_wall.h"
 
 static unsigned char tiles[64 * 32];
 static MmWorld world = {tiles, 64, 32};
@@ -905,6 +906,10 @@ static void wall_jump_rules(void) {
     AIRBORNE(64, 1); mm_tick(&world, &b, away);
     /* The kick faces away from the wall and accelerates from rest, as a spin does. */
     assert(b.jumped && b.facing_left && b.vx == -MM_AIR_ACCEL && b.pose == MM_POSE_WALL_KICK);
+    mm_tick(&world, &b, (MmInput){.axis = -1, .jump_held = 1});
+    assert(b.vx == -REFERENCE_WALL_SPEED);
+    mm_tick(&world, &b, (MmInput){.jump_held = 1});
+    assert(b.vx == -REFERENCE_WALL_SPEED); /* Releasing the d-pad preserves spin momentum. */
     AIRBORNE(64, 0); mm_tick(&world, &b, away);
     assert(!b.jumped && b.pose != MM_POSE_WALL_KICK);
     AIRBORNE(64, 1); mm_tick(&world, &b, into);

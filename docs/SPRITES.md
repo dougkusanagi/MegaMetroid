@@ -236,3 +236,35 @@ cores efetivas do feixe/impacto, além das regressões do núcleo.
 da VRAM, CRAM, scroll e SAT lidos pela própria ROM no BlastEm, via GDB. Confere
 os pixels dos planos, bancos de paleta e scroll contra os recursos compilados;
 não é uma comparação automática com todas as cenas possíveis do SNES.
+
+
+### 6.0.1 — Continuidade do scroll e medição dos saltos
+
+O módulo `% 512` aplicado antes de `MAP_scrollTo` era incorreto: o próprio MAP
+já repete os blocos do recurso. Cruzar 1024→1023 fazia o parâmetro do fundo saltar
+0→511, solicitando um redraw completo. Agora o fundo recebe Y contínuo da câmera;
+o hardware e o MAP cuidam da repetição. A arte não foi retocada por causa dessa
+mudança.
+
+No BlastEm NTSC, em 110 quadros medidos por salto, após aquecimento e com pelo
+menos 24 px de movimento vertical de câmera (1024→988 na execução validada),
+o resultado foi:
+
+| Medida | Normal antes/depois | Giratório antes/depois |
+|---|---|---|
+| VInts perdidos | 2 → 0 | 2 → 0 |
+| Maior fila DMA (bytes) | 4.368 → 912 | 4.872 → 1.032 |
+| Maior carga média de 8 quadros (%) | 42 → 28 | 46 → 32 |
+
+O smoke falha se esses trajetos perderem VInts, ultrapassarem 2 KB de DMA ou se
+não executarem o salto com o deslocamento de câmera esperado. Os valores são
+desse cenário, não um benchmark de todas as salas/inimigos nem garantia para
+qualquer emulador ou hardware. O port não recebe instrumentação na ROM padrão.
+
+`tests/reference/super_metroid/landing_sky/` conserva quatro probes adicionais
+do original (câmeras Y=976, 1024, 688 e 43), incluindo scanlines, VRAM, CGRAM e
+screenshots. Na câmera alta Y=43, a faixa de horizonte e o retorno às nuvens
+também aparecem no original; a repetição visual não foi removida. As posições
+high/upper foram fixadas artificialmente apenas para estabilizar a câmera, sem
+alterar os registradores de render. O original aplica scroll horizontal por
+faixas/HDMA e chuva que ainda não existem no port; o céu não é visualmente idêntico.

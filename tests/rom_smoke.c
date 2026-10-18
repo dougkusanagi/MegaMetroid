@@ -12,6 +12,43 @@ volatile u32 mm_smoke_failure; /* Failure bitmask, printed through the GDB API. 
 volatile u16 mm_smoke_video[4096];
 volatile u16 mm_smoke_video_header[76];
 volatile u16 mm_smoke_video_chunk;
+volatile u16 mm_smoke_perf[10]; /* CPU/DMA/missed VInts per jump, then initial/minimum camera Y. */
+
+static int jump_performance(Game *g)
+{
+    int spin, frame, i, failed = 0;
+    for (i = 0; i < 10; ++i) mm_smoke_perf[i] = 0;
+    for (spin = 0; spin < 2; ++spin) {
+        int start_y, min_y, saw_spin = 0;
+        mm_samus_init(&g->player, 1493, 1176);
+        mm_weapon_init(&g->weapon);
+        for (frame = 0; frame < 40; ++frame) {
+            game_update(g, (MmInput){.axis = spin && frame >= 32 ? 1 : 0});
+            SYS_doVBlankProcess();
+        }
+        start_y = min_y = g->camera.y;
+        for (frame = 0; frame < 110; ++frame) {
+            u32 start = vtimer;
+            u16 bytes, load;
+            game_update(g, (MmInput){.axis = spin, .jump_pressed = frame == 0, .jump_held = 1});
+            if (g->camera.y < min_y) min_y = g->camera.y;
+            if (g->player.spin_jumping) saw_spin = 1;
+            bytes = DMA_getQueueTransferSize();
+            SYS_doVBlankProcess();
+            load = SYS_getCPULoad();
+            if (load > mm_smoke_perf[spin * 3]) mm_smoke_perf[spin * 3] = load;
+            if (bytes > mm_smoke_perf[spin * 3 + 1]) mm_smoke_perf[spin * 3 + 1] = bytes;
+            if (vtimer > start + 1) mm_smoke_perf[spin * 3 + 2] += vtimer - start - 1;
+        }
+        /* Ensure the probe actually jumped through the 1024 boundary, rather
+           than passing while stuck on a slope or below a ceiling. */
+        mm_smoke_perf[6 + spin * 2] = start_y;
+        mm_smoke_perf[7 + spin * 2] = min_y;
+        if (start_y != 1024 || start_y - min_y < 24 || saw_spin != spin ||
+            mm_smoke_perf[spin * 3 + 2] || mm_smoke_perf[spin * 3 + 1] > 2048) failed = 1;
+    }
+    return failed;
+}
 __attribute__((noinline, used, externally_visible)) void mm_smoke_video_ready(void)
 {
     __asm__ volatile ("nop");
@@ -258,6 +295,7 @@ int main(bool hardReset)
         }
         if (impact_frames != 31 || g.weapon.beams[0].impact_ticks) failed |= 8192;
     }
+    if (jump_performance(&g)) failed |= 65536;
     room_video(&g);
     /* Window plane keeps the result on screen; plane A scrolls with the camera. */
     VDP_setWindowVPos(FALSE, 2);

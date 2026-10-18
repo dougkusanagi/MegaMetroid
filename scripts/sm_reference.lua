@@ -31,6 +31,7 @@ local function after_prep(...)
 end
 
 local SCENARIOS = {
+  {name = "wall_open", steps = {{300, "left run"}, {15, "right"}, {10, "left"}, {14, "left jump"}, {2, "right"}, {80, "right jump"}}},
   {name = "walk_right", steps = {{900, "right"}}},
   {name = "run_left", steps = {{400, "left run"}}},
   {name = "walk_stop", steps = after_prep({30, "right"}, {40, ""})},
@@ -139,6 +140,10 @@ local MAP = {left = "left", right = "right", up = "up", down = "down", jump = "a
 
 emu.addEventCallback(function()
   if pending_load or frame < 0 then return end
+  -- Keep the room intact; relocate the spinning Samus to a wall without the old low ceiling.
+  if SCENARIOS[scenario_index].name == "wall_open" and frame == 339 then
+    w16(0x0AF6, 629); w16(0x0AFA, 720); w16(0x0B2E, 0); w16(0x0B2C, 0)
+  end
   local pad = {a = false, b = false, x = false, y = false, l = false, r = false,
                up = false, down = false, left = false, right = false, start = false, select = false}
   for word in buttons_for(frame + 1):gmatch("%a+") do pad[MAP[word]] = true end

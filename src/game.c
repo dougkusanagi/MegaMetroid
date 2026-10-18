@@ -125,8 +125,9 @@ static void render(Game *g)
     bool rolling = animation == PLAYER_ANIM_BALL_R + side;
     g->camera = mm_camera(x + 20, y + 28, VIEW_WIDTH, VIEW_HEIGHT, bounds);
     MAP_scrollTo(g->foreground, g->camera.x, g->camera.y);
-    MAP_scrollTo(g->background, 0, g->level->background_scroll_height ?
-        g->camera.y % g->level->background_scroll_height : 0);
+    /* MAP wraps source blocks itself. Modulo here makes a one-pixel crossing
+       look like a 511-pixel teleport and queues a full plane redraw. */
+    MAP_scrollTo(g->background, 0, g->level->background_scroll_height ? g->camera.y : 0);
     SPR_setPosition(g->sprite, x - g->camera.x - SAMUS_DRAW_X, y - g->camera.y - SAMUS_DRAW_Y);
     if (animation != g->animation) {
         if (g->animation != 0xFFFF && walk_row(animation) && walk_row(g->animation))

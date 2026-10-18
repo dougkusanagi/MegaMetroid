@@ -5375,6 +5375,122 @@
           "samples": 1
         }
       ]
+    },
+    "wall_open": {
+      "file": "wall_open.csv.gz",
+      "saved_at": "2026-10-18T17:23:43-03:00",
+      "rows": 421,
+      "csv_sha256": "4830f6895ac1f298b4ed98ec08aab036e5577aac78e4e7a41732089d4c066ff9",
+      "last_committed_script_before_saved_at": "bd43ceb3b2d27ad7a842acb4392a3486cd892a6d",
+      "source_file": "wall_open.csv",
+      "observed_radii": [
+        {
+          "pose": "01",
+          "x": 5,
+          "y": 21,
+          "samples": 1
+        },
+        {
+          "pose": "02",
+          "x": 5,
+          "y": 21,
+          "samples": 2
+        },
+        {
+          "pose": "09",
+          "x": 5,
+          "y": 21,
+          "samples": 8
+        },
+        {
+          "pose": "0A",
+          "x": 5,
+          "y": 21,
+          "samples": 245
+        },
+        {
+          "pose": "19",
+          "x": 5,
+          "y": 12,
+          "samples": 2
+        },
+        {
+          "pose": "1A",
+          "x": 5,
+          "y": 12,
+          "samples": 13
+        },
+        {
+          "pose": "1A",
+          "x": 5,
+          "y": 21,
+          "samples": 1
+        },
+        {
+          "pose": "25",
+          "x": 5,
+          "y": 21,
+          "samples": 11
+        },
+        {
+          "pose": "25",
+          "x": 5,
+          "y": 24,
+          "samples": 1
+        },
+        {
+          "pose": "26",
+          "x": 5,
+          "y": 21,
+          "samples": 6
+        },
+        {
+          "pose": "2A",
+          "x": 5,
+          "y": 19,
+          "samples": 28
+        },
+        {
+          "pose": "2A",
+          "x": 5,
+          "y": 21,
+          "samples": 1
+        },
+        {
+          "pose": "83",
+          "x": 5,
+          "y": 12,
+          "samples": 1
+        },
+        {
+          "pose": "83",
+          "x": 5,
+          "y": 19,
+          "samples": 79
+        },
+        {
+          "pose": "8A",
+          "x": 5,
+          "y": 21,
+          "samples": 21
+        },
+        {
+          "pose": "A5",
+          "x": 5,
+          "y": 19,
+          "samples": 1
+        }
+      ],
+      "capture_reference": {
+        "rom_sha256": "12b77c4bc9c1832cee8881244659065ee1d84c70c3d29e6eaf92e6798cc2ca72",
+        "script_sha256": "2a172da00ec886d26fa99c79b92b74d0c77ca0b8c8f4d18eef4a528482b821a6",
+        "state_sha256": "19fc0e06e192cf66662e18b9853de096065b950092ee02fed3b005329bd1366c"
+      },
+      "limits": [
+        "After frame 339, position is moved to (629,720), vertical speed cleared; room terrain is unchanged.",
+        "This avoids the ceiling that immediately blocks the older wall_jump capture.",
+        "Right wall kick with no running bonus; not every equipment/input or mirrored scenario."
+      ]
     }
   },
   "reference": {

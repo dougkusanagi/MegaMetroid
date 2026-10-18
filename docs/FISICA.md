@@ -228,13 +228,14 @@ pelo BlastEm via API. As larguras e alturas foram atualizadas na 2.8.4 abaixo.
 - **Parede**: como no Super Metroid, só no pulo giratório (ou logo depois de outro pulo
   de parede, que também gira), encostado numa parede sólida e com o direcional apontando
   para o lado oposto a ela; aí apertar C faz um pulo de parede. "Encostado" aceita a
-  parede até `MM_WALL_REACH` = 8 px atrás, porque apertar para longe já afasta a Samus
-  2,75 px por tick. O pulo dá `MM_WALL_JUMP` para cima e um impulso de 2,75 px/tick para
-  o lado apertado, sem direcional, por `MM_WALL_LOCK` ticks. Usa o estado SPIN. Pulo
+  parede até `MM_WALL_REACH` = 8 px atrás. O pulo dá `MM_WALL_JUMP` = 4,625 px/tick
+  para cima. Na horizontal, acelera de 0,75 até 1,375 px/tick, conserva a inércia
+  quando se solta o direcional e permite mudar de direção; não há `MM_WALL_LOCK`.
+  Usa o estado SPIN. Pulo
   parado, direcional contra a parede ou sem direcional não fazem pulo de parede
   (`wall_jump_rules()` em `tests/core_test.c`).
 - O teste `wall_climb()` sobe um poço de 40 px de largura, do chão (y 112) até y 40,
-  com 3 impulsos de parede. Ele conta os impulsos e exige pelo menos 2, para que um
+  exigindo pelo menos 2 impulsos de parede, para que um
   pulo do chão não baste.
 - Sem deslizar na parede: a queda continua no ritmo normal enquanto encosta.
 
@@ -246,3 +247,25 @@ pelo BlastEm via API. As larguras e alturas foram atualizadas na 2.8.4 abaixo.
   subida na hora; soltar nos 2 primeiros ticks nem tira a Samus do chão.
 - Rampas (2.5) e agachar/bola (2.6) mudam a colisão, então as medidas precisam ser
   refeitas depois dessas etapas.
+
+
+## Auditoria dos relatos de tiro e wall jump (18/10/2026)
+
+- **Segurar tiro:** a referência já arquivada `shoot_hold` confirma disparos no
+  quadro 216, novamente no 231 e no 256: primeira espera de 15, depois 25 quadros.
+  O save está sem beams/upgrades equipados. Portanto o Power Beam básico repete
+  no original; mantido no port. Charge continua para a 4.4, sem inferir seu
+  comportamento a partir desses cenários sem equipamento.
+- **Força lateral do wall jump:** `wall_open` evita o teto que interrompia a
+  subida em `wall_jump`. Após o quadro 339, o coletor reposiciona a Samus já
+  girando em (629,720), zera a velocidade vertical e mantém o terreno original.
+  São dois quadros apertando para longe e então pulo segurado. O chute leva a
+  pose 83 e sobe 100 px nesta amostra; velocidade lateral: 0, depois 0,75 e
+  1,375 px/quadro, sem bônus de corrida. O limite sustentado de 1,375 já coincide
+  com o port e agora é comparado diretamente com o cache pelos testes.
+- Não houve aumento arbitrário do impulso. Isso não prova equivalência completa:
+  o port começa a mover um tick antes na saída; sua pose de chute dura 10 ticks,
+  enquanto a 83 permanece por toda a janela observada no original. Tempos e
+  poses do chute ficam explicitamente na auditoria 3.3, e não foram corrigidos
+  nesta entrega. A amostra nova cobre só a parede à esquerda, sem outros itens
+  ou bônus de corrida; não generalizar para todas as condições.

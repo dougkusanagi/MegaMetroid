@@ -14,6 +14,7 @@ Histórico de correções, melhorias e adições: [`CHANGELOG.md`](CHANGELOG.md)
 
 O Landing Site usa a arte nova de Crateria: paredes e vegetação restauradas,
 céu baseado no original, quatro portas azuis fechadas, base de blocos e a nave.
+O scroll do fundo foi corrigido para evitar redraw completo e travadas nas emendas.
 Esta integração é visual: portas não abrem, blocos não quebram e a nave ainda
 não tem colisão, save ou recarga. O ponto inicial da Samus foi mantido; caminhe
 para a direita até o centro da sala para ver a nave. Há adaptação de cores às
@@ -35,7 +36,7 @@ cancelar item. Ainda não implementado. Para jogar com um controle Xbox no layou
 remap do RetroArch descrito em `docs/BUILD.md`.
 Segure cima para mirar acima; cima + esquerda/direita mira na diagonal, parado ou andando, e a pose
 de mira aparece mesmo sem atirar. Baixo + esquerda/direita anda mirando na diagonal abaixo. No ar,
-baixo mira para baixo. Tocar A dispara; segurar repete. O tiro sai da boca do canhão da pose,
+baixo mira para baixo. Tocar A dispara; segurar repete, como o Power Beam sem Charge medido no original. O tiro sai da boca do canhão da pose,
 usa o sprite original nas oito direções e mostra um impacto animado ao atingir paredes.
 ↓ no chão agacha, com hitbox e pose menores; a Samus continua agachada ao soltar,
 independentemente do tempo segurado. Para levantar, dê um novo toque de ↑, ande ou pule,

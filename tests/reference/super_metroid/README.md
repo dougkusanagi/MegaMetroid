@@ -66,3 +66,14 @@ no Mesen, screenshot e recorte da prancha nova de Crateria. Seu manifesto separa
 origem, cenário, precisão da posição da nave e limitações. Os checksums são
 conferidos pelo mesmo `sm_reference_cache.py check`; a regeneração de arte não
 executa o Mesen. Não confundir a cor azul de transparência do mapa com o céu real.
+
+
+`landing_sky/` registra quatro alturas de câmera e o scroll BG2 por scanline.
+As duas alturas artificiais estão identificadas no manifesto. A faixa do
+horizonte pode repetir nas alturas observadas; isso também é visível nas
+screenshots do original. O port ainda não reproduz vento HDMA e chuva.
+
+`wall_open.csv.gz` acrescenta um chute sem o teto que truncava `wall_jump`.
+No quadro 340, a Samus já girando é reposicionada em (629,720), com velocidade
+vertical zerada. O terreno não é alterado. O limite lateral observado é 1,375
+px/quadro; não usar essa única amostra como prova de todos os wall jumps.

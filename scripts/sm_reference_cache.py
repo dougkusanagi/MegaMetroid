@@ -85,6 +85,15 @@ def import_traces(patterns, rom, state):
             'observed_radii': [{'pose': f'{pose:02X}', 'x': x, 'y': y, 'samples': count}
                               for (pose, x, y), count in sorted(sizes.items())]
         }
+        sidecar = Path(str(path) + '.source.json')
+        if sidecar.exists():
+            manifest['scenarios'][scenario]['capture_reference'] = json.loads(sidecar.read_text(encoding='utf-8-sig'))
+        if scenario == 'wall_open':
+            manifest['scenarios'][scenario]['limits'] = [
+                'After frame 339, position is moved to (629,720), vertical speed cleared; room terrain is unchanged.',
+                'This avoids the ceiling that immediately blocks the older wall_jump capture.',
+                'Right wall kick with no running bonus; not every equipment/input or mirrored scenario.',
+            ]
     manifest_path.write_text(json.dumps(manifest, indent=2, ensure_ascii=False) + '\n', encoding='utf-8')
     print(f'Archived {len(chosen)} scenarios (existing scenarios retained).')
 
@@ -118,6 +127,31 @@ def import_scene(prefix):
                    'Ship art origin (1057,1101) matches the screenshot within one pixel; no animation measurement.']}
     metadata['reference'] = origin
     (target / 'manifest.json').write_text(json.dumps(metadata, indent=2) + '\n')
+
+
+def import_sky(prefixes):
+    """Archive sparse original scanline/video probes, keeping each capture's source hashes."""
+    target = DEST / 'landing_sky'
+    target.mkdir(exist_ok=True)
+    files, captures = {}, []
+    for prefix in prefixes:
+        source = Path(prefix)
+        origin = json.loads(Path(str(source)+'.source.json').read_text(encoding='utf-8-sig'))
+        captures.append({'file': source.name, 'reference': origin,
+            'captured_at': datetime.fromtimestamp(source.stat().st_mtime).astimezone().isoformat(timespec='seconds')})
+        for path in [source, *sorted(source.parent.glob(source.name+'.*'))]:
+            data = path.read_bytes()
+            name = path.name + '.gz'
+            (target/name).write_bytes(gzip.compress(data, mtime=0))
+            files[name] = digest(data)
+    metadata = {'scenario': 'landing_sky_scanlines', 'emulator': 'Mesen 2.1.1 --testrunner',
+        'captures': captures, 'files': files, 'limits': [
+            'Four saved-state probes only: ship, ground, high and upper; no rendering registers modified.',
+            'High/upper positions are held artificially to let the camera settle; not normal traversal.',
+            'One CPU-execution sample per scanline; not every HDMA write or subscanline timing.',
+            'Sky wraps vertically at 512 pixels in these samples; horizontal HDMA/weather are not ported.',
+        ]}
+    (target/'manifest.json').write_text(json.dumps(metadata, indent=2)+'\n')
 
 
 def check():
@@ -159,20 +193,40 @@ def check():
         beam_header += f'static const int reference_{name}[][2] = {{\n'
         beam_header += ''.join(f'    {{{x}, {y}}},\n' for x, y in vectors) + '};\n'
     (out / 'sm_beams.h').write_text(beam_header)
+    # Independent confirmation of the wall-kick's sustained horizontal speed.
+    if 'wall_open' in manifest['scenarios']:
+        wall = list(csv.DictReader(io.StringIO(gzip.decompress((DEST/'wall_open.csv.gz').read_bytes()).decode())))
+        kick = [r for r in wall if int(r['pose']) == 0x83 and int(r['frame']) >= 342]
+        assert len(kick) >= 40 and min(int(r['y']) for r in kick) <= 621
+        speeds = [int(r['vx_base'])*256 + int(r['vx_basesub'])//256 for r in kick]
+        assert speeds[:4] == [0,192,352,352] and max(speeds) == 352
+        (out/'sm_wall.h').write_text('/* Original wall_open, kick away from an unobstructed wall. */\n'
+            f'#define REFERENCE_WALL_SPEED {max(speeds)}\n')
+    held = list(csv.DictReader(io.StringIO(gzip.decompress((DEST/'shoot_hold.csv.gz').read_bytes()).decode())))
+    reloads = [int(r['frame']) for i,r in enumerate(held) if i and int(r['cooldown'])>int(held[i-1]['cooldown'])]
+    assert reloads[:3] == [216,231,256], 'Original held Power Beam repeats (first gap 15, then 25)'
     print(f'PASS saved reference: {len(manifest["scenarios"])} scenarios, {total} RAM samples; no emulator needed')
-    scene = DEST / 'landing_site'
-    if scene.exists():
-        metadata = json.loads((scene / 'manifest.json').read_text())
-        for name, expected in metadata['files'].items():
-            data = (scene / name).read_bytes()
-            if name.endswith('.gz'): data = gzip.decompress(data)
-            assert digest(data) == expected, 'scene checksum: ' + name
-        print('PASS saved Landing Site graphics and video memory; no emulator needed')
+    for scene in (DEST/'landing_site', DEST/'landing_sky'):
+        if scene.exists():
+            metadata = json.loads((scene / 'manifest.json').read_text())
+            for name, expected in metadata['files'].items():
+                data = (scene / name).read_bytes()
+                if name.endswith('.gz'): data = gzip.decompress(data)
+                assert digest(data) == expected, 'scene checksum: ' + name
+            print(f'PASS saved {scene.name} graphics and video memory; no emulator needed')
+    sky = DEST/'landing_sky'
+    if sky.exists():
+        for name in ('sky_reference.csv.gz', 'sky_upper.csv.gz'):
+            rows = csv.DictReader(io.StringIO(gzip.decompress((sky/name).read_bytes()).decode()))
+            for row in rows:
+                samples = [tuple(map(int,v.split(':'))) for v in row['bg2_lines'].split()]
+                assert len(samples) >= 220
+                assert all(scroll%512 == int(row['camera_y'])%512 for line,scroll,x in samples if line>0)
 
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('action', choices=['import', 'import-scene', 'check'])
+    parser.add_argument('action', choices=['import', 'import-scene', 'import-sky', 'check'])
     parser.add_argument('patterns', nargs='*')
     parser.add_argument('--rom')
     parser.add_argument('--state')
@@ -181,4 +235,6 @@ if __name__ == '__main__':
         import_traces(args.patterns, args.rom, args.state)
     elif args.action == 'import-scene':
         import_scene(args.patterns[0])
+    elif args.action == 'import-sky':
+        import_sky(args.patterns)
     check()
