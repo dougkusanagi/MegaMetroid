@@ -35,7 +35,7 @@ GROUND_ROW = 58
 # The ball and its transitions sit on the same row: the ball box keeps the standing feet, in the air too.
 GROUNDED = {'STAND', 'WALK', 'LAND', 'SPIN_LAND', 'CROUCH_DOWN', 'CROUCH', 'STAND_UP',
             'MORPH', 'BALL', 'UNMORPH', 'AIM_UP', 'WALK_SHOOT', 'WALK_AIM_UP', 'WALK_AIM_DOWN',
-            'CROUCH_AIM_UP'}
+            'CROUCH_AIM_UP', 'TURN'}
 # Actions aligned frame by frame instead of as a whole. The extracted ball frames drift up and down by
 # a pixel from the sheet grid; a rolling ball must not bounce.
 ALIGN_EACH_FRAME = {'BALL'}
@@ -79,6 +79,9 @@ ANIMATIONS = [
     ('FALL_AIM_DOWN', '2D:1', '2E:1', 'D'),
     ('FALL_AIM_DIAG_UP', '6D', '6E', 'DU'),
     ('FALL_AIM_DIAG_DOWN', '6F', '70', 'DD'),
+    # 3.2.7: labels name the facing at the start of the turn.
+    ('TURN', '25', '26'),
+    ('TURN_AIR', '2F', '30'),
 ]
 
 

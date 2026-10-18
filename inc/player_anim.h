@@ -65,6 +65,10 @@ enum {
     PLAYER_ANIM_FALL_AIM_DIAG_UP_L, /* pose 6E */
     PLAYER_ANIM_FALL_AIM_DIAG_DOWN_R, /* pose 6F */
     PLAYER_ANIM_FALL_AIM_DIAG_DOWN_L, /* pose 70 */
+    PLAYER_ANIM_TURN_R, /* pose 25 */
+    PLAYER_ANIM_TURN_L, /* pose 26 */
+    PLAYER_ANIM_TURN_AIR_R, /* pose 2F */
+    PLAYER_ANIM_TURN_AIR_L, /* pose 30 */
     PLAYER_ANIM_COUNT
 };
 
@@ -130,6 +134,10 @@ static const signed char player_muzzle[PLAYER_ANIM_COUNT][2] = {
     {2, 1}, /* 6E */
     {36, 27}, /* 6F */
     {4, 27}, /* 70 */
+    {27, 11}, /* 25 */
+    {9, 17}, /* 26 */
+    {27, 11}, /* 2F */
+    {9, 17}, /* 30 */
 };
 
 #endif /* MM_PLAYER_ANIM_H */

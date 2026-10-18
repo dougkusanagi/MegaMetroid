@@ -91,6 +91,25 @@ A paleta é `pal_samus_power_suit` (um `PALETTE` no `res/resources.res`). A folh
 
 ## Outras pranchas
 
+### Virada (3.2.7)
+
+A folha inclui `TURN` (`25/26`, pés alinhados) e `TURN_AIR` (`2F/30`).
+Os nomes das poses indicam o lado **inicial** da Samus. O núcleo mantém esse
+lado e um contador visual de seis ticks; o render mostra os quadros 0, 1 e 2
+por dois ticks cada, sem loop do SGDK. A frenagem continua usando `turn` e
+`turned`, com as velocidades já medidas. Mira/tiro têm prioridade visual,
+preservando a origem do canhão; bola, giro e chute não exibem a virada normal.
+
+Medida reproduzível: cenários `turn`, `turn_moving` e `air_turn_rest` de
+`scripts/sm_reference.ps1`, colunas `pose`, `anim_frame` e `anim_timer`.
+No chão o original usa `25`, no ar `2F`, ambos por 2+2+2 ticks.
+
+Custo: quatro linhas/12 quadros na folha, dois inteiros adicionais no núcleo
+(8 bytes de RAM no 68000). Os novos quadros têm até 18 tiles, abaixo do máximo
+já reservado pela Samus; sem sprite ou paleta adicional em VRAM. Ciclos de CPU
+ainda não medidos em hardware. `build_player_sheet.py` valida os pixels gerados;
+o teste da ROM verifica os três quadros nas quatro tiras pelo BlastEm via API.
+
 ### Pulo normal: sequência de quadros (correção de 18/10/2026)
 
 O pulo normal usa a tira `4D/4E` na subida e na descida. `29/2A` é a queda

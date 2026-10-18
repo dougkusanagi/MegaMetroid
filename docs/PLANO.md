@@ -98,7 +98,7 @@ pula, tempos das transições e dos pousos do original.
 | # | Etapa | Entrega | Teste |
 |---|-------|---------|-------|
 | 3.1 ✅ | Pipeline de sprite | Pranchas originais → PNG indexado → `.res` (`scripts/extract_*.py`), convenções em `docs/SPRITES.md`. Extração feita e todos os `.res` compilam no `rescomp`; a Samus carrega no jogo desde a 3.2.1 | Sprite novo carrega seguindo o doc |
-| 3.2 ⏭️ | Animações atuais com os sprites originais | Trocar a folha Dread (`player_sprite`) pelas poses de `res/images/samus-original-sgdk/poses` em tudo o que o código já faz. Dividida nas sub-etapas 3.2.1–3.2.7 abaixo, cada uma com commit próprio | Ver a tabela da 3.2 |
+| 3.2 ✅ | Animações atuais com os sprites originais | Folha Dread substituída pelas poses de `res/images/samus-original-sgdk/poses`. Sub-etapas 3.2.1–3.2.7 concluídas, com commits próprios | Ver a tabela da 3.2 |
 | 3.3 | Animações completas | Virar, mirar (cima/baixo/diagonal), agachar, bola, spin | Todas visíveis em sequência |
 | 3.4 | Hitbox por estado | `collision_size` varia por estado | Sem prender na parede ao trocar de estado |
 | 3.5 | Orçamento de VRAM | Alocação automática de VRAM / streaming de tiles do sprite | `SPR_showVRAMUsage` dentro do orçamento |
@@ -160,7 +160,13 @@ perda de cores (ver custo em `docs/SPRITES.md`). Teste: regressões do núcleo
 com gcc, `beam_impacts()` para contato varrido/expiração/saída da tela, build
 SGDK e `SMOKE PASS` no BlastEm, incluindo os cinco quadros do impacto na ROM.
 
-**3.2.7 Virar.** Animação curta de virada antes de trocar a pose de lado.
+**3.2.7 Virar** ✅. Três quadros de dois ticks, medidos no Mesen (`turn`,
+`turn_moving`, `air_turn_rest`): `25/26` no chão e `2F/30` no ar, escolhidos
+pelo lado inicial. O núcleo guarda a duração visual separada da frenagem;
+velocidades e transições físicas não mudam. O render retorna à pose normal
+ao terminar e mantém prioridade para mira/tiro, bola, giro e chute de parede.
+Teste: `turn_animation()` no núcleo; a ROM confere as quatro tiras e seus três
+quadros, com `SMOKE PASS` via API GDB do BlastEm. Custo em `docs/SPRITES.md`.
 
 **Fora da 3.2.** Ficam para a 3.3:
 - Mira diagonal parado (`05`–`08`) e agachado (`71`–`74`): no SNES vem de L/R, e o controle de 3 botões não tem botões livres. **Decidido:** no controle de 6 botões, L = Z (mirar para baixo) e R = Y (mirar para cima); X fica livre para cancelar item. Ainda não implementado no código.
@@ -170,7 +176,8 @@ SGDK e `SMOKE PASS` no BlastEm, incluindo os cinco quadros do impacto na ROM.
 - A pose `16` (pulo parado, esquerda, mirando para cima) não tem faixa própria: são os quadros 2–3 da tira `15`.
 - A faixa da `69` diz "Facing left - aiming up-right", provável erro de digitação ("Facing right").
 
-> **Prioridade (2026-10-12)**: a 3.2 vem antes de qualquer outra implementação.
+> **Prioridade de 2026-10-12 atendida em 2026-10-18:** a 3.2 está concluída.
+> Retomar a próxima pendência na ordem do plano: 2.8.3 (agachar, bola e pousos).
 
 #### Extração (revisão de 2026-10-12)
 

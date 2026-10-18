@@ -8,6 +8,9 @@ Pipeline de extração e importação de sprites: [`docs/SPRITES.md`](docs/SPRIT
 
 Histórico de correções, melhorias e adições: [`CHANGELOG.md`](CHANGELOG.md).
 
+A Samus usa animações originais de movimento, pulo, agachar, bola, mira e virada.
+A virada tem três quadros, tanto no chão quanto no ar, preservando a física do movimento.
+
 Small project with the intention of porting Super Metroid for Mega Drive / Sega Genesis.
 
 Update: simple tile collision system implemented. 

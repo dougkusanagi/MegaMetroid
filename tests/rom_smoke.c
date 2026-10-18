@@ -11,6 +11,37 @@ __attribute__((noinline, used, externally_visible)) void mm_smoke_finish(void)
     while (1) SYS_doVBlankProcess();
 }
 
+static int turns(Game *g)
+{
+    int side, air, t, failed = 0;
+    for (side = 0; side < 2; ++side) for (air = 0; air < 2; ++air) {
+        int seen = 0;
+        g->player.facing_left = side;
+        if (air) {
+            for (t = 0; t < 12; ++t) {
+                game_update(g, (MmInput){.jump_pressed = t == 0, .jump_held = 1});
+                SYS_doVBlankProcess();
+            }
+        }
+        for (t = 0; t < MM_TURN_POSE_TICKS; ++t) {
+            game_update(g, (MmInput){.axis = side ? 1 : -1, .jump_held = 1});
+            if (g->player.turn_pose_ticks) {
+                if (g->animation != (air ? PLAYER_ANIM_TURN_AIR_R : PLAYER_ANIM_TURN_R) + side ||
+                    g->sprite->frameInd != (MM_TURN_POSE_TICKS - g->player.turn_pose_ticks) / 2) failed = 1;
+                seen |= 1 << g->sprite->frameInd;
+            }
+            SYS_doVBlankProcess();
+        }
+        /* Return to rest, ready for the next turn. */
+        for (t = 0; t < 100; ++t) {
+            game_update(g, (MmInput){0});
+            SYS_doVBlankProcess();
+        }
+        if (seen != 7 || !g->player.grounded || g->player.turn_pose_ticks) failed = 1;
+    }
+    return failed;
+}
+
 int main(bool hardReset)
 {
     static Game g;
@@ -109,6 +140,7 @@ int main(bool hardReset)
             if ((seen & 60) != 60 || !g.player.grounded) failed = 1;
         }
     }
+    failed |= turns(&g);
     /* A downward beam just above the floor must render all five impact frames, then hide. */
     mm_weapon_init(&g.weapon);
     g.weapon.beams[0] = (MmBeam){.active = 1, .x = g.player.x + 20 * MM_UNIT,

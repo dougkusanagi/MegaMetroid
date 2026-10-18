@@ -54,6 +54,7 @@ void mm_body_init(MmBody *b, int x, int y, MmRect hitbox)
     b->vx = b->vy = 0; b->hitbox = hitbox;
     b->grounded = b->facing_left = b->jumped = 0;
     b->speed = b->run_extra = b->turn = b->slide = b->walking = b->falling = 0;
+    b->turn_pose_ticks = b->turn_pose_left = 0;
     b->spin_jumping = b->shoot_pose_timer = 0;
     b->aim = MM_AIM_FORWARD;
     b->jump_frame = 0; b->jump_frame_ticks = 3;
@@ -276,6 +277,10 @@ static void steer(MmBody *b, int direction, int run_held)
         /* The tick the opposite way is pressed still steers the old way, as the original does; a body at
            rest on the ground stays put. A spin at rest just faces the new way. */
         b->turn = MM_TURN_TICKS - 1; b->turned = b->slide = 0;
+        if (!b->spin_jumping) {
+            b->turn_pose_ticks = MM_TURN_POSE_TICKS;
+            b->turn_pose_left = b->facing_left;
+        }
         direction = b->grounded && !b->walking ? 0 : facing;
     }
     if (b->grounded && !b->ball) {
@@ -342,6 +347,7 @@ void mm_tick(const MmWorld *w, MmBody *b, MmInput input)
     int moving_before_jump = b->vx != 0, wall_jump, was_grounded = b->grounded, was_crouching = b->crouching;
     int was_ball = b->ball;
     if (b->pose_timer) --b->pose_timer;
+    if (b->turn_pose_ticks) --b->turn_pose_ticks;
     b->jumped = input.jump_pressed && b->grounded;
     /* As in Super Metroid, only a jump while walking spins: from rest, even with a direction pressed on
        the same tick, the jump is a standing one. A jump during a slide, with no direction, still spins. */
@@ -415,6 +421,7 @@ void mm_tick(const MmWorld *w, MmBody *b, MmInput input)
     update_pose(b, was_grounded, was_crouching, was_ball);
     update_jump_animation(b);
     if (b->grounded) b->spin_jumping = 0;
+    if (b->ball || b->spin_jumping || b->pose == MM_POSE_WALL_KICK) b->turn_pose_ticks = 0;
     b->state = body_state(b);
     b->aim = body_aim(b, input);
 }

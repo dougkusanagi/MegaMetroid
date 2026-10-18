@@ -9,6 +9,7 @@
 #define MM_WALK_SNAP 480 /* ...and past 1.875 the walk jumps to MM_SPEED: full speed on the 11th tick. */
 #define MM_DECEL 128 /* -0.5 px/tick when letting go on the ground, turning around or reversing in the air. */
 #define MM_TURN_TICKS 7 /* Turning around on the ground or in a normal jump or fall, the tick it starts on included. */
+#define MM_TURN_POSE_TICKS 6 /* Three original turn frames, two simulation ticks each. */
 #define MM_RUN_ACCEL 16 /* Dash: +1/16 px/tick each tick... */
 #define MM_RUN_EXTRA_MAX 512 /* ...up to +2 (4.75 px/tick in all) after 32 ticks. */
 #define MM_AIR_ACCEL 192 /* +0.75 px/tick in the air and in the ball. */
@@ -62,6 +63,7 @@ typedef struct {
     int grounded, facing_left, jumped;
     int speed, run_extra; /* Base speed along the facing direction and the dash bonus, Q24.8 px/tick. */
     int turn, turned; /* Ticks left turning around, and whether the body already faces the new way. */
+    int turn_pose_ticks, turn_pose_left; /* Visual turn, facing at its start (independent of braking). */
     int slide, walking; /* Ground: sliding after letting go, already walking. */
     int falling; /* In the air without a jump: walked off a ledge. */
     int spin_jumping;

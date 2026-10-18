@@ -10,6 +10,28 @@ O registro detalhado começa em 18/10/2026. A entrada anterior abaixo foi
 reconstituída do commit indicado; o histórico anterior completo permanece no Git
 (`git log`) e as entregas por etapa estão em [docs/PLANO.md](docs/PLANO.md).
 
+## 2026-10-18 15:47:57 −03:00 — Virada da Samus (etapa 3.2.7)
+
+### Adicionado
+
+- Animação de virada original nos dois lados: `25/26` no chão e `2F/30` no ar.
+  São três quadros de dois ticks, com a tira escolhida pelo lado inicial da
+  Samus, conforme medição no Mesen. Depois, retorna à pose de movimento.
+- Regressões de duração, orientação e cancelamento por giro/bola; teste na ROM
+  verifica os três quadros, nos dois lados, no chão e durante o pulo.
+
+### Melhorado
+
+- A transição visual de direção acompanha a simulação sem alterar aceleração,
+  frenagem ou velocidade. Mira e tiro mantêm suas poses; bola, giro e chute de
+  parede mantêm suas animações próprias.
+- `AGENTS.md` exige teste da ROM no BlastEm via API GDB, sem skills de controle
+  do computador nem automação da interface, com sessão oculta e isolada.
+- Concluída a sequência 3.2.1–3.2.7 de importação das animações atuais.
+
+**Validação:** medição no Mesen (`turn`, `turn_moving`, `air_turn_rest`), geração
+da folha, testes do núcleo com gcc, build SGDK e `SMOKE PASS` pela API do BlastEm.
+
 ## 2026-10-18 15:41:13 −03:00 — Descida do pulo sem giro
 
 ### Corrigido

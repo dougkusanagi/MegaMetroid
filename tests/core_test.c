@@ -933,6 +933,35 @@ static void beam_from_muzzle(void) {
     assert(!w.beams[0].active);
     puts("PASS beam leaves from the muzzle along the aim, never from inside a wall");
 }
+static void turn_animation(void) {
+    int side, air, t;
+    for (side = 0; side < 2; ++side) for (air = 0; air < 2; ++air) {
+        MmBody b;
+        MmInput opposite = {.axis = side ? 1 : -1, .jump_held = 1};
+        reset(); floor_at(30);
+        mm_body_init(&b, 100, 192, (MmRect){8, 8, 32, 48});
+        mm_tick(&world, &b, idle); b.facing_left = side;
+        if (air) {
+            mm_tick(&world, &b, (MmInput){.jump_pressed = 1, .jump_held = 1});
+            for (t = 0; t < 12; ++t) mm_tick(&world, &b, (MmInput){.jump_held = 1});
+        }
+        for (t = 0; t < MM_TURN_POSE_TICKS; ++t) {
+            mm_tick(&world, &b, opposite);
+            assert(b.turn_pose_ticks == MM_TURN_POSE_TICKS - t && b.turn_pose_left == side);
+            assert(b.grounded == !air);
+        }
+        mm_tick(&world, &b, opposite);
+        assert(!b.turn_pose_ticks && b.facing_left != side);
+        /* Spin and morph cancel a pending normal turn instead of displaying it. */
+        b.turn_pose_ticks = 3; b.spin_jumping = 1; b.grounded = 0; b.vy = -MM_JUMP;
+        mm_tick(&world, &b, (MmInput){.jump_held = 1});
+        assert(!b.turn_pose_ticks);
+        b.turn_pose_ticks = 3; b.ball = 1;
+        mm_tick(&world, &b, idle);
+        assert(!b.turn_pose_ticks);
+    }
+    puts("PASS turn animation: six ticks, old-facing strips on ground and in air; spin/ball cancel");
+}
 static void normal_jump_animation(void) {
     int side, short_hop;
     for (side = 0; side < 2; ++side) for (short_hop = 0; short_hop < 2; ++short_hop) {
@@ -984,6 +1013,7 @@ static void beam_impacts(void) {
     puts("PASS beam impact at swept wall contact, expires after 10 ticks; no impact off screen");
 }
 int main(void) {
+    turn_animation();
     normal_jump_animation();
     slope_spin_takeoff();
     beam_impacts();
