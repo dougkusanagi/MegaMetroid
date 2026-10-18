@@ -4,6 +4,13 @@
 #include "player_anim.h"
 #include "resources.h"
 
+/* Read by scripts/smoke_test.py through BlastEm's GDB protocol: 0 running, 1 pass, 2 fail. */
+volatile u16 mm_smoke_result;
+__attribute__((noinline, used, externally_visible)) void mm_smoke_finish(void)
+{
+    while (1) SYS_doVBlankProcess();
+}
+
 int main(bool hardReset)
 {
     static Game g;
@@ -18,8 +25,9 @@ int main(bool hardReset)
     const int ball_poses = 1 << MM_POSE_MORPH | 1 << MM_POSE_BALL | 1 << MM_POSE_UNMORPH;
     (void)hardReset;
     if (!game_init(&g, 0)) {
+        mm_smoke_result = 2;
         VDP_drawText("SMOKE INIT FAIL", 1, 1);
-        while (1) SYS_doVBlankProcess();
+        mm_smoke_finish();
     }
     start = g.player.x;
     for (frame = 0; frame < 760; ++frame) {
@@ -105,6 +113,7 @@ int main(bool hardReset)
     VDP_setTextPlane(WINDOW);
     VDP_drawText(failed ? "SMOKE FAIL" : "SMOKE PASS", 1, 0);
     VDP_drawText("MOVE L/R JUMP CAMERA", 1, 1);
-    while (1) SYS_doVBlankProcess();
+    mm_smoke_result = failed ? 2 : 1;
+    mm_smoke_finish();
     return 0;
 }

@@ -211,6 +211,41 @@ static void slopes(void) {
     assert(mm_pixel(b.x)>430 && mm_pixel(b.y)==184 && b.grounded);
     puts("PASS both slope orientations uphill and downhill");
 }
+/* Jump from every subpixel/tile phase of an ascending 45-degree surface. */
+static void slope_spin_takeoff(void) {
+    int side, phase, bonus, x, y, t;
+    for (side = -1; side <= 1; side += 2) {
+        reset();
+        for (x = 0; x < 64; ++x) {
+            int col = side > 0 ? x : 63 - x;
+            int row = col < 12 ? 24 : col < 20 ? 35 - col : 16;
+            for (y = row + 1; y < 32; ++y) tiles[y * 64 + x] = 0;
+            tiles[row * 64 + x] = col >= 12 && col < 20 ? (side > 0 ? 2 : 3) : 0;
+        }
+        for (phase = 0; phase < 8 * MM_UNIT; phase += 32) for (bonus = 0; bonus <= MM_RUN_EXTRA_MAX; bonus += MM_RUN_EXTRA_MAX) {
+            MmBody b;
+            MmInput held = {.axis = side, .jump_held = 1, .run_held = bonus != 0};
+            int origin;
+            mm_body_init(&b, side > 0 ? 104 : 384, 60, (MmRect){8, 8, 32, 48});
+            b.x += phase;
+            for (t = 0; t < 100 && !b.grounded; ++t) mm_tick(&world, &b, idle);
+            assert(b.grounded);
+            b.speed = MM_SPEED; b.run_extra = bonus; b.walking = 1;
+            b.facing_left = side < 0; b.vx = side * (b.speed + bonus);
+            held.jump_pressed = 1;
+            mm_tick(&world, &b, held);
+            assert(b.spin_jumping && b.vx * side > 0);
+            origin = b.x;
+            held.jump_pressed = 0;
+            mm_tick(&world, &b, held);
+            assert(b.spin_jumping && !b.grounded && b.vy < 0);
+            assert((b.x - origin) * side > 0 && b.vx * side > 0);
+            assert(b.run_extra == bonus);
+            assert(!mm_blocked(&world, &b, mm_pixel(b.x), mm_pixel(b.y)));
+        }
+    }
+    puts("PASS spin takeoff uphill: both slopes, 64 subpixel phases, walking and full dash");
+}
 static void camera_and_input(void) {
     MmRect r = {0, 0, 2304, 1248}, small = {0,0,128,128};
     MmCameraZone zone = {{0,960,608,1248},{0,1024,768,1248}};
@@ -922,6 +957,7 @@ static void beam_impacts(void) {
     puts("PASS beam impact at swept wall contact, expires after 10 ticks; no impact off screen");
 }
 int main(void) {
+    slope_spin_takeoff();
     beam_impacts();
     movement(); air_steering(); collisions(); jump_and_ledge(); states(); physics(); variable_jump(); ledge_jump();
     slopes(); slope_sweep(); tunnels(); wall_climb(); wall_jump_rules(); poses(); crouch_poses(); crouch_tap(); double_tap(); ball_poses(); aiming(); beam_from_muzzle(); morph_rules(); ball_stands_on_slope();

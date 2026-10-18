@@ -117,6 +117,18 @@ void mm_move(const MmWorld *w, MmBody *b)
     int target, p, step, lift, x = mm_pixel(b->x), y = mm_pixel(b->y);
     int was_grounded = b->grounded;
     int hit_x = 0, hit_y = 0;
+    /* Rise before testing horizontal motion. At takeoff the feet still touch the
+       slope: testing X there first mistakes its rising surface for a wall. */
+    int rising = b->vy < 0;
+    if (rising) {
+        target = mm_pixel(b->y + b->vy);
+        for (p = y; p != target;) {
+            if (mm_blocked(w, b, x, p - 1)) { b->vy = 0; hit_y = 1; break; }
+            --p;
+        }
+        b->y = hit_y ? p * MM_UNIT : b->y + b->vy;
+        y = p;
+    }
     target = mm_pixel(b->x + b->vx);
     step = b->vx < 0 ? -1 : 1;
     for (p = x; p != target;) {
@@ -131,7 +143,7 @@ void mm_move(const MmWorld *w, MmBody *b)
     }
     b->x = hit_x ? p * MM_UNIT : b->x + b->vx;
     x = p;
-    target = mm_pixel(b->y + b->vy);
+    target = rising ? y : mm_pixel(b->y + b->vy);
     step = b->vy < 0 ? -1 : 1;
     b->grounded = 0;
     for (p = y; p != target;) {
@@ -142,7 +154,7 @@ void mm_move(const MmWorld *w, MmBody *b)
         p += step;
     }
     /* Keeps the fraction when nothing was hit, also at speed 0 (the apex of a jump). */
-    b->y = hit_y ? p * MM_UNIT : b->y + b->vy;
+    if (!rising) b->y = hit_y ? p * MM_UNIT : b->y + b->vy;
     /* Follow a descending slope, but release grounded immediately at ledges. */
     if (was_grounded && b->vy >= 0 && !b->grounded) {
         int distance = (b->vx < 0 ? -b->vx : b->vx) / MM_UNIT + 1;

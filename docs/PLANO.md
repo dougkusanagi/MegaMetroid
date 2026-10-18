@@ -240,6 +240,13 @@ Para a 3.2: o tamanho de quadro é 64×64 (8×8 tiles); com a Samus em pé, os p
 
 ## 4. Riscos e decisões em aberto
 
+**Correção validada — pulo em rampas (2026-10-18).** A colisão de subida agora
+precede a horizontal: o primeiro tick no ar deixava os pés na altura da rampa,
+que era tratada como parede e zerava velocidade e corrida. `slope_spin_takeoff()`
+cobre duas orientações, 64 posições subpixel e caminhada/corrida máxima. As
+regressões do núcleo e a ROM passaram; `scripts/smoke_test.py` lê o resultado
+pela API GDB do BlastEm, sem controle de interface. Ver [CHANGELOG.md](../CHANGELOG.md).
+
 - **Tamanho dos mapas**: Crateria 1 tem 288x156 tiles de 8 px (2304x1248). Avaliar tiles de colisão 16x16 (4x menos dados) ou RLE para o restante do jogo.
 - **VRAM**: cada sala precisa de tiles únicos suficientes junto com sprites; planejar tileset compartilhado por região.
 - **Propriedade intelectual**: Super Metroid é da Nintendo. O projeto é de estudo/fã e não distribui ROMs. As pranchas originais ficam fora do Git; os recortes convertidos para o SGDK (`res/images/*-original-sgdk/`) são versionados por decisão do mantenedor.

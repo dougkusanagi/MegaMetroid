@@ -46,6 +46,22 @@ Teste das ROMs em:
 
 Neste ambiente o BlastEm 1.0.0 está em `D:\emuladores\blastem\blastem-win64-1.0.0\blastem.exe`. Abra com `blastem.exe out\rom.bin`. O FPS aparece no título da janela.
 
+## Teste automatizado no BlastEm, sem controle de interface
+
+```powershell
+./scripts/build.ps1 -Sgdk D:/apps/sgdk -Java D:/apps/jre/bin/java.exe -SmokeTest
+python scripts/smoke_test.py
+```
+
+O script inicia o BlastEm oculto com `-D` e conecta ao protocolo GDB em
+`localhost:1234`. Aguarda o fim da sequência roteirizada e lê `mm_smoke_result`
+diretamente da RAM (1 = passou, 2 = falhou). O log fica em
+`tests/out/smoke-gdb.log`; o processo iniciado é encerrado mesmo se o teste falhar.
+Não usa cliques, teclado ou captura da área de trabalho. Se a porta já estiver
+ocupada, recusa executar para não interferir em outra sessão. Ajuste os caminhos
+com `--blastem` e `--gdb`; `--timeout` limita a espera (padrão: 45 segundos).
+O `out/symbol.txt` deve pertencer à mesma build `-SmokeTest`.
+
 ## Medidas do Super Metroid original (Mesen 2)
 
 `scripts/sm_reference.ps1` roda o Super Metroid no Mesen 2 sem janela (`--testrunner`), com

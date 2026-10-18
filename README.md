@@ -6,6 +6,8 @@ Build instructions: [`docs/BUILD.md`](docs/BUILD.md).
 
 Pipeline de extração e importação de sprites: [`docs/SPRITES.md`](docs/SPRITES.md).
 
+Histórico de correções, melhorias e adições: [`CHANGELOG.md`](CHANGELOG.md).
+
 Small project with the intention of porting Super Metroid for Mega Drive / Sega Genesis.
 
 Update: simple tile collision system implemented. 
