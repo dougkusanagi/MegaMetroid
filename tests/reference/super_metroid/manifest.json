@@ -1,0 +1,4959 @@
+{
+  "schema": 1,
+  "emulator": "Mesen 2.1.1",
+  "system": "SNES NTSC",
+  "method": "WRAM sampled at endFrame; one integer/subpixel record per video frame",
+  "limits": [
+    "Observed scenarios only; not a complete extraction of the game logic.",
+    "RAM values are exact integers; timestamps identify saved trace files, not a hardware clock.",
+    "Pose and radii can disagree for a transition frame; preserve all samples, not just a modal size.",
+    "Old captures may omit animation columns. Inputs and RAM field meanings are in sm_reference.lua."
+  ],
+  "scenarios": {
+    "air_turn_rest": {
+      "file": "air_turn_rest.csv.gz",
+      "saved_at": "2026-10-18T15:45:57-03:00",
+      "rows": 267,
+      "csv_sha256": "af29017de2bc9b4bea10134618f7867f0557ab6b822dc83df92e9db52b4ef7f7",
+      "last_committed_script_before_saved_at": "982cadc5a9af7bbf81c6908f6199aa5c8b624cc4",
+      "source_file": "sm_air_turn_animation.csv",
+      "observed_radii": [
+        {
+          "pose": "01",
+          "x": 5,
+          "y": 21,
+          "samples": 34
+        },
+        {
+          "pose": "09",
+          "x": 5,
+          "y": 21,
+          "samples": 140
+        },
+        {
+          "pose": "26",
+          "x": 5,
+          "y": 21,
+          "samples": 5
+        },
+        {
+          "pose": "26",
+          "x": 5,
+          "y": 24,
+          "samples": 1
+        },
+        {
+          "pose": "29",
+          "x": 5,
+          "y": 19,
+          "samples": 33
+        },
+        {
+          "pose": "29",
+          "x": 5,
+          "y": 21,
+          "samples": 1
+        },
+        {
+          "pose": "2F",
+          "x": 5,
+          "y": 19,
+          "samples": 6
+        },
+        {
+          "pose": "4B",
+          "x": 5,
+          "y": 21,
+          "samples": 1
+        },
+        {
+          "pose": "4D",
+          "x": 5,
+          "y": 19,
+          "samples": 11
+        },
+        {
+          "pose": "52",
+          "x": 5,
+          "y": 19,
+          "samples": 34
+        },
+        {
+          "pose": "A4",
+          "x": 5,
+          "y": 19,
+          "samples": 1
+        }
+      ]
+    },
+    "crouch_morph": {
+      "file": "crouch_morph.csv.gz",
+      "saved_at": "2026-10-18T15:57:07-03:00",
+      "rows": 379,
+      "csv_sha256": "1978a16ce1dd8ab29adcb3e825a53d6baa7138aee8900f368f0e0b972f1b269c",
+      "last_committed_script_before_saved_at": "982cadc5a9af7bbf81c6908f6199aa5c8b624cc4",
+      "source_file": "ref_crouch_morph.csv",
+      "observed_radii": [
+        {
+          "pose": "01",
+          "x": 5,
+          "y": 21,
+          "samples": 72
+        },
+        {
+          "pose": "09",
+          "x": 5,
+          "y": 21,
+          "samples": 140
+        },
+        {
+          "pose": "1D",
+          "x": 5,
+          "y": 7,
+          "samples": 35
+        },
+        {
+          "pose": "26",
+          "x": 5,
+          "y": 21,
+          "samples": 5
+        },
+        {
+          "pose": "26",
+          "x": 5,
+          "y": 24,
+          "samples": 1
+        },
+        {
+          "pose": "27",
+          "x": 5,
+          "y": 16,
+          "samples": 73
+        },
+        {
+          "pose": "29",
+          "x": 5,
+          "y": 19,
+          "samples": 33
+        },
+        {
+          "pose": "29",
+          "x": 5,
+          "y": 21,
+          "samples": 1
+        },
+        {
+          "pose": "35",
+          "x": 5,
+          "y": 16,
+          "samples": 3
+        },
+        {
+          "pose": "37",
+          "x": 5,
+          "y": 7,
+          "samples": 6
+        },
+        {
+          "pose": "3B",
+          "x": 5,
+          "y": 16,
+          "samples": 1
+        },
+        {
+          "pose": "3B",
+          "x": 5,
+          "y": 21,
+          "samples": 2
+        },
+        {
+          "pose": "3D",
+          "x": 5,
+          "y": 7,
+          "samples": 1
+        },
+        {
+          "pose": "3D",
+          "x": 5,
+          "y": 16,
+          "samples": 5
+        },
+        {
+          "pose": "A4",
+          "x": 5,
+          "y": 19,
+          "samples": 1
+        }
+      ]
+    },
+    "down_hold": {
+      "file": "down_hold.csv.gz",
+      "saved_at": "2026-10-18T15:57:09-03:00",
+      "rows": 285,
+      "csv_sha256": "403799d3666978adb4e284bfa865472766b8a86e211d9c508c64fe97c4245aa6",
+      "last_committed_script_before_saved_at": "982cadc5a9af7bbf81c6908f6199aa5c8b624cc4",
+      "source_file": "ref_down_hold.csv",
+      "observed_radii": [
+        {
+          "pose": "01",
+          "x": 5,
+          "y": 21,
+          "samples": 34
+        },
+        {
+          "pose": "09",
+          "x": 5,
+          "y": 21,
+          "samples": 140
+        },
+        {
+          "pose": "26",
+          "x": 5,
+          "y": 21,
+          "samples": 5
+        },
+        {
+          "pose": "26",
+          "x": 5,
+          "y": 24,
+          "samples": 1
+        },
+        {
+          "pose": "27",
+          "x": 5,
+          "y": 16,
+          "samples": 67
+        },
+        {
+          "pose": "29",
+          "x": 5,
+          "y": 19,
+          "samples": 33
+        },
+        {
+          "pose": "29",
+          "x": 5,
+          "y": 21,
+          "samples": 1
+        },
+        {
+          "pose": "35",
+          "x": 5,
+          "y": 16,
+          "samples": 3
+        },
+        {
+          "pose": "A4",
+          "x": 5,
+          "y": 19,
+          "samples": 1
+        }
+      ]
+    },
+    "fall_from_ship": {
+      "file": "fall_from_ship.csv.gz",
+      "saved_at": "2026-10-13T20:58:53-03:00",
+      "rows": 120,
+      "csv_sha256": "8f727469433a8d71ce1b70b2df92ec87e70d4da67ca024c416a1d54671773f8d",
+      "last_committed_script_before_saved_at": "8f4f29c25b975772e9926ee2005334edf342bff3",
+      "source_file": "sm_reference.csv",
+      "observed_radii": [
+        {
+          "pose": "09",
+          "x": 5,
+          "y": 21,
+          "samples": 6
+        },
+        {
+          "pose": "19",
+          "x": 5,
+          "y": 12,
+          "samples": 111
+        },
+        {
+          "pose": "19",
+          "x": 5,
+          "y": 21,
+          "samples": 1
+        },
+        {
+          "pose": "26",
+          "x": 5,
+          "y": 24,
+          "samples": 1
+        },
+        {
+          "pose": "A6",
+          "x": 5,
+          "y": 12,
+          "samples": 1
+        }
+      ]
+    },
+    "fall_release": {
+      "file": "fall_release.csv.gz",
+      "saved_at": "2026-10-13T20:59:20-03:00",
+      "rows": 92,
+      "csv_sha256": "c0b44a438b8ace796d53c27ec0a56003a151d269e7f064201d3b803ce48e458d",
+      "last_committed_script_before_saved_at": "8f4f29c25b975772e9926ee2005334edf342bff3",
+      "source_file": "sm_fall_release.csv",
+      "observed_radii": [
+        {
+          "pose": "01",
+          "x": 5,
+          "y": 21,
+          "samples": 1
+        },
+        {
+          "pose": "09",
+          "x": 5,
+          "y": 21,
+          "samples": 47
+        },
+        {
+          "pose": "26",
+          "x": 5,
+          "y": 21,
+          "samples": 5
+        },
+        {
+          "pose": "26",
+          "x": 5,
+          "y": 24,
+          "samples": 1
+        },
+        {
+          "pose": "29",
+          "x": 5,
+          "y": 19,
+          "samples": 34
+        },
+        {
+          "pose": "29",
+          "x": 5,
+          "y": 21,
+          "samples": 1
+        },
+        {
+          "pose": "A4",
+          "x": 5,
+          "y": 19,
+          "samples": 1
+        },
+        {
+          "pose": "A4",
+          "x": 5,
+          "y": 21,
+          "samples": 2
+        }
+      ]
+    },
+    "fall_reverse": {
+      "file": "fall_reverse.csv.gz",
+      "saved_at": "2026-10-13T20:59:21-03:00",
+      "rows": 92,
+      "csv_sha256": "f7a99fae06e794e862bc9214110d05978ec0de3f4135d658edeac5c4360f6f2d",
+      "last_committed_script_before_saved_at": "8f4f29c25b975772e9926ee2005334edf342bff3",
+      "source_file": "sm_fall_reverse.csv",
+      "observed_radii": [
+        {
+          "pose": "01",
+          "x": 5,
+          "y": 21,
+          "samples": 1
+        },
+        {
+          "pose": "09",
+          "x": 5,
+          "y": 21,
+          "samples": 47
+        },
+        {
+          "pose": "26",
+          "x": 5,
+          "y": 21,
+          "samples": 5
+        },
+        {
+          "pose": "26",
+          "x": 5,
+          "y": 24,
+          "samples": 1
+        },
+        {
+          "pose": "29",
+          "x": 5,
+          "y": 19,
+          "samples": 7
+        },
+        {
+          "pose": "29",
+          "x": 5,
+          "y": 21,
+          "samples": 1
+        },
+        {
+          "pose": "2A",
+          "x": 5,
+          "y": 19,
+          "samples": 24
+        },
+        {
+          "pose": "87",
+          "x": 5,
+          "y": 19,
+          "samples": 6
+        }
+      ]
+    },
+    "jump_hold_1": {
+      "file": "jump_hold_1.csv.gz",
+      "saved_at": "2026-10-13T20:58:53-03:00",
+      "rows": 305,
+      "csv_sha256": "cee2303ce09be440346a8a99a2b728e3f0b338c49bcb40d05f77f3202f76bf11",
+      "last_committed_script_before_saved_at": "8f4f29c25b975772e9926ee2005334edf342bff3",
+      "source_file": "sm_reference.csv",
+      "observed_radii": [
+        {
+          "pose": "01",
+          "x": 5,
+          "y": 21,
+          "samples": 109
+        },
+        {
+          "pose": "09",
+          "x": 5,
+          "y": 21,
+          "samples": 140
+        },
+        {
+          "pose": "26",
+          "x": 5,
+          "y": 21,
+          "samples": 5
+        },
+        {
+          "pose": "26",
+          "x": 5,
+          "y": 24,
+          "samples": 1
+        },
+        {
+          "pose": "29",
+          "x": 5,
+          "y": 19,
+          "samples": 33
+        },
+        {
+          "pose": "29",
+          "x": 5,
+          "y": 21,
+          "samples": 1
+        },
+        {
+          "pose": "4B",
+          "x": 5,
+          "y": 21,
+          "samples": 1
+        },
+        {
+          "pose": "4D",
+          "x": 5,
+          "y": 19,
+          "samples": 7
+        },
+        {
+          "pose": "A4",
+          "x": 5,
+          "y": 19,
+          "samples": 2
+        },
+        {
+          "pose": "A4",
+          "x": 5,
+          "y": 21,
+          "samples": 6
+        }
+      ]
+    },
+    "jump_hold_10": {
+      "file": "jump_hold_10.csv.gz",
+      "saved_at": "2026-10-13T20:58:53-03:00",
+      "rows": 305,
+      "csv_sha256": "d8a4969fb7b7b0e329862bf5fdb522372a2dd37ae7dd18012025ab438f694088",
+      "last_committed_script_before_saved_at": "8f4f29c25b975772e9926ee2005334edf342bff3",
+      "source_file": "sm_reference.csv",
+      "observed_radii": [
+        {
+          "pose": "01",
+          "x": 5,
+          "y": 21,
+          "samples": 81
+        },
+        {
+          "pose": "09",
+          "x": 5,
+          "y": 21,
+          "samples": 140
+        },
+        {
+          "pose": "26",
+          "x": 5,
+          "y": 21,
+          "samples": 5
+        },
+        {
+          "pose": "26",
+          "x": 5,
+          "y": 24,
+          "samples": 1
+        },
+        {
+          "pose": "29",
+          "x": 5,
+          "y": 19,
+          "samples": 33
+        },
+        {
+          "pose": "29",
+          "x": 5,
+          "y": 21,
+          "samples": 1
+        },
+        {
+          "pose": "4B",
+          "x": 5,
+          "y": 21,
+          "samples": 1
+        },
+        {
+          "pose": "4D",
+          "x": 5,
+          "y": 19,
+          "samples": 35
+        },
+        {
+          "pose": "A4",
+          "x": 5,
+          "y": 19,
+          "samples": 2
+        },
+        {
+          "pose": "A4",
+          "x": 5,
+          "y": 21,
+          "samples": 6
+        }
+      ]
+    },
+    "jump_hold_11": {
+      "file": "jump_hold_11.csv.gz",
+      "saved_at": "2026-10-13T20:58:53-03:00",
+      "rows": 305,
+      "csv_sha256": "b915c8338d523c291ab42383a3aa8c9130143548fdca93e87a13c476bd214adb",
+      "last_committed_script_before_saved_at": "8f4f29c25b975772e9926ee2005334edf342bff3",
+      "source_file": "sm_reference.csv",
+      "observed_radii": [
+        {
+          "pose": "01",
+          "x": 5,
+          "y": 21,
+          "samples": 78
+        },
+        {
+          "pose": "09",
+          "x": 5,
+          "y": 21,
+          "samples": 140
+        },
+        {
+          "pose": "26",
+          "x": 5,
+          "y": 21,
+          "samples": 5
+        },
+        {
+          "pose": "26",
+          "x": 5,
+          "y": 24,
+          "samples": 1
+        },
+        {
+          "pose": "29",
+          "x": 5,
+          "y": 19,
+          "samples": 33
+        },
+        {
+          "pose": "29",
+          "x": 5,
+          "y": 21,
+          "samples": 1
+        },
+        {
+          "pose": "4B",
+          "x": 5,
+          "y": 21,
+          "samples": 1
+        },
+        {
+          "pose": "4D",
+          "x": 5,
+          "y": 19,
+          "samples": 38
+        },
+        {
+          "pose": "A4",
+          "x": 5,
+          "y": 19,
+          "samples": 2
+        },
+        {
+          "pose": "A4",
+          "x": 5,
+          "y": 21,
+          "samples": 6
+        }
+      ]
+    },
+    "jump_hold_12": {
+      "file": "jump_hold_12.csv.gz",
+      "saved_at": "2026-10-13T20:58:53-03:00",
+      "rows": 305,
+      "csv_sha256": "4d5a2f5aaf8d1d7d71787976d91ca548f251aedbb04daf33d41e00582fb7211d",
+      "last_committed_script_before_saved_at": "8f4f29c25b975772e9926ee2005334edf342bff3",
+      "source_file": "sm_reference.csv",
+      "observed_radii": [
+        {
+          "pose": "01",
+          "x": 5,
+          "y": 21,
+          "samples": 76
+        },
+        {
+          "pose": "09",
+          "x": 5,
+          "y": 21,
+          "samples": 140
+        },
+        {
+          "pose": "26",
+          "x": 5,
+          "y": 21,
+          "samples": 5
+        },
+        {
+          "pose": "26",
+          "x": 5,
+          "y": 24,
+          "samples": 1
+        },
+        {
+          "pose": "29",
+          "x": 5,
+          "y": 19,
+          "samples": 33
+        },
+        {
+          "pose": "29",
+          "x": 5,
+          "y": 21,
+          "samples": 1
+        },
+        {
+          "pose": "4B",
+          "x": 5,
+          "y": 21,
+          "samples": 1
+        },
+        {
+          "pose": "4D",
+          "x": 5,
+          "y": 19,
+          "samples": 40
+        },
+        {
+          "pose": "A4",
+          "x": 5,
+          "y": 19,
+          "samples": 2
+        },
+        {
+          "pose": "A4",
+          "x": 5,
+          "y": 21,
+          "samples": 6
+        }
+      ]
+    },
+    "jump_hold_13": {
+      "file": "jump_hold_13.csv.gz",
+      "saved_at": "2026-10-13T20:58:53-03:00",
+      "rows": 305,
+      "csv_sha256": "b7c0be075cb3c346ba229db12fa99072ca63f41caf7a31fbe9a53f8cb39c03ca",
+      "last_committed_script_before_saved_at": "8f4f29c25b975772e9926ee2005334edf342bff3",
+      "source_file": "sm_reference.csv",
+      "observed_radii": [
+        {
+          "pose": "01",
+          "x": 5,
+          "y": 21,
+          "samples": 74
+        },
+        {
+          "pose": "09",
+          "x": 5,
+          "y": 21,
+          "samples": 140
+        },
+        {
+          "pose": "26",
+          "x": 5,
+          "y": 21,
+          "samples": 5
+        },
+        {
+          "pose": "26",
+          "x": 5,
+          "y": 24,
+          "samples": 1
+        },
+        {
+          "pose": "29",
+          "x": 5,
+          "y": 19,
+          "samples": 33
+        },
+        {
+          "pose": "29",
+          "x": 5,
+          "y": 21,
+          "samples": 1
+        },
+        {
+          "pose": "4B",
+          "x": 5,
+          "y": 21,
+          "samples": 1
+        },
+        {
+          "pose": "4D",
+          "x": 5,
+          "y": 19,
+          "samples": 42
+        },
+        {
+          "pose": "A4",
+          "x": 5,
+          "y": 19,
+          "samples": 2
+        },
+        {
+          "pose": "A4",
+          "x": 5,
+          "y": 21,
+          "samples": 6
+        }
+      ]
+    },
+    "jump_hold_14": {
+      "file": "jump_hold_14.csv.gz",
+      "saved_at": "2026-10-13T20:58:53-03:00",
+      "rows": 305,
+      "csv_sha256": "500b415fd2d254df307efe47cccfc84d4b4dfa062433f0b38920a8d39517e56c",
+      "last_committed_script_before_saved_at": "8f4f29c25b975772e9926ee2005334edf342bff3",
+      "source_file": "sm_reference.csv",
+      "observed_radii": [
+        {
+          "pose": "01",
+          "x": 5,
+          "y": 21,
+          "samples": 72
+        },
+        {
+          "pose": "09",
+          "x": 5,
+          "y": 21,
+          "samples": 140
+        },
+        {
+          "pose": "26",
+          "x": 5,
+          "y": 21,
+          "samples": 5
+        },
+        {
+          "pose": "26",
+          "x": 5,
+          "y": 24,
+          "samples": 1
+        },
+        {
+          "pose": "29",
+          "x": 5,
+          "y": 19,
+          "samples": 33
+        },
+        {
+          "pose": "29",
+          "x": 5,
+          "y": 21,
+          "samples": 1
+        },
+        {
+          "pose": "4B",
+          "x": 5,
+          "y": 21,
+          "samples": 1
+        },
+        {
+          "pose": "4D",
+          "x": 5,
+          "y": 19,
+          "samples": 44
+        },
+        {
+          "pose": "A4",
+          "x": 5,
+          "y": 19,
+          "samples": 2
+        },
+        {
+          "pose": "A4",
+          "x": 5,
+          "y": 21,
+          "samples": 6
+        }
+      ]
+    },
+    "jump_hold_15": {
+      "file": "jump_hold_15.csv.gz",
+      "saved_at": "2026-10-13T20:58:53-03:00",
+      "rows": 305,
+      "csv_sha256": "57a3f42f6854d06480809620c9894794dd0c3368561f8103df92e53351e4eca9",
+      "last_committed_script_before_saved_at": "8f4f29c25b975772e9926ee2005334edf342bff3",
+      "source_file": "sm_reference.csv",
+      "observed_radii": [
+        {
+          "pose": "01",
+          "x": 5,
+          "y": 21,
+          "samples": 70
+        },
+        {
+          "pose": "09",
+          "x": 5,
+          "y": 21,
+          "samples": 140
+        },
+        {
+          "pose": "26",
+          "x": 5,
+          "y": 21,
+          "samples": 5
+        },
+        {
+          "pose": "26",
+          "x": 5,
+          "y": 24,
+          "samples": 1
+        },
+        {
+          "pose": "29",
+          "x": 5,
+          "y": 19,
+          "samples": 33
+        },
+        {
+          "pose": "29",
+          "x": 5,
+          "y": 21,
+          "samples": 1
+        },
+        {
+          "pose": "4B",
+          "x": 5,
+          "y": 21,
+          "samples": 1
+        },
+        {
+          "pose": "4D",
+          "x": 5,
+          "y": 19,
+          "samples": 46
+        },
+        {
+          "pose": "A4",
+          "x": 5,
+          "y": 19,
+          "samples": 2
+        },
+        {
+          "pose": "A4",
+          "x": 5,
+          "y": 21,
+          "samples": 6
+        }
+      ]
+    },
+    "jump_hold_16": {
+      "file": "jump_hold_16.csv.gz",
+      "saved_at": "2026-10-13T20:58:53-03:00",
+      "rows": 305,
+      "csv_sha256": "6bf9293d6621be8d2a0b5e55ded9506c1758fc855060c929bcb6d23e7b29505f",
+      "last_committed_script_before_saved_at": "8f4f29c25b975772e9926ee2005334edf342bff3",
+      "source_file": "sm_reference.csv",
+      "observed_radii": [
+        {
+          "pose": "01",
+          "x": 5,
+          "y": 21,
+          "samples": 68
+        },
+        {
+          "pose": "09",
+          "x": 5,
+          "y": 21,
+          "samples": 140
+        },
+        {
+          "pose": "26",
+          "x": 5,
+          "y": 21,
+          "samples": 5
+        },
+        {
+          "pose": "26",
+          "x": 5,
+          "y": 24,
+          "samples": 1
+        },
+        {
+          "pose": "29",
+          "x": 5,
+          "y": 19,
+          "samples": 33
+        },
+        {
+          "pose": "29",
+          "x": 5,
+          "y": 21,
+          "samples": 1
+        },
+        {
+          "pose": "4B",
+          "x": 5,
+          "y": 21,
+          "samples": 1
+        },
+        {
+          "pose": "4D",
+          "x": 5,
+          "y": 19,
+          "samples": 48
+        },
+        {
+          "pose": "A4",
+          "x": 5,
+          "y": 19,
+          "samples": 2
+        },
+        {
+          "pose": "A4",
+          "x": 5,
+          "y": 21,
+          "samples": 6
+        }
+      ]
+    },
+    "jump_hold_17": {
+      "file": "jump_hold_17.csv.gz",
+      "saved_at": "2026-10-13T20:58:53-03:00",
+      "rows": 305,
+      "csv_sha256": "c022c3d00a334d055c1b8168e66143159e6ccd56bd01812a3a01feddc7acd092",
+      "last_committed_script_before_saved_at": "8f4f29c25b975772e9926ee2005334edf342bff3",
+      "source_file": "sm_reference.csv",
+      "observed_radii": [
+        {
+          "pose": "01",
+          "x": 5,
+          "y": 21,
+          "samples": 66
+        },
+        {
+          "pose": "09",
+          "x": 5,
+          "y": 21,
+          "samples": 140
+        },
+        {
+          "pose": "26",
+          "x": 5,
+          "y": 21,
+          "samples": 5
+        },
+        {
+          "pose": "26",
+          "x": 5,
+          "y": 24,
+          "samples": 1
+        },
+        {
+          "pose": "29",
+          "x": 5,
+          "y": 19,
+          "samples": 33
+        },
+        {
+          "pose": "29",
+          "x": 5,
+          "y": 21,
+          "samples": 1
+        },
+        {
+          "pose": "4B",
+          "x": 5,
+          "y": 21,
+          "samples": 1
+        },
+        {
+          "pose": "4D",
+          "x": 5,
+          "y": 19,
+          "samples": 50
+        },
+        {
+          "pose": "A4",
+          "x": 5,
+          "y": 19,
+          "samples": 2
+        },
+        {
+          "pose": "A4",
+          "x": 5,
+          "y": 21,
+          "samples": 6
+        }
+      ]
+    },
+    "jump_hold_18": {
+      "file": "jump_hold_18.csv.gz",
+      "saved_at": "2026-10-13T20:58:53-03:00",
+      "rows": 305,
+      "csv_sha256": "1726dd1d79946ff764ecc281b16229273fc508aaf87525d55c6c8bc72aa7eac1",
+      "last_committed_script_before_saved_at": "8f4f29c25b975772e9926ee2005334edf342bff3",
+      "source_file": "sm_reference.csv",
+      "observed_radii": [
+        {
+          "pose": "01",
+          "x": 5,
+          "y": 21,
+          "samples": 64
+        },
+        {
+          "pose": "09",
+          "x": 5,
+          "y": 21,
+          "samples": 140
+        },
+        {
+          "pose": "26",
+          "x": 5,
+          "y": 21,
+          "samples": 5
+        },
+        {
+          "pose": "26",
+          "x": 5,
+          "y": 24,
+          "samples": 1
+        },
+        {
+          "pose": "29",
+          "x": 5,
+          "y": 19,
+          "samples": 33
+        },
+        {
+          "pose": "29",
+          "x": 5,
+          "y": 21,
+          "samples": 1
+        },
+        {
+          "pose": "4B",
+          "x": 5,
+          "y": 21,
+          "samples": 1
+        },
+        {
+          "pose": "4D",
+          "x": 5,
+          "y": 19,
+          "samples": 52
+        },
+        {
+          "pose": "A4",
+          "x": 5,
+          "y": 19,
+          "samples": 2
+        },
+        {
+          "pose": "A4",
+          "x": 5,
+          "y": 21,
+          "samples": 6
+        }
+      ]
+    },
+    "jump_hold_19": {
+      "file": "jump_hold_19.csv.gz",
+      "saved_at": "2026-10-13T20:58:53-03:00",
+      "rows": 305,
+      "csv_sha256": "74eda3932fe5ef296be204d20b6e8d707bb396ff46adbc595e65719c8f451781",
+      "last_committed_script_before_saved_at": "8f4f29c25b975772e9926ee2005334edf342bff3",
+      "source_file": "sm_reference.csv",
+      "observed_radii": [
+        {
+          "pose": "01",
+          "x": 5,
+          "y": 21,
+          "samples": 62
+        },
+        {
+          "pose": "09",
+          "x": 5,
+          "y": 21,
+          "samples": 140
+        },
+        {
+          "pose": "26",
+          "x": 5,
+          "y": 21,
+          "samples": 5
+        },
+        {
+          "pose": "26",
+          "x": 5,
+          "y": 24,
+          "samples": 1
+        },
+        {
+          "pose": "29",
+          "x": 5,
+          "y": 19,
+          "samples": 33
+        },
+        {
+          "pose": "29",
+          "x": 5,
+          "y": 21,
+          "samples": 1
+        },
+        {
+          "pose": "4B",
+          "x": 5,
+          "y": 21,
+          "samples": 1
+        },
+        {
+          "pose": "4D",
+          "x": 5,
+          "y": 19,
+          "samples": 54
+        },
+        {
+          "pose": "A4",
+          "x": 5,
+          "y": 19,
+          "samples": 2
+        },
+        {
+          "pose": "A4",
+          "x": 5,
+          "y": 21,
+          "samples": 6
+        }
+      ]
+    },
+    "jump_hold_2": {
+      "file": "jump_hold_2.csv.gz",
+      "saved_at": "2026-10-13T20:58:53-03:00",
+      "rows": 305,
+      "csv_sha256": "86e052d99f65266950b56d9163c2e965fb3dd03f65e4fc6946a39d61449012b1",
+      "last_committed_script_before_saved_at": "8f4f29c25b975772e9926ee2005334edf342bff3",
+      "source_file": "sm_reference.csv",
+      "observed_radii": [
+        {
+          "pose": "01",
+          "x": 5,
+          "y": 21,
+          "samples": 109
+        },
+        {
+          "pose": "09",
+          "x": 5,
+          "y": 21,
+          "samples": 140
+        },
+        {
+          "pose": "26",
+          "x": 5,
+          "y": 21,
+          "samples": 5
+        },
+        {
+          "pose": "26",
+          "x": 5,
+          "y": 24,
+          "samples": 1
+        },
+        {
+          "pose": "29",
+          "x": 5,
+          "y": 19,
+          "samples": 33
+        },
+        {
+          "pose": "29",
+          "x": 5,
+          "y": 21,
+          "samples": 1
+        },
+        {
+          "pose": "4B",
+          "x": 5,
+          "y": 21,
+          "samples": 1
+        },
+        {
+          "pose": "4D",
+          "x": 5,
+          "y": 19,
+          "samples": 7
+        },
+        {
+          "pose": "A4",
+          "x": 5,
+          "y": 19,
+          "samples": 2
+        },
+        {
+          "pose": "A4",
+          "x": 5,
+          "y": 21,
+          "samples": 6
+        }
+      ]
+    },
+    "jump_hold_20": {
+      "file": "jump_hold_20.csv.gz",
+      "saved_at": "2026-10-13T20:58:53-03:00",
+      "rows": 305,
+      "csv_sha256": "348fa7101cb0ef22ca446f4ee8bd2de2d08cb27195f789281dd0dbe1d09bb723",
+      "last_committed_script_before_saved_at": "8f4f29c25b975772e9926ee2005334edf342bff3",
+      "source_file": "sm_reference.csv",
+      "observed_radii": [
+        {
+          "pose": "01",
+          "x": 5,
+          "y": 21,
+          "samples": 60
+        },
+        {
+          "pose": "09",
+          "x": 5,
+          "y": 21,
+          "samples": 140
+        },
+        {
+          "pose": "26",
+          "x": 5,
+          "y": 21,
+          "samples": 5
+        },
+        {
+          "pose": "26",
+          "x": 5,
+          "y": 24,
+          "samples": 1
+        },
+        {
+          "pose": "29",
+          "x": 5,
+          "y": 19,
+          "samples": 33
+        },
+        {
+          "pose": "29",
+          "x": 5,
+          "y": 21,
+          "samples": 1
+        },
+        {
+          "pose": "4B",
+          "x": 5,
+          "y": 21,
+          "samples": 1
+        },
+        {
+          "pose": "4D",
+          "x": 5,
+          "y": 19,
+          "samples": 56
+        },
+        {
+          "pose": "A4",
+          "x": 5,
+          "y": 19,
+          "samples": 2
+        },
+        {
+          "pose": "A4",
+          "x": 5,
+          "y": 21,
+          "samples": 6
+        }
+      ]
+    },
+    "jump_hold_21": {
+      "file": "jump_hold_21.csv.gz",
+      "saved_at": "2026-10-13T20:58:53-03:00",
+      "rows": 305,
+      "csv_sha256": "e105c5f75306aa4d20f88008df8c4f115b59e41f46bfbb5e1e8a2c2b45ec5b2f",
+      "last_committed_script_before_saved_at": "8f4f29c25b975772e9926ee2005334edf342bff3",
+      "source_file": "sm_reference.csv",
+      "observed_radii": [
+        {
+          "pose": "01",
+          "x": 5,
+          "y": 21,
+          "samples": 59
+        },
+        {
+          "pose": "09",
+          "x": 5,
+          "y": 21,
+          "samples": 140
+        },
+        {
+          "pose": "26",
+          "x": 5,
+          "y": 21,
+          "samples": 5
+        },
+        {
+          "pose": "26",
+          "x": 5,
+          "y": 24,
+          "samples": 1
+        },
+        {
+          "pose": "29",
+          "x": 5,
+          "y": 19,
+          "samples": 33
+        },
+        {
+          "pose": "29",
+          "x": 5,
+          "y": 21,
+          "samples": 1
+        },
+        {
+          "pose": "4B",
+          "x": 5,
+          "y": 21,
+          "samples": 1
+        },
+        {
+          "pose": "4D",
+          "x": 5,
+          "y": 19,
+          "samples": 57
+        },
+        {
+          "pose": "A4",
+          "x": 5,
+          "y": 19,
+          "samples": 2
+        },
+        {
+          "pose": "A4",
+          "x": 5,
+          "y": 21,
+          "samples": 6
+        }
+      ]
+    },
+    "jump_hold_22": {
+      "file": "jump_hold_22.csv.gz",
+      "saved_at": "2026-10-13T20:58:53-03:00",
+      "rows": 305,
+      "csv_sha256": "7f29696676e7d7096ec29ef5a0f0d35ffe1ff272c417b4af536f6e0d6642a46c",
+      "last_committed_script_before_saved_at": "8f4f29c25b975772e9926ee2005334edf342bff3",
+      "source_file": "sm_reference.csv",
+      "observed_radii": [
+        {
+          "pose": "01",
+          "x": 5,
+          "y": 21,
+          "samples": 57
+        },
+        {
+          "pose": "09",
+          "x": 5,
+          "y": 21,
+          "samples": 140
+        },
+        {
+          "pose": "26",
+          "x": 5,
+          "y": 21,
+          "samples": 5
+        },
+        {
+          "pose": "26",
+          "x": 5,
+          "y": 24,
+          "samples": 1
+        },
+        {
+          "pose": "29",
+          "x": 5,
+          "y": 19,
+          "samples": 33
+        },
+        {
+          "pose": "29",
+          "x": 5,
+          "y": 21,
+          "samples": 1
+        },
+        {
+          "pose": "4B",
+          "x": 5,
+          "y": 21,
+          "samples": 1
+        },
+        {
+          "pose": "4D",
+          "x": 5,
+          "y": 19,
+          "samples": 59
+        },
+        {
+          "pose": "A4",
+          "x": 5,
+          "y": 19,
+          "samples": 2
+        },
+        {
+          "pose": "A4",
+          "x": 5,
+          "y": 21,
+          "samples": 6
+        }
+      ]
+    },
+    "jump_hold_23": {
+      "file": "jump_hold_23.csv.gz",
+      "saved_at": "2026-10-13T20:58:53-03:00",
+      "rows": 305,
+      "csv_sha256": "cee8bfcea9ecbebf8989fdfbe34c8de363618f7487dcf3aa03d0fbf55ad6bfda",
+      "last_committed_script_before_saved_at": "8f4f29c25b975772e9926ee2005334edf342bff3",
+      "source_file": "sm_reference.csv",
+      "observed_radii": [
+        {
+          "pose": "01",
+          "x": 5,
+          "y": 21,
+          "samples": 55
+        },
+        {
+          "pose": "09",
+          "x": 5,
+          "y": 21,
+          "samples": 140
+        },
+        {
+          "pose": "26",
+          "x": 5,
+          "y": 21,
+          "samples": 5
+        },
+        {
+          "pose": "26",
+          "x": 5,
+          "y": 24,
+          "samples": 1
+        },
+        {
+          "pose": "29",
+          "x": 5,
+          "y": 19,
+          "samples": 33
+        },
+        {
+          "pose": "29",
+          "x": 5,
+          "y": 21,
+          "samples": 1
+        },
+        {
+          "pose": "4B",
+          "x": 5,
+          "y": 21,
+          "samples": 1
+        },
+        {
+          "pose": "4D",
+          "x": 5,
+          "y": 19,
+          "samples": 61
+        },
+        {
+          "pose": "A4",
+          "x": 5,
+          "y": 19,
+          "samples": 2
+        },
+        {
+          "pose": "A4",
+          "x": 5,
+          "y": 21,
+          "samples": 6
+        }
+      ]
+    },
+    "jump_hold_24": {
+      "file": "jump_hold_24.csv.gz",
+      "saved_at": "2026-10-13T20:58:53-03:00",
+      "rows": 305,
+      "csv_sha256": "934913f1870e3313186f19e5e12086bca3718b99eaadbe049631da9d05449961",
+      "last_committed_script_before_saved_at": "8f4f29c25b975772e9926ee2005334edf342bff3",
+      "source_file": "sm_reference.csv",
+      "observed_radii": [
+        {
+          "pose": "01",
+          "x": 5,
+          "y": 21,
+          "samples": 54
+        },
+        {
+          "pose": "09",
+          "x": 5,
+          "y": 21,
+          "samples": 140
+        },
+        {
+          "pose": "26",
+          "x": 5,
+          "y": 21,
+          "samples": 5
+        },
+        {
+          "pose": "26",
+          "x": 5,
+          "y": 24,
+          "samples": 1
+        },
+        {
+          "pose": "29",
+          "x": 5,
+          "y": 19,
+          "samples": 33
+        },
+        {
+          "pose": "29",
+          "x": 5,
+          "y": 21,
+          "samples": 1
+        },
+        {
+          "pose": "4B",
+          "x": 5,
+          "y": 21,
+          "samples": 1
+        },
+        {
+          "pose": "4D",
+          "x": 5,
+          "y": 19,
+          "samples": 62
+        },
+        {
+          "pose": "A4",
+          "x": 5,
+          "y": 19,
+          "samples": 2
+        },
+        {
+          "pose": "A4",
+          "x": 5,
+          "y": 21,
+          "samples": 6
+        }
+      ]
+    },
+    "jump_hold_25": {
+      "file": "jump_hold_25.csv.gz",
+      "saved_at": "2026-10-13T20:58:53-03:00",
+      "rows": 305,
+      "csv_sha256": "47e877280cc10ff274d6c70330ed8f7147cffe01ee399f52e5eb57a5ada5ef2c",
+      "last_committed_script_before_saved_at": "8f4f29c25b975772e9926ee2005334edf342bff3",
+      "source_file": "sm_reference.csv",
+      "observed_radii": [
+        {
+          "pose": "01",
+          "x": 5,
+          "y": 21,
+          "samples": 52
+        },
+        {
+          "pose": "09",
+          "x": 5,
+          "y": 21,
+          "samples": 140
+        },
+        {
+          "pose": "26",
+          "x": 5,
+          "y": 21,
+          "samples": 5
+        },
+        {
+          "pose": "26",
+          "x": 5,
+          "y": 24,
+          "samples": 1
+        },
+        {
+          "pose": "29",
+          "x": 5,
+          "y": 19,
+          "samples": 33
+        },
+        {
+          "pose": "29",
+          "x": 5,
+          "y": 21,
+          "samples": 1
+        },
+        {
+          "pose": "4B",
+          "x": 5,
+          "y": 21,
+          "samples": 1
+        },
+        {
+          "pose": "4D",
+          "x": 5,
+          "y": 19,
+          "samples": 64
+        },
+        {
+          "pose": "A4",
+          "x": 5,
+          "y": 19,
+          "samples": 2
+        },
+        {
+          "pose": "A4",
+          "x": 5,
+          "y": 21,
+          "samples": 6
+        }
+      ]
+    },
+    "jump_hold_26": {
+      "file": "jump_hold_26.csv.gz",
+      "saved_at": "2026-10-13T20:58:53-03:00",
+      "rows": 305,
+      "csv_sha256": "ff8b929de717edd7f43747facfd4416859fba820632cfd9712530017eb9ba523",
+      "last_committed_script_before_saved_at": "8f4f29c25b975772e9926ee2005334edf342bff3",
+      "source_file": "sm_reference.csv",
+      "observed_radii": [
+        {
+          "pose": "01",
+          "x": 5,
+          "y": 21,
+          "samples": 51
+        },
+        {
+          "pose": "09",
+          "x": 5,
+          "y": 21,
+          "samples": 140
+        },
+        {
+          "pose": "26",
+          "x": 5,
+          "y": 21,
+          "samples": 5
+        },
+        {
+          "pose": "26",
+          "x": 5,
+          "y": 24,
+          "samples": 1
+        },
+        {
+          "pose": "29",
+          "x": 5,
+          "y": 19,
+          "samples": 33
+        },
+        {
+          "pose": "29",
+          "x": 5,
+          "y": 21,
+          "samples": 1
+        },
+        {
+          "pose": "4B",
+          "x": 5,
+          "y": 21,
+          "samples": 1
+        },
+        {
+          "pose": "4D",
+          "x": 5,
+          "y": 19,
+          "samples": 65
+        },
+        {
+          "pose": "A4",
+          "x": 5,
+          "y": 19,
+          "samples": 2
+        },
+        {
+          "pose": "A4",
+          "x": 5,
+          "y": 21,
+          "samples": 6
+        }
+      ]
+    },
+    "jump_hold_27": {
+      "file": "jump_hold_27.csv.gz",
+      "saved_at": "2026-10-13T20:58:53-03:00",
+      "rows": 305,
+      "csv_sha256": "42149433036add10dcc60ec1f444e48bb43d2424751107e3a7620218b8b28689",
+      "last_committed_script_before_saved_at": "8f4f29c25b975772e9926ee2005334edf342bff3",
+      "source_file": "sm_reference.csv",
+      "observed_radii": [
+        {
+          "pose": "01",
+          "x": 5,
+          "y": 21,
+          "samples": 49
+        },
+        {
+          "pose": "09",
+          "x": 5,
+          "y": 21,
+          "samples": 140
+        },
+        {
+          "pose": "26",
+          "x": 5,
+          "y": 21,
+          "samples": 5
+        },
+        {
+          "pose": "26",
+          "x": 5,
+          "y": 24,
+          "samples": 1
+        },
+        {
+          "pose": "29",
+          "x": 5,
+          "y": 19,
+          "samples": 33
+        },
+        {
+          "pose": "29",
+          "x": 5,
+          "y": 21,
+          "samples": 1
+        },
+        {
+          "pose": "4B",
+          "x": 5,
+          "y": 21,
+          "samples": 1
+        },
+        {
+          "pose": "4D",
+          "x": 5,
+          "y": 19,
+          "samples": 67
+        },
+        {
+          "pose": "A4",
+          "x": 5,
+          "y": 19,
+          "samples": 2
+        },
+        {
+          "pose": "A4",
+          "x": 5,
+          "y": 21,
+          "samples": 6
+        }
+      ]
+    },
+    "jump_hold_28": {
+      "file": "jump_hold_28.csv.gz",
+      "saved_at": "2026-10-13T20:58:53-03:00",
+      "rows": 305,
+      "csv_sha256": "149a269dc5aa73fb7f854958ed1124a637abbdf095e6669a3f5ecb4c0e8d9233",
+      "last_committed_script_before_saved_at": "8f4f29c25b975772e9926ee2005334edf342bff3",
+      "source_file": "sm_reference.csv",
+      "observed_radii": [
+        {
+          "pose": "01",
+          "x": 5,
+          "y": 21,
+          "samples": 48
+        },
+        {
+          "pose": "09",
+          "x": 5,
+          "y": 21,
+          "samples": 140
+        },
+        {
+          "pose": "26",
+          "x": 5,
+          "y": 21,
+          "samples": 5
+        },
+        {
+          "pose": "26",
+          "x": 5,
+          "y": 24,
+          "samples": 1
+        },
+        {
+          "pose": "29",
+          "x": 5,
+          "y": 19,
+          "samples": 33
+        },
+        {
+          "pose": "29",
+          "x": 5,
+          "y": 21,
+          "samples": 1
+        },
+        {
+          "pose": "4B",
+          "x": 5,
+          "y": 21,
+          "samples": 1
+        },
+        {
+          "pose": "4D",
+          "x": 5,
+          "y": 19,
+          "samples": 68
+        },
+        {
+          "pose": "A4",
+          "x": 5,
+          "y": 19,
+          "samples": 2
+        },
+        {
+          "pose": "A4",
+          "x": 5,
+          "y": 21,
+          "samples": 6
+        }
+      ]
+    },
+    "jump_hold_29": {
+      "file": "jump_hold_29.csv.gz",
+      "saved_at": "2026-10-13T20:58:53-03:00",
+      "rows": 305,
+      "csv_sha256": "bb3141a50aaf029ca91f81d6ed63940bbbbde8eb2af4f451b573a6c96aa68d03",
+      "last_committed_script_before_saved_at": "8f4f29c25b975772e9926ee2005334edf342bff3",
+      "source_file": "sm_reference.csv",
+      "observed_radii": [
+        {
+          "pose": "01",
+          "x": 5,
+          "y": 21,
+          "samples": 46
+        },
+        {
+          "pose": "09",
+          "x": 5,
+          "y": 21,
+          "samples": 140
+        },
+        {
+          "pose": "26",
+          "x": 5,
+          "y": 21,
+          "samples": 5
+        },
+        {
+          "pose": "26",
+          "x": 5,
+          "y": 24,
+          "samples": 1
+        },
+        {
+          "pose": "29",
+          "x": 5,
+          "y": 19,
+          "samples": 33
+        },
+        {
+          "pose": "29",
+          "x": 5,
+          "y": 21,
+          "samples": 1
+        },
+        {
+          "pose": "4B",
+          "x": 5,
+          "y": 21,
+          "samples": 1
+        },
+        {
+          "pose": "4D",
+          "x": 5,
+          "y": 19,
+          "samples": 70
+        },
+        {
+          "pose": "A4",
+          "x": 5,
+          "y": 19,
+          "samples": 2
+        },
+        {
+          "pose": "A4",
+          "x": 5,
+          "y": 21,
+          "samples": 6
+        }
+      ]
+    },
+    "jump_hold_3": {
+      "file": "jump_hold_3.csv.gz",
+      "saved_at": "2026-10-13T20:58:53-03:00",
+      "rows": 305,
+      "csv_sha256": "ad61c47f7e90c54963b23865cd2c207e17e9ca120a78b177df006abbe67b2dbf",
+      "last_committed_script_before_saved_at": "8f4f29c25b975772e9926ee2005334edf342bff3",
+      "source_file": "sm_reference.csv",
+      "observed_radii": [
+        {
+          "pose": "01",
+          "x": 5,
+          "y": 21,
+          "samples": 103
+        },
+        {
+          "pose": "09",
+          "x": 5,
+          "y": 21,
+          "samples": 140
+        },
+        {
+          "pose": "26",
+          "x": 5,
+          "y": 21,
+          "samples": 5
+        },
+        {
+          "pose": "26",
+          "x": 5,
+          "y": 24,
+          "samples": 1
+        },
+        {
+          "pose": "29",
+          "x": 5,
+          "y": 19,
+          "samples": 33
+        },
+        {
+          "pose": "29",
+          "x": 5,
+          "y": 21,
+          "samples": 1
+        },
+        {
+          "pose": "4B",
+          "x": 5,
+          "y": 21,
+          "samples": 1
+        },
+        {
+          "pose": "4D",
+          "x": 5,
+          "y": 19,
+          "samples": 13
+        },
+        {
+          "pose": "A4",
+          "x": 5,
+          "y": 19,
+          "samples": 2
+        },
+        {
+          "pose": "A4",
+          "x": 5,
+          "y": 21,
+          "samples": 6
+        }
+      ]
+    },
+    "jump_hold_30": {
+      "file": "jump_hold_30.csv.gz",
+      "saved_at": "2026-10-13T20:58:53-03:00",
+      "rows": 305,
+      "csv_sha256": "7f0bb2cc5c8c24f08288de3660e7f06db15f9003d7faf069b1992a0cb6808e41",
+      "last_committed_script_before_saved_at": "8f4f29c25b975772e9926ee2005334edf342bff3",
+      "source_file": "sm_reference.csv",
+      "observed_radii": [
+        {
+          "pose": "01",
+          "x": 5,
+          "y": 21,
+          "samples": 45
+        },
+        {
+          "pose": "09",
+          "x": 5,
+          "y": 21,
+          "samples": 140
+        },
+        {
+          "pose": "26",
+          "x": 5,
+          "y": 21,
+          "samples": 5
+        },
+        {
+          "pose": "26",
+          "x": 5,
+          "y": 24,
+          "samples": 1
+        },
+        {
+          "pose": "29",
+          "x": 5,
+          "y": 19,
+          "samples": 33
+        },
+        {
+          "pose": "29",
+          "x": 5,
+          "y": 21,
+          "samples": 1
+        },
+        {
+          "pose": "4B",
+          "x": 5,
+          "y": 21,
+          "samples": 1
+        },
+        {
+          "pose": "4D",
+          "x": 5,
+          "y": 19,
+          "samples": 71
+        },
+        {
+          "pose": "A4",
+          "x": 5,
+          "y": 19,
+          "samples": 2
+        },
+        {
+          "pose": "A4",
+          "x": 5,
+          "y": 21,
+          "samples": 6
+        }
+      ]
+    },
+    "jump_hold_4": {
+      "file": "jump_hold_4.csv.gz",
+      "saved_at": "2026-10-13T20:58:53-03:00",
+      "rows": 305,
+      "csv_sha256": "fd2c5858565aa7a1dbf46cecaf4ea0b24187bf09050149576ba2a7aab45a2ee5",
+      "last_committed_script_before_saved_at": "8f4f29c25b975772e9926ee2005334edf342bff3",
+      "source_file": "sm_reference.csv",
+      "observed_radii": [
+        {
+          "pose": "01",
+          "x": 5,
+          "y": 21,
+          "samples": 98
+        },
+        {
+          "pose": "09",
+          "x": 5,
+          "y": 21,
+          "samples": 140
+        },
+        {
+          "pose": "26",
+          "x": 5,
+          "y": 21,
+          "samples": 5
+        },
+        {
+          "pose": "26",
+          "x": 5,
+          "y": 24,
+          "samples": 1
+        },
+        {
+          "pose": "29",
+          "x": 5,
+          "y": 19,
+          "samples": 33
+        },
+        {
+          "pose": "29",
+          "x": 5,
+          "y": 21,
+          "samples": 1
+        },
+        {
+          "pose": "4B",
+          "x": 5,
+          "y": 21,
+          "samples": 1
+        },
+        {
+          "pose": "4D",
+          "x": 5,
+          "y": 19,
+          "samples": 18
+        },
+        {
+          "pose": "A4",
+          "x": 5,
+          "y": 19,
+          "samples": 2
+        },
+        {
+          "pose": "A4",
+          "x": 5,
+          "y": 21,
+          "samples": 6
+        }
+      ]
+    },
+    "jump_hold_5": {
+      "file": "jump_hold_5.csv.gz",
+      "saved_at": "2026-10-13T20:58:53-03:00",
+      "rows": 305,
+      "csv_sha256": "bb7ede61eae73743838385b23775484f82bad7f91db8aec36dc5c6fb2f9ada33",
+      "last_committed_script_before_saved_at": "8f4f29c25b975772e9926ee2005334edf342bff3",
+      "source_file": "sm_reference.csv",
+      "observed_radii": [
+        {
+          "pose": "01",
+          "x": 5,
+          "y": 21,
+          "samples": 95
+        },
+        {
+          "pose": "09",
+          "x": 5,
+          "y": 21,
+          "samples": 140
+        },
+        {
+          "pose": "26",
+          "x": 5,
+          "y": 21,
+          "samples": 5
+        },
+        {
+          "pose": "26",
+          "x": 5,
+          "y": 24,
+          "samples": 1
+        },
+        {
+          "pose": "29",
+          "x": 5,
+          "y": 19,
+          "samples": 33
+        },
+        {
+          "pose": "29",
+          "x": 5,
+          "y": 21,
+          "samples": 1
+        },
+        {
+          "pose": "4B",
+          "x": 5,
+          "y": 21,
+          "samples": 1
+        },
+        {
+          "pose": "4D",
+          "x": 5,
+          "y": 19,
+          "samples": 21
+        },
+        {
+          "pose": "A4",
+          "x": 5,
+          "y": 19,
+          "samples": 2
+        },
+        {
+          "pose": "A4",
+          "x": 5,
+          "y": 21,
+          "samples": 6
+        }
+      ]
+    },
+    "jump_hold_6": {
+      "file": "jump_hold_6.csv.gz",
+      "saved_at": "2026-10-13T20:58:53-03:00",
+      "rows": 305,
+      "csv_sha256": "4ace2732f61b64aad772320778e5cd90bd152d4a98936d9a1be328b9a4742a60",
+      "last_committed_script_before_saved_at": "8f4f29c25b975772e9926ee2005334edf342bff3",
+      "source_file": "sm_reference.csv",
+      "observed_radii": [
+        {
+          "pose": "01",
+          "x": 5,
+          "y": 21,
+          "samples": 91
+        },
+        {
+          "pose": "09",
+          "x": 5,
+          "y": 21,
+          "samples": 140
+        },
+        {
+          "pose": "26",
+          "x": 5,
+          "y": 21,
+          "samples": 5
+        },
+        {
+          "pose": "26",
+          "x": 5,
+          "y": 24,
+          "samples": 1
+        },
+        {
+          "pose": "29",
+          "x": 5,
+          "y": 19,
+          "samples": 33
+        },
+        {
+          "pose": "29",
+          "x": 5,
+          "y": 21,
+          "samples": 1
+        },
+        {
+          "pose": "4B",
+          "x": 5,
+          "y": 21,
+          "samples": 1
+        },
+        {
+          "pose": "4D",
+          "x": 5,
+          "y": 19,
+          "samples": 25
+        },
+        {
+          "pose": "A4",
+          "x": 5,
+          "y": 19,
+          "samples": 2
+        },
+        {
+          "pose": "A4",
+          "x": 5,
+          "y": 21,
+          "samples": 6
+        }
+      ]
+    },
+    "jump_hold_7": {
+      "file": "jump_hold_7.csv.gz",
+      "saved_at": "2026-10-13T20:58:53-03:00",
+      "rows": 305,
+      "csv_sha256": "f9135112e6e2cd85dfb7b34f41155fdbd028727386ea271058ca6802ca3f0b11",
+      "last_committed_script_before_saved_at": "8f4f29c25b975772e9926ee2005334edf342bff3",
+      "source_file": "sm_reference.csv",
+      "observed_radii": [
+        {
+          "pose": "01",
+          "x": 5,
+          "y": 21,
+          "samples": 88
+        },
+        {
+          "pose": "09",
+          "x": 5,
+          "y": 21,
+          "samples": 140
+        },
+        {
+          "pose": "26",
+          "x": 5,
+          "y": 21,
+          "samples": 5
+        },
+        {
+          "pose": "26",
+          "x": 5,
+          "y": 24,
+          "samples": 1
+        },
+        {
+          "pose": "29",
+          "x": 5,
+          "y": 19,
+          "samples": 33
+        },
+        {
+          "pose": "29",
+          "x": 5,
+          "y": 21,
+          "samples": 1
+        },
+        {
+          "pose": "4B",
+          "x": 5,
+          "y": 21,
+          "samples": 1
+        },
+        {
+          "pose": "4D",
+          "x": 5,
+          "y": 19,
+          "samples": 28
+        },
+        {
+          "pose": "A4",
+          "x": 5,
+          "y": 19,
+          "samples": 2
+        },
+        {
+          "pose": "A4",
+          "x": 5,
+          "y": 21,
+          "samples": 6
+        }
+      ]
+    },
+    "jump_hold_8": {
+      "file": "jump_hold_8.csv.gz",
+      "saved_at": "2026-10-13T20:58:53-03:00",
+      "rows": 305,
+      "csv_sha256": "8e7a25d2279d3e490236567b1e116479d541b779e7ce92accbf93804095c5348",
+      "last_committed_script_before_saved_at": "8f4f29c25b975772e9926ee2005334edf342bff3",
+      "source_file": "sm_reference.csv",
+      "observed_radii": [
+        {
+          "pose": "01",
+          "x": 5,
+          "y": 21,
+          "samples": 86
+        },
+        {
+          "pose": "09",
+          "x": 5,
+          "y": 21,
+          "samples": 140
+        },
+        {
+          "pose": "26",
+          "x": 5,
+          "y": 21,
+          "samples": 5
+        },
+        {
+          "pose": "26",
+          "x": 5,
+          "y": 24,
+          "samples": 1
+        },
+        {
+          "pose": "29",
+          "x": 5,
+          "y": 19,
+          "samples": 33
+        },
+        {
+          "pose": "29",
+          "x": 5,
+          "y": 21,
+          "samples": 1
+        },
+        {
+          "pose": "4B",
+          "x": 5,
+          "y": 21,
+          "samples": 1
+        },
+        {
+          "pose": "4D",
+          "x": 5,
+          "y": 19,
+          "samples": 30
+        },
+        {
+          "pose": "A4",
+          "x": 5,
+          "y": 19,
+          "samples": 2
+        },
+        {
+          "pose": "A4",
+          "x": 5,
+          "y": 21,
+          "samples": 6
+        }
+      ]
+    },
+    "jump_hold_9": {
+      "file": "jump_hold_9.csv.gz",
+      "saved_at": "2026-10-13T20:58:53-03:00",
+      "rows": 305,
+      "csv_sha256": "4796499eb52a257c74d1fd227b60fcbe1f767ceaa81d38c487e5a2935f27d09a",
+      "last_committed_script_before_saved_at": "8f4f29c25b975772e9926ee2005334edf342bff3",
+      "source_file": "sm_reference.csv",
+      "observed_radii": [
+        {
+          "pose": "01",
+          "x": 5,
+          "y": 21,
+          "samples": 83
+        },
+        {
+          "pose": "09",
+          "x": 5,
+          "y": 21,
+          "samples": 140
+        },
+        {
+          "pose": "26",
+          "x": 5,
+          "y": 21,
+          "samples": 5
+        },
+        {
+          "pose": "26",
+          "x": 5,
+          "y": 24,
+          "samples": 1
+        },
+        {
+          "pose": "29",
+          "x": 5,
+          "y": 19,
+          "samples": 33
+        },
+        {
+          "pose": "29",
+          "x": 5,
+          "y": 21,
+          "samples": 1
+        },
+        {
+          "pose": "4B",
+          "x": 5,
+          "y": 21,
+          "samples": 1
+        },
+        {
+          "pose": "4D",
+          "x": 5,
+          "y": 19,
+          "samples": 33
+        },
+        {
+          "pose": "A4",
+          "x": 5,
+          "y": 19,
+          "samples": 2
+        },
+        {
+          "pose": "A4",
+          "x": 5,
+          "y": 21,
+          "samples": 6
+        }
+      ]
+    },
+    "jump_release_dir": {
+      "file": "jump_release_dir.csv.gz",
+      "saved_at": "2026-10-13T20:58:53-03:00",
+      "rows": 301,
+      "csv_sha256": "001c5c4b0ae4b3d7f9f16ce89c058ad503fc6a988a39ff109283c5b47ba6cb9d",
+      "last_committed_script_before_saved_at": "8f4f29c25b975772e9926ee2005334edf342bff3",
+      "source_file": "sm_reference.csv",
+      "observed_radii": [
+        {
+          "pose": "01",
+          "x": 5,
+          "y": 21,
+          "samples": 34
+        },
+        {
+          "pose": "09",
+          "x": 5,
+          "y": 21,
+          "samples": 140
+        },
+        {
+          "pose": "26",
+          "x": 5,
+          "y": 21,
+          "samples": 5
+        },
+        {
+          "pose": "26",
+          "x": 5,
+          "y": 24,
+          "samples": 1
+        },
+        {
+          "pose": "29",
+          "x": 5,
+          "y": 19,
+          "samples": 33
+        },
+        {
+          "pose": "29",
+          "x": 5,
+          "y": 21,
+          "samples": 1
+        },
+        {
+          "pose": "4B",
+          "x": 5,
+          "y": 21,
+          "samples": 1
+        },
+        {
+          "pose": "4D",
+          "x": 5,
+          "y": 19,
+          "samples": 65
+        },
+        {
+          "pose": "51",
+          "x": 5,
+          "y": 19,
+          "samples": 20
+        },
+        {
+          "pose": "A4",
+          "x": 5,
+          "y": 19,
+          "samples": 1
+        }
+      ]
+    },
+    "jump_reverse": {
+      "file": "jump_reverse.csv.gz",
+      "saved_at": "2026-10-13T21:09:02-03:00",
+      "rows": 293,
+      "csv_sha256": "8f60b4bb7113367c3aef9c6c65b03aebd8f7adf3cb3523a70ddb4486529a7429",
+      "last_committed_script_before_saved_at": "8a3167698fd8489ee2803ea0809d9ee95c34ea8c",
+      "source_file": "sm_jump_reverse.csv",
+      "observed_radii": [
+        {
+          "pose": "01",
+          "x": 5,
+          "y": 21,
+          "samples": 34
+        },
+        {
+          "pose": "09",
+          "x": 5,
+          "y": 21,
+          "samples": 140
+        },
+        {
+          "pose": "26",
+          "x": 5,
+          "y": 21,
+          "samples": 5
+        },
+        {
+          "pose": "26",
+          "x": 5,
+          "y": 24,
+          "samples": 1
+        },
+        {
+          "pose": "29",
+          "x": 5,
+          "y": 19,
+          "samples": 33
+        },
+        {
+          "pose": "29",
+          "x": 5,
+          "y": 21,
+          "samples": 1
+        },
+        {
+          "pose": "2F",
+          "x": 5,
+          "y": 19,
+          "samples": 6
+        },
+        {
+          "pose": "4B",
+          "x": 5,
+          "y": 21,
+          "samples": 1
+        },
+        {
+          "pose": "4D",
+          "x": 5,
+          "y": 19,
+          "samples": 5
+        },
+        {
+          "pose": "51",
+          "x": 5,
+          "y": 19,
+          "samples": 12
+        },
+        {
+          "pose": "52",
+          "x": 5,
+          "y": 19,
+          "samples": 54
+        },
+        {
+          "pose": "A4",
+          "x": 5,
+          "y": 19,
+          "samples": 1
+        }
+      ]
+    },
+    "jump_stand": {
+      "file": "jump_stand.csv.gz",
+      "saved_at": "2026-10-18T15:57:13-03:00",
+      "rows": 315,
+      "csv_sha256": "bf2da6ac584d72ded45a242ba1b2f1ec095957111a84284f712cfa3d5dfdfeb0",
+      "last_committed_script_before_saved_at": "982cadc5a9af7bbf81c6908f6199aa5c8b624cc4",
+      "source_file": "ref_jump_stand.csv",
+      "observed_radii": [
+        {
+          "pose": "01",
+          "x": 5,
+          "y": 21,
+          "samples": 35
+        },
+        {
+          "pose": "09",
+          "x": 5,
+          "y": 21,
+          "samples": 140
+        },
+        {
+          "pose": "26",
+          "x": 5,
+          "y": 21,
+          "samples": 5
+        },
+        {
+          "pose": "26",
+          "x": 5,
+          "y": 24,
+          "samples": 1
+        },
+        {
+          "pose": "29",
+          "x": 5,
+          "y": 19,
+          "samples": 33
+        },
+        {
+          "pose": "29",
+          "x": 5,
+          "y": 21,
+          "samples": 1
+        },
+        {
+          "pose": "4B",
+          "x": 5,
+          "y": 21,
+          "samples": 1
+        },
+        {
+          "pose": "4D",
+          "x": 5,
+          "y": 19,
+          "samples": 91
+        },
+        {
+          "pose": "A4",
+          "x": 5,
+          "y": 19,
+          "samples": 2
+        },
+        {
+          "pose": "A4",
+          "x": 5,
+          "y": 21,
+          "samples": 6
+        }
+      ]
+    },
+    "jump_then_right": {
+      "file": "jump_then_right.csv.gz",
+      "saved_at": "2026-10-13T20:58:53-03:00",
+      "rows": 315,
+      "csv_sha256": "fdb695c4c84b755701281456cce20d88c17439cd4be89319830a49cabe4890a0",
+      "last_committed_script_before_saved_at": "8f4f29c25b975772e9926ee2005334edf342bff3",
+      "source_file": "sm_reference.csv",
+      "observed_radii": [
+        {
+          "pose": "01",
+          "x": 5,
+          "y": 21,
+          "samples": 34
+        },
+        {
+          "pose": "09",
+          "x": 5,
+          "y": 21,
+          "samples": 147
+        },
+        {
+          "pose": "26",
+          "x": 5,
+          "y": 21,
+          "samples": 5
+        },
+        {
+          "pose": "26",
+          "x": 5,
+          "y": 24,
+          "samples": 1
+        },
+        {
+          "pose": "29",
+          "x": 5,
+          "y": 19,
+          "samples": 33
+        },
+        {
+          "pose": "29",
+          "x": 5,
+          "y": 21,
+          "samples": 1
+        },
+        {
+          "pose": "4B",
+          "x": 5,
+          "y": 21,
+          "samples": 1
+        },
+        {
+          "pose": "4D",
+          "x": 5,
+          "y": 19,
+          "samples": 5
+        },
+        {
+          "pose": "51",
+          "x": 5,
+          "y": 19,
+          "samples": 86
+        },
+        {
+          "pose": "A4",
+          "x": 5,
+          "y": 19,
+          "samples": 2
+        }
+      ]
+    },
+    "ledge_jump_0": {
+      "file": "ledge_jump_0.csv.gz",
+      "saved_at": "2026-10-13T20:58:53-03:00",
+      "rows": 94,
+      "csv_sha256": "bd39901aa3419aefe0bbd5f07c0f42c42fc481a0001456814c6de5ad6b757c2e",
+      "last_committed_script_before_saved_at": "8f4f29c25b975772e9926ee2005334edf342bff3",
+      "source_file": "sm_reference.csv",
+      "observed_radii": [
+        {
+          "pose": "01",
+          "x": 5,
+          "y": 21,
+          "samples": 1
+        },
+        {
+          "pose": "09",
+          "x": 5,
+          "y": 21,
+          "samples": 52
+        },
+        {
+          "pose": "26",
+          "x": 5,
+          "y": 21,
+          "samples": 5
+        },
+        {
+          "pose": "26",
+          "x": 5,
+          "y": 24,
+          "samples": 1
+        },
+        {
+          "pose": "29",
+          "x": 5,
+          "y": 19,
+          "samples": 33
+        },
+        {
+          "pose": "29",
+          "x": 5,
+          "y": 21,
+          "samples": 1
+        },
+        {
+          "pose": "A4",
+          "x": 5,
+          "y": 19,
+          "samples": 1
+        }
+      ]
+    },
+    "ledge_jump_1": {
+      "file": "ledge_jump_1.csv.gz",
+      "saved_at": "2026-10-13T20:58:53-03:00",
+      "rows": 95,
+      "csv_sha256": "20def7a99ce618666a1dc99467b3d34c090bc40514cb7993dee1e5a089502235",
+      "last_committed_script_before_saved_at": "8f4f29c25b975772e9926ee2005334edf342bff3",
+      "source_file": "sm_reference.csv",
+      "observed_radii": [
+        {
+          "pose": "01",
+          "x": 5,
+          "y": 21,
+          "samples": 1
+        },
+        {
+          "pose": "09",
+          "x": 5,
+          "y": 21,
+          "samples": 53
+        },
+        {
+          "pose": "26",
+          "x": 5,
+          "y": 21,
+          "samples": 5
+        },
+        {
+          "pose": "26",
+          "x": 5,
+          "y": 24,
+          "samples": 1
+        },
+        {
+          "pose": "29",
+          "x": 5,
+          "y": 19,
+          "samples": 33
+        },
+        {
+          "pose": "29",
+          "x": 5,
+          "y": 21,
+          "samples": 1
+        },
+        {
+          "pose": "A4",
+          "x": 5,
+          "y": 19,
+          "samples": 1
+        }
+      ]
+    },
+    "ledge_jump_2": {
+      "file": "ledge_jump_2.csv.gz",
+      "saved_at": "2026-10-13T20:58:53-03:00",
+      "rows": 96,
+      "csv_sha256": "32d29c45a969c260afd7e62e99da1c85727bde878f40cf04ffae9802d31c48ff",
+      "last_committed_script_before_saved_at": "8f4f29c25b975772e9926ee2005334edf342bff3",
+      "source_file": "sm_reference.csv",
+      "observed_radii": [
+        {
+          "pose": "01",
+          "x": 5,
+          "y": 21,
+          "samples": 1
+        },
+        {
+          "pose": "09",
+          "x": 5,
+          "y": 21,
+          "samples": 54
+        },
+        {
+          "pose": "26",
+          "x": 5,
+          "y": 21,
+          "samples": 5
+        },
+        {
+          "pose": "26",
+          "x": 5,
+          "y": 24,
+          "samples": 1
+        },
+        {
+          "pose": "29",
+          "x": 5,
+          "y": 19,
+          "samples": 33
+        },
+        {
+          "pose": "29",
+          "x": 5,
+          "y": 21,
+          "samples": 1
+        },
+        {
+          "pose": "A4",
+          "x": 5,
+          "y": 19,
+          "samples": 1
+        }
+      ]
+    },
+    "ledge_jump_3": {
+      "file": "ledge_jump_3.csv.gz",
+      "saved_at": "2026-10-13T20:58:53-03:00",
+      "rows": 97,
+      "csv_sha256": "191e0b01e9c5f8671c2634d5804941b32e17c8ff2dc973810d9619a0ae0e28bc",
+      "last_committed_script_before_saved_at": "8f4f29c25b975772e9926ee2005334edf342bff3",
+      "source_file": "sm_reference.csv",
+      "observed_radii": [
+        {
+          "pose": "01",
+          "x": 5,
+          "y": 21,
+          "samples": 1
+        },
+        {
+          "pose": "09",
+          "x": 5,
+          "y": 21,
+          "samples": 55
+        },
+        {
+          "pose": "26",
+          "x": 5,
+          "y": 21,
+          "samples": 5
+        },
+        {
+          "pose": "26",
+          "x": 5,
+          "y": 24,
+          "samples": 1
+        },
+        {
+          "pose": "29",
+          "x": 5,
+          "y": 19,
+          "samples": 33
+        },
+        {
+          "pose": "29",
+          "x": 5,
+          "y": 21,
+          "samples": 1
+        },
+        {
+          "pose": "A4",
+          "x": 5,
+          "y": 19,
+          "samples": 1
+        }
+      ]
+    },
+    "ledge_jump_4": {
+      "file": "ledge_jump_4.csv.gz",
+      "saved_at": "2026-10-13T20:58:53-03:00",
+      "rows": 98,
+      "csv_sha256": "0acd376f7aaf73a701ac845534e577bffc061f52f9e218de5a334f7ba03ecd13",
+      "last_committed_script_before_saved_at": "8f4f29c25b975772e9926ee2005334edf342bff3",
+      "source_file": "sm_reference.csv",
+      "observed_radii": [
+        {
+          "pose": "01",
+          "x": 5,
+          "y": 21,
+          "samples": 1
+        },
+        {
+          "pose": "09",
+          "x": 5,
+          "y": 21,
+          "samples": 56
+        },
+        {
+          "pose": "26",
+          "x": 5,
+          "y": 21,
+          "samples": 5
+        },
+        {
+          "pose": "26",
+          "x": 5,
+          "y": 24,
+          "samples": 1
+        },
+        {
+          "pose": "29",
+          "x": 5,
+          "y": 19,
+          "samples": 33
+        },
+        {
+          "pose": "29",
+          "x": 5,
+          "y": 21,
+          "samples": 1
+        },
+        {
+          "pose": "A4",
+          "x": 5,
+          "y": 19,
+          "samples": 1
+        }
+      ]
+    },
+    "morph_air": {
+      "file": "morph_air.csv.gz",
+      "saved_at": "2026-10-13T20:58:53-03:00",
+      "rows": 286,
+      "csv_sha256": "0a1ba8a7655fc77e4d1fe140acdcf7ed0493f92f9e94850904cad7ea30361dbf",
+      "last_committed_script_before_saved_at": "8f4f29c25b975772e9926ee2005334edf342bff3",
+      "source_file": "sm_reference.csv",
+      "observed_radii": [
+        {
+          "pose": "01",
+          "x": 5,
+          "y": 21,
+          "samples": 59
+        },
+        {
+          "pose": "09",
+          "x": 5,
+          "y": 21,
+          "samples": 140
+        },
+        {
+          "pose": "17",
+          "x": 5,
+          "y": 10,
+          "samples": 28
+        },
+        {
+          "pose": "17",
+          "x": 5,
+          "y": 19,
+          "samples": 1
+        },
+        {
+          "pose": "26",
+          "x": 5,
+          "y": 21,
+          "samples": 5
+        },
+        {
+          "pose": "26",
+          "x": 5,
+          "y": 24,
+          "samples": 1
+        },
+        {
+          "pose": "29",
+          "x": 5,
+          "y": 19,
+          "samples": 33
+        },
+        {
+          "pose": "29",
+          "x": 5,
+          "y": 21,
+          "samples": 1
+        },
+        {
+          "pose": "4B",
+          "x": 5,
+          "y": 21,
+          "samples": 1
+        },
+        {
+          "pose": "4D",
+          "x": 5,
+          "y": 19,
+          "samples": 9
+        },
+        {
+          "pose": "A4",
+          "x": 5,
+          "y": 10,
+          "samples": 1
+        },
+        {
+          "pose": "A4",
+          "x": 5,
+          "y": 19,
+          "samples": 1
+        },
+        {
+          "pose": "A4",
+          "x": 5,
+          "y": 21,
+          "samples": 6
+        }
+      ]
+    },
+    "morph_air_jump": {
+      "file": "morph_air_jump.csv.gz",
+      "saved_at": "2026-10-18T15:59:36-03:00",
+      "rows": 297,
+      "csv_sha256": "0f664da808f83db333c599de0a25d7097732f13ed27146cd20f0ab90439e80f1",
+      "last_committed_script_before_saved_at": "982cadc5a9af7bbf81c6908f6199aa5c8b624cc4",
+      "source_file": "ref_morph_air_jump.csv",
+      "observed_radii": [
+        {
+          "pose": "01",
+          "x": 5,
+          "y": 21,
+          "samples": 66
+        },
+        {
+          "pose": "09",
+          "x": 5,
+          "y": 21,
+          "samples": 140
+        },
+        {
+          "pose": "17",
+          "x": 5,
+          "y": 10,
+          "samples": 1
+        },
+        {
+          "pose": "17",
+          "x": 5,
+          "y": 19,
+          "samples": 1
+        },
+        {
+          "pose": "26",
+          "x": 5,
+          "y": 21,
+          "samples": 5
+        },
+        {
+          "pose": "26",
+          "x": 5,
+          "y": 24,
+          "samples": 1
+        },
+        {
+          "pose": "27",
+          "x": 5,
+          "y": 16,
+          "samples": 1
+        },
+        {
+          "pose": "29",
+          "x": 5,
+          "y": 16,
+          "samples": 1
+        },
+        {
+          "pose": "29",
+          "x": 5,
+          "y": 19,
+          "samples": 47
+        },
+        {
+          "pose": "29",
+          "x": 5,
+          "y": 21,
+          "samples": 1
+        },
+        {
+          "pose": "31",
+          "x": 5,
+          "y": 7,
+          "samples": 3
+        },
+        {
+          "pose": "37",
+          "x": 5,
+          "y": 7,
+          "samples": 6
+        },
+        {
+          "pose": "3D",
+          "x": 5,
+          "y": 7,
+          "samples": 1
+        },
+        {
+          "pose": "3D",
+          "x": 5,
+          "y": 16,
+          "samples": 5
+        },
+        {
+          "pose": "4B",
+          "x": 5,
+          "y": 21,
+          "samples": 1
+        },
+        {
+          "pose": "4D",
+          "x": 5,
+          "y": 19,
+          "samples": 9
+        },
+        {
+          "pose": "A4",
+          "x": 5,
+          "y": 19,
+          "samples": 2
+        },
+        {
+          "pose": "A4",
+          "x": 5,
+          "y": 21,
+          "samples": 6
+        }
+      ]
+    },
+    "morph_air_twice": {
+      "file": "morph_air_twice.csv.gz",
+      "saved_at": "2026-10-13T20:58:53-03:00",
+      "rows": 288,
+      "csv_sha256": "153a0972ef74a7b1db4d319437723e1888fd1271095a854daf2d0034fdb69ff7",
+      "last_committed_script_before_saved_at": "8f4f29c25b975772e9926ee2005334edf342bff3",
+      "source_file": "sm_reference.csv",
+      "observed_radii": [
+        {
+          "pose": "01",
+          "x": 5,
+          "y": 21,
+          "samples": 34
+        },
+        {
+          "pose": "09",
+          "x": 5,
+          "y": 21,
+          "samples": 140
+        },
+        {
+          "pose": "17",
+          "x": 5,
+          "y": 10,
+          "samples": 1
+        },
+        {
+          "pose": "17",
+          "x": 5,
+          "y": 19,
+          "samples": 1
+        },
+        {
+          "pose": "1D",
+          "x": 5,
+          "y": 7,
+          "samples": 12
+        },
+        {
+          "pose": "26",
+          "x": 5,
+          "y": 21,
+          "samples": 5
+        },
+        {
+          "pose": "26",
+          "x": 5,
+          "y": 24,
+          "samples": 1
+        },
+        {
+          "pose": "29",
+          "x": 5,
+          "y": 19,
+          "samples": 33
+        },
+        {
+          "pose": "29",
+          "x": 5,
+          "y": 21,
+          "samples": 1
+        },
+        {
+          "pose": "31",
+          "x": 5,
+          "y": 7,
+          "samples": 43
+        },
+        {
+          "pose": "37",
+          "x": 5,
+          "y": 7,
+          "samples": 6
+        },
+        {
+          "pose": "4B",
+          "x": 5,
+          "y": 21,
+          "samples": 1
+        },
+        {
+          "pose": "4D",
+          "x": 5,
+          "y": 19,
+          "samples": 9
+        },
+        {
+          "pose": "A4",
+          "x": 5,
+          "y": 19,
+          "samples": 1
+        }
+      ]
+    },
+    "morph_jump": {
+      "file": "morph_jump.csv.gz",
+      "saved_at": "2026-10-18T15:57:11-03:00",
+      "rows": 287,
+      "csv_sha256": "a9137c80e4ddf75845e307eaa7d92fc9a4a709f42dba002232207f8442196b43",
+      "last_committed_script_before_saved_at": "982cadc5a9af7bbf81c6908f6199aa5c8b624cc4",
+      "source_file": "ref_morph_jump.csv",
+      "observed_radii": [
+        {
+          "pose": "01",
+          "x": 5,
+          "y": 21,
+          "samples": 34
+        },
+        {
+          "pose": "09",
+          "x": 5,
+          "y": 21,
+          "samples": 140
+        },
+        {
+          "pose": "1D",
+          "x": 5,
+          "y": 7,
+          "samples": 15
+        },
+        {
+          "pose": "26",
+          "x": 5,
+          "y": 21,
+          "samples": 5
+        },
+        {
+          "pose": "26",
+          "x": 5,
+          "y": 24,
+          "samples": 1
+        },
+        {
+          "pose": "27",
+          "x": 5,
+          "y": 16,
+          "samples": 42
+        },
+        {
+          "pose": "29",
+          "x": 5,
+          "y": 19,
+          "samples": 33
+        },
+        {
+          "pose": "29",
+          "x": 5,
+          "y": 21,
+          "samples": 1
+        },
+        {
+          "pose": "35",
+          "x": 5,
+          "y": 16,
+          "samples": 3
+        },
+        {
+          "pose": "37",
+          "x": 5,
+          "y": 7,
+          "samples": 6
+        },
+        {
+          "pose": "3D",
+          "x": 5,
+          "y": 7,
+          "samples": 1
+        },
+        {
+          "pose": "3D",
+          "x": 5,
+          "y": 16,
+          "samples": 5
+        },
+        {
+          "pose": "A4",
+          "x": 5,
+          "y": 19,
+          "samples": 1
+        }
+      ]
+    },
+    "morph_roll": {
+      "file": "morph_roll.csv.gz",
+      "saved_at": "2026-10-13T20:58:53-03:00",
+      "rows": 317,
+      "csv_sha256": "903e5f32dfaaa33d990094eca1eacd2af7dc27effe6aa12a8244fd53327c02af",
+      "last_committed_script_before_saved_at": "8f4f29c25b975772e9926ee2005334edf342bff3",
+      "source_file": "sm_reference.csv",
+      "observed_radii": [
+        {
+          "pose": "01",
+          "x": 5,
+          "y": 21,
+          "samples": 34
+        },
+        {
+          "pose": "09",
+          "x": 5,
+          "y": 21,
+          "samples": 140
+        },
+        {
+          "pose": "1D",
+          "x": 5,
+          "y": 7,
+          "samples": 45
+        },
+        {
+          "pose": "1E",
+          "x": 5,
+          "y": 7,
+          "samples": 40
+        },
+        {
+          "pose": "26",
+          "x": 5,
+          "y": 21,
+          "samples": 5
+        },
+        {
+          "pose": "26",
+          "x": 5,
+          "y": 24,
+          "samples": 1
+        },
+        {
+          "pose": "27",
+          "x": 5,
+          "y": 16,
+          "samples": 8
+        },
+        {
+          "pose": "29",
+          "x": 5,
+          "y": 19,
+          "samples": 33
+        },
+        {
+          "pose": "29",
+          "x": 5,
+          "y": 21,
+          "samples": 1
+        },
+        {
+          "pose": "35",
+          "x": 5,
+          "y": 16,
+          "samples": 3
+        },
+        {
+          "pose": "37",
+          "x": 5,
+          "y": 7,
+          "samples": 6
+        },
+        {
+          "pose": "A4",
+          "x": 5,
+          "y": 19,
+          "samples": 1
+        }
+      ]
+    },
+    "morph_up_hold": {
+      "file": "morph_up_hold.csv.gz",
+      "saved_at": "2026-10-18T15:59:34-03:00",
+      "rows": 288,
+      "csv_sha256": "0174999ac7a0c6a3dad4c4cbe9800c5b63d0d4ea8bd107d36f557e1c1b07bd3c",
+      "last_committed_script_before_saved_at": "982cadc5a9af7bbf81c6908f6199aa5c8b624cc4",
+      "source_file": "ref_morph_up_hold.csv",
+      "observed_radii": [
+        {
+          "pose": "01",
+          "x": 5,
+          "y": 21,
+          "samples": 35
+        },
+        {
+          "pose": "03",
+          "x": 5,
+          "y": 21,
+          "samples": 6
+        },
+        {
+          "pose": "09",
+          "x": 5,
+          "y": 21,
+          "samples": 140
+        },
+        {
+          "pose": "1D",
+          "x": 5,
+          "y": 7,
+          "samples": 15
+        },
+        {
+          "pose": "26",
+          "x": 5,
+          "y": 21,
+          "samples": 5
+        },
+        {
+          "pose": "26",
+          "x": 5,
+          "y": 24,
+          "samples": 1
+        },
+        {
+          "pose": "27",
+          "x": 5,
+          "y": 16,
+          "samples": 33
+        },
+        {
+          "pose": "29",
+          "x": 5,
+          "y": 19,
+          "samples": 33
+        },
+        {
+          "pose": "29",
+          "x": 5,
+          "y": 21,
+          "samples": 1
+        },
+        {
+          "pose": "35",
+          "x": 5,
+          "y": 16,
+          "samples": 3
+        },
+        {
+          "pose": "37",
+          "x": 5,
+          "y": 7,
+          "samples": 6
+        },
+        {
+          "pose": "3B",
+          "x": 5,
+          "y": 16,
+          "samples": 1
+        },
+        {
+          "pose": "3B",
+          "x": 5,
+          "y": 21,
+          "samples": 2
+        },
+        {
+          "pose": "3D",
+          "x": 5,
+          "y": 7,
+          "samples": 1
+        },
+        {
+          "pose": "3D",
+          "x": 5,
+          "y": 16,
+          "samples": 5
+        },
+        {
+          "pose": "A4",
+          "x": 5,
+          "y": 19,
+          "samples": 1
+        }
+      ]
+    },
+    "release_short": {
+      "file": "release_short.csv.gz",
+      "saved_at": "2026-10-13T21:09:05-03:00",
+      "rows": 240,
+      "csv_sha256": "541d28ce4bdb5ea03cdd5098876d65aa08791d9a61a85d0ef78004e8621e5ec2",
+      "last_committed_script_before_saved_at": "8a3167698fd8489ee2803ea0809d9ee95c34ea8c",
+      "source_file": "sm_release_short.csv",
+      "observed_radii": [
+        {
+          "pose": "01",
+          "x": 5,
+          "y": 21,
+          "samples": 51
+        },
+        {
+          "pose": "09",
+          "x": 5,
+          "y": 21,
+          "samples": 148
+        },
+        {
+          "pose": "26",
+          "x": 5,
+          "y": 21,
+          "samples": 5
+        },
+        {
+          "pose": "26",
+          "x": 5,
+          "y": 24,
+          "samples": 1
+        },
+        {
+          "pose": "29",
+          "x": 5,
+          "y": 19,
+          "samples": 33
+        },
+        {
+          "pose": "29",
+          "x": 5,
+          "y": 21,
+          "samples": 1
+        },
+        {
+          "pose": "A4",
+          "x": 5,
+          "y": 19,
+          "samples": 1
+        }
+      ]
+    },
+    "run_jump": {
+      "file": "run_jump.csv.gz",
+      "saved_at": "2026-10-13T20:58:53-03:00",
+      "rows": 215,
+      "csv_sha256": "0c2218b2d6f77334b73e01d53a5055a07a6ee0885738e742b3401d52291fb9c3",
+      "last_committed_script_before_saved_at": "8f4f29c25b975772e9926ee2005334edf342bff3",
+      "source_file": "sm_reference.csv",
+      "observed_radii": [
+        {
+          "pose": "02",
+          "x": 5,
+          "y": 21,
+          "samples": 1
+        },
+        {
+          "pose": "0A",
+          "x": 5,
+          "y": 21,
+          "samples": 87
+        },
+        {
+          "pose": "1A",
+          "x": 5,
+          "y": 12,
+          "samples": 89
+        },
+        {
+          "pose": "1A",
+          "x": 5,
+          "y": 21,
+          "samples": 1
+        },
+        {
+          "pose": "25",
+          "x": 5,
+          "y": 21,
+          "samples": 5
+        },
+        {
+          "pose": "25",
+          "x": 5,
+          "y": 24,
+          "samples": 1
+        },
+        {
+          "pose": "2A",
+          "x": 5,
+          "y": 19,
+          "samples": 28
+        },
+        {
+          "pose": "2A",
+          "x": 5,
+          "y": 21,
+          "samples": 1
+        },
+        {
+          "pose": "A5",
+          "x": 5,
+          "y": 19,
+          "samples": 1
+        },
+        {
+          "pose": "A7",
+          "x": 5,
+          "y": 12,
+          "samples": 1
+        }
+      ]
+    },
+    "run_jump_release": {
+      "file": "run_jump_release.csv.gz",
+      "saved_at": "2026-10-13T20:58:53-03:00",
+      "rows": 185,
+      "csv_sha256": "4cc049aa0153b71b91b66414ff8c10dbf644536095b5116e9673af29c4e5a9a0",
+      "last_committed_script_before_saved_at": "8f4f29c25b975772e9926ee2005334edf342bff3",
+      "source_file": "sm_reference.csv",
+      "observed_radii": [
+        {
+          "pose": "02",
+          "x": 5,
+          "y": 21,
+          "samples": 1
+        },
+        {
+          "pose": "0A",
+          "x": 5,
+          "y": 21,
+          "samples": 78
+        },
+        {
+          "pose": "1A",
+          "x": 5,
+          "y": 12,
+          "samples": 69
+        },
+        {
+          "pose": "1A",
+          "x": 5,
+          "y": 21,
+          "samples": 1
+        },
+        {
+          "pose": "25",
+          "x": 5,
+          "y": 21,
+          "samples": 5
+        },
+        {
+          "pose": "25",
+          "x": 5,
+          "y": 24,
+          "samples": 1
+        },
+        {
+          "pose": "2A",
+          "x": 5,
+          "y": 19,
+          "samples": 28
+        },
+        {
+          "pose": "2A",
+          "x": 5,
+          "y": 21,
+          "samples": 1
+        },
+        {
+          "pose": "A5",
+          "x": 5,
+          "y": 19,
+          "samples": 1
+        }
+      ]
+    },
+    "run_left": {
+      "file": "run_left.csv.gz",
+      "saved_at": "2026-10-13T20:58:53-03:00",
+      "rows": 400,
+      "csv_sha256": "5d66617e2b371a0c35b4a3c55bb5e1bb255ff7a840f3921be51a36df59b5e616",
+      "last_committed_script_before_saved_at": "8f4f29c25b975772e9926ee2005334edf342bff3",
+      "source_file": "sm_reference.csv",
+      "observed_radii": [
+        {
+          "pose": "02",
+          "x": 5,
+          "y": 21,
+          "samples": 1
+        },
+        {
+          "pose": "0A",
+          "x": 5,
+          "y": 21,
+          "samples": 242
+        },
+        {
+          "pose": "25",
+          "x": 5,
+          "y": 21,
+          "samples": 5
+        },
+        {
+          "pose": "25",
+          "x": 5,
+          "y": 24,
+          "samples": 1
+        },
+        {
+          "pose": "2A",
+          "x": 5,
+          "y": 19,
+          "samples": 28
+        },
+        {
+          "pose": "2A",
+          "x": 5,
+          "y": 21,
+          "samples": 1
+        },
+        {
+          "pose": "8A",
+          "x": 5,
+          "y": 21,
+          "samples": 121
+        },
+        {
+          "pose": "A5",
+          "x": 5,
+          "y": 19,
+          "samples": 1
+        }
+      ]
+    },
+    "shoot_hold": {
+      "file": "shoot_hold.csv.gz",
+      "saved_at": "2026-10-13T20:58:53-03:00",
+      "rows": 275,
+      "csv_sha256": "8f3b989309c0c7db68f664ec9a9840098782b5886e0e0e9abd196dffbca96f00",
+      "last_committed_script_before_saved_at": "8f4f29c25b975772e9926ee2005334edf342bff3",
+      "source_file": "sm_reference.csv",
+      "observed_radii": [
+        {
+          "pose": "01",
+          "x": 5,
+          "y": 21,
+          "samples": 94
+        },
+        {
+          "pose": "09",
+          "x": 5,
+          "y": 21,
+          "samples": 140
+        },
+        {
+          "pose": "26",
+          "x": 5,
+          "y": 21,
+          "samples": 5
+        },
+        {
+          "pose": "26",
+          "x": 5,
+          "y": 24,
+          "samples": 1
+        },
+        {
+          "pose": "29",
+          "x": 5,
+          "y": 19,
+          "samples": 33
+        },
+        {
+          "pose": "29",
+          "x": 5,
+          "y": 21,
+          "samples": 1
+        },
+        {
+          "pose": "A4",
+          "x": 5,
+          "y": 19,
+          "samples": 1
+        }
+      ]
+    },
+    "shoot_left": {
+      "file": "shoot_left.csv.gz",
+      "saved_at": "2026-10-13T20:59:23-03:00",
+      "rows": 333,
+      "csv_sha256": "12e4afe345f7bbef21a6a7a28c2f5e0dc3f7bf339879edce7a6b83382f31c475",
+      "last_committed_script_before_saved_at": "8f4f29c25b975772e9926ee2005334edf342bff3",
+      "source_file": "sm_shoot_left.csv",
+      "observed_radii": [
+        {
+          "pose": "01",
+          "x": 5,
+          "y": 21,
+          "samples": 34
+        },
+        {
+          "pose": "02",
+          "x": 5,
+          "y": 21,
+          "samples": 112
+        },
+        {
+          "pose": "09",
+          "x": 5,
+          "y": 21,
+          "samples": 140
+        },
+        {
+          "pose": "25",
+          "x": 5,
+          "y": 21,
+          "samples": 6
+        },
+        {
+          "pose": "26",
+          "x": 5,
+          "y": 21,
+          "samples": 5
+        },
+        {
+          "pose": "26",
+          "x": 5,
+          "y": 24,
+          "samples": 1
+        },
+        {
+          "pose": "29",
+          "x": 5,
+          "y": 19,
+          "samples": 33
+        },
+        {
+          "pose": "29",
+          "x": 5,
+          "y": 21,
+          "samples": 1
+        },
+        {
+          "pose": "A4",
+          "x": 5,
+          "y": 19,
+          "samples": 1
+        }
+      ]
+    },
+    "shoot_mash": {
+      "file": "shoot_mash.csv.gz",
+      "saved_at": "2026-10-13T20:58:53-03:00",
+      "rows": 275,
+      "csv_sha256": "7720e3c99ec10bdef2c1759a57712ec889ce20d4c4a36e53356c54d0c4aa1468",
+      "last_committed_script_before_saved_at": "8f4f29c25b975772e9926ee2005334edf342bff3",
+      "source_file": "sm_reference.csv",
+      "observed_radii": [
+        {
+          "pose": "01",
+          "x": 5,
+          "y": 21,
+          "samples": 94
+        },
+        {
+          "pose": "09",
+          "x": 5,
+          "y": 21,
+          "samples": 140
+        },
+        {
+          "pose": "26",
+          "x": 5,
+          "y": 21,
+          "samples": 5
+        },
+        {
+          "pose": "26",
+          "x": 5,
+          "y": 24,
+          "samples": 1
+        },
+        {
+          "pose": "29",
+          "x": 5,
+          "y": 19,
+          "samples": 33
+        },
+        {
+          "pose": "29",
+          "x": 5,
+          "y": 21,
+          "samples": 1
+        },
+        {
+          "pose": "A4",
+          "x": 5,
+          "y": 19,
+          "samples": 1
+        }
+      ]
+    },
+    "shoot_single": {
+      "file": "shoot_single.csv.gz",
+      "saved_at": "2026-10-13T20:58:53-03:00",
+      "rows": 276,
+      "csv_sha256": "432d75d86ce1a9e541e0efeafe787944a0784d0fcdcd5a41e6101c6d00a5841a",
+      "last_committed_script_before_saved_at": "8f4f29c25b975772e9926ee2005334edf342bff3",
+      "source_file": "sm_reference.csv",
+      "observed_radii": [
+        {
+          "pose": "01",
+          "x": 5,
+          "y": 21,
+          "samples": 95
+        },
+        {
+          "pose": "09",
+          "x": 5,
+          "y": 21,
+          "samples": 140
+        },
+        {
+          "pose": "26",
+          "x": 5,
+          "y": 21,
+          "samples": 5
+        },
+        {
+          "pose": "26",
+          "x": 5,
+          "y": 24,
+          "samples": 1
+        },
+        {
+          "pose": "29",
+          "x": 5,
+          "y": 19,
+          "samples": 33
+        },
+        {
+          "pose": "29",
+          "x": 5,
+          "y": 21,
+          "samples": 1
+        },
+        {
+          "pose": "A4",
+          "x": 5,
+          "y": 19,
+          "samples": 1
+        }
+      ]
+    },
+    "slide_jump": {
+      "file": "slide_jump.csv.gz",
+      "saved_at": "2026-10-14T20:40:27-03:00",
+      "rows": 307,
+      "csv_sha256": "5a1f82e16532106757c5e71170e5dd3c7cb89ad90565c3b37d7b7087f8ce96d6",
+      "last_committed_script_before_saved_at": "8a3167698fd8489ee2803ea0809d9ee95c34ea8c",
+      "source_file": "sm_slide_jump.csv",
+      "observed_radii": [
+        {
+          "pose": "01",
+          "x": 5,
+          "y": 21,
+          "samples": 34
+        },
+        {
+          "pose": "09",
+          "x": 5,
+          "y": 21,
+          "samples": 172
+        },
+        {
+          "pose": "19",
+          "x": 5,
+          "y": 12,
+          "samples": 59
+        },
+        {
+          "pose": "19",
+          "x": 5,
+          "y": 21,
+          "samples": 1
+        },
+        {
+          "pose": "26",
+          "x": 5,
+          "y": 21,
+          "samples": 5
+        },
+        {
+          "pose": "26",
+          "x": 5,
+          "y": 24,
+          "samples": 1
+        },
+        {
+          "pose": "29",
+          "x": 5,
+          "y": 19,
+          "samples": 33
+        },
+        {
+          "pose": "29",
+          "x": 5,
+          "y": 21,
+          "samples": 1
+        },
+        {
+          "pose": "A4",
+          "x": 5,
+          "y": 19,
+          "samples": 1
+        }
+      ]
+    },
+    "spin_release": {
+      "file": "spin_release.csv.gz",
+      "saved_at": "2026-10-13T20:58:53-03:00",
+      "rows": 305,
+      "csv_sha256": "68411be0ece081cb10ed0869476da29074d610fc88a9ef3320b8e87666f48cd8",
+      "last_committed_script_before_saved_at": "8f4f29c25b975772e9926ee2005334edf342bff3",
+      "source_file": "sm_reference.csv",
+      "observed_radii": [
+        {
+          "pose": "01",
+          "x": 5,
+          "y": 21,
+          "samples": 34
+        },
+        {
+          "pose": "09",
+          "x": 5,
+          "y": 21,
+          "samples": 160
+        },
+        {
+          "pose": "19",
+          "x": 5,
+          "y": 12,
+          "samples": 69
+        },
+        {
+          "pose": "19",
+          "x": 5,
+          "y": 21,
+          "samples": 1
+        },
+        {
+          "pose": "26",
+          "x": 5,
+          "y": 21,
+          "samples": 5
+        },
+        {
+          "pose": "26",
+          "x": 5,
+          "y": 24,
+          "samples": 1
+        },
+        {
+          "pose": "29",
+          "x": 5,
+          "y": 19,
+          "samples": 33
+        },
+        {
+          "pose": "29",
+          "x": 5,
+          "y": 21,
+          "samples": 1
+        },
+        {
+          "pose": "A4",
+          "x": 5,
+          "y": 19,
+          "samples": 1
+        }
+      ]
+    },
+    "spin_reverse": {
+      "file": "spin_reverse.csv.gz",
+      "saved_at": "2026-10-13T20:58:53-03:00",
+      "rows": 305,
+      "csv_sha256": "5628b6672aa5a3bcfb4b4eac86bb0a33d807df4381bb66c42446b6fc38e86f60",
+      "last_committed_script_before_saved_at": "8f4f29c25b975772e9926ee2005334edf342bff3",
+      "source_file": "sm_reference.csv",
+      "observed_radii": [
+        {
+          "pose": "01",
+          "x": 5,
+          "y": 21,
+          "samples": 34
+        },
+        {
+          "pose": "09",
+          "x": 5,
+          "y": 21,
+          "samples": 160
+        },
+        {
+          "pose": "19",
+          "x": 5,
+          "y": 12,
+          "samples": 9
+        },
+        {
+          "pose": "19",
+          "x": 5,
+          "y": 21,
+          "samples": 1
+        },
+        {
+          "pose": "1A",
+          "x": 5,
+          "y": 12,
+          "samples": 60
+        },
+        {
+          "pose": "26",
+          "x": 5,
+          "y": 21,
+          "samples": 5
+        },
+        {
+          "pose": "26",
+          "x": 5,
+          "y": 24,
+          "samples": 1
+        },
+        {
+          "pose": "29",
+          "x": 5,
+          "y": 19,
+          "samples": 33
+        },
+        {
+          "pose": "29",
+          "x": 5,
+          "y": 21,
+          "samples": 1
+        },
+        {
+          "pose": "A4",
+          "x": 5,
+          "y": 19,
+          "samples": 1
+        }
+      ]
+    },
+    "spin_right": {
+      "file": "spin_right.csv.gz",
+      "saved_at": "2026-10-13T20:58:53-03:00",
+      "rows": 315,
+      "csv_sha256": "59baabadbecf70c2d646d5623fed8b13fb2f7c78aa27e855edd95928f40511dc",
+      "last_committed_script_before_saved_at": "8f4f29c25b975772e9926ee2005334edf342bff3",
+      "source_file": "sm_reference.csv",
+      "observed_radii": [
+        {
+          "pose": "01",
+          "x": 5,
+          "y": 21,
+          "samples": 34
+        },
+        {
+          "pose": "09",
+          "x": 5,
+          "y": 21,
+          "samples": 147
+        },
+        {
+          "pose": "26",
+          "x": 5,
+          "y": 21,
+          "samples": 5
+        },
+        {
+          "pose": "26",
+          "x": 5,
+          "y": 24,
+          "samples": 1
+        },
+        {
+          "pose": "29",
+          "x": 5,
+          "y": 19,
+          "samples": 33
+        },
+        {
+          "pose": "29",
+          "x": 5,
+          "y": 21,
+          "samples": 1
+        },
+        {
+          "pose": "4B",
+          "x": 5,
+          "y": 21,
+          "samples": 1
+        },
+        {
+          "pose": "4D",
+          "x": 5,
+          "y": 19,
+          "samples": 1
+        },
+        {
+          "pose": "51",
+          "x": 5,
+          "y": 19,
+          "samples": 90
+        },
+        {
+          "pose": "A4",
+          "x": 5,
+          "y": 19,
+          "samples": 2
+        }
+      ]
+    },
+    "turn": {
+      "file": "turn.csv.gz",
+      "saved_at": "2026-10-18T15:45:53-03:00",
+      "rows": 245,
+      "csv_sha256": "bc580037a7ae7e253de8b01f322a1282cdf1d62408ac0bd06a05d21565d3ee80",
+      "last_committed_script_before_saved_at": "982cadc5a9af7bbf81c6908f6199aa5c8b624cc4",
+      "source_file": "sm_turn_animation.csv",
+      "observed_radii": [
+        {
+          "pose": "01",
+          "x": 5,
+          "y": 21,
+          "samples": 34
+        },
+        {
+          "pose": "02",
+          "x": 5,
+          "y": 21,
+          "samples": 1
+        },
+        {
+          "pose": "09",
+          "x": 5,
+          "y": 21,
+          "samples": 140
+        },
+        {
+          "pose": "0A",
+          "x": 5,
+          "y": 21,
+          "samples": 23
+        },
+        {
+          "pose": "25",
+          "x": 5,
+          "y": 21,
+          "samples": 6
+        },
+        {
+          "pose": "26",
+          "x": 5,
+          "y": 21,
+          "samples": 5
+        },
+        {
+          "pose": "26",
+          "x": 5,
+          "y": 24,
+          "samples": 1
+        },
+        {
+          "pose": "29",
+          "x": 5,
+          "y": 19,
+          "samples": 33
+        },
+        {
+          "pose": "29",
+          "x": 5,
+          "y": 21,
+          "samples": 1
+        },
+        {
+          "pose": "A4",
+          "x": 5,
+          "y": 19,
+          "samples": 1
+        }
+      ]
+    },
+    "turn_jump": {
+      "file": "turn_jump.csv.gz",
+      "saved_at": "2026-10-14T20:40:31-03:00",
+      "rows": 308,
+      "csv_sha256": "eef121d1dc4845b0320f7977edddc8594f45c506024b05b0bd6cde80c173fc1c",
+      "last_committed_script_before_saved_at": "8a3167698fd8489ee2803ea0809d9ee95c34ea8c",
+      "source_file": "sm_turn_jump.csv",
+      "observed_radii": [
+        {
+          "pose": "01",
+          "x": 5,
+          "y": 21,
+          "samples": 34
+        },
+        {
+          "pose": "09",
+          "x": 5,
+          "y": 21,
+          "samples": 170
+        },
+        {
+          "pose": "1A",
+          "x": 5,
+          "y": 12,
+          "samples": 59
+        },
+        {
+          "pose": "1A",
+          "x": 5,
+          "y": 21,
+          "samples": 1
+        },
+        {
+          "pose": "25",
+          "x": 5,
+          "y": 21,
+          "samples": 3
+        },
+        {
+          "pose": "26",
+          "x": 5,
+          "y": 21,
+          "samples": 5
+        },
+        {
+          "pose": "26",
+          "x": 5,
+          "y": 24,
+          "samples": 1
+        },
+        {
+          "pose": "29",
+          "x": 5,
+          "y": 19,
+          "samples": 33
+        },
+        {
+          "pose": "29",
+          "x": 5,
+          "y": 21,
+          "samples": 1
+        },
+        {
+          "pose": "A4",
+          "x": 5,
+          "y": 19,
+          "samples": 1
+        }
+      ]
+    },
+    "turn_moving": {
+      "file": "turn_moving.csv.gz",
+      "saved_at": "2026-10-18T15:45:55-03:00",
+      "rows": 285,
+      "csv_sha256": "27e5588c89c22b84cbeff66ca767b403c25f29fa01231f01df38cff8cf668527",
+      "last_committed_script_before_saved_at": "982cadc5a9af7bbf81c6908f6199aa5c8b624cc4",
+      "source_file": "sm_turn_moving_animation.csv",
+      "observed_radii": [
+        {
+          "pose": "01",
+          "x": 5,
+          "y": 21,
+          "samples": 34
+        },
+        {
+          "pose": "02",
+          "x": 5,
+          "y": 21,
+          "samples": 1
+        },
+        {
+          "pose": "09",
+          "x": 5,
+          "y": 21,
+          "samples": 170
+        },
+        {
+          "pose": "0A",
+          "x": 5,
+          "y": 21,
+          "samples": 33
+        },
+        {
+          "pose": "25",
+          "x": 5,
+          "y": 21,
+          "samples": 6
+        },
+        {
+          "pose": "26",
+          "x": 5,
+          "y": 21,
+          "samples": 5
+        },
+        {
+          "pose": "26",
+          "x": 5,
+          "y": 24,
+          "samples": 1
+        },
+        {
+          "pose": "29",
+          "x": 5,
+          "y": 19,
+          "samples": 33
+        },
+        {
+          "pose": "29",
+          "x": 5,
+          "y": 21,
+          "samples": 1
+        },
+        {
+          "pose": "A4",
+          "x": 5,
+          "y": 19,
+          "samples": 1
+        }
+      ]
+    },
+    "walk_right": {
+      "file": "walk_right.csv.gz",
+      "saved_at": "2026-10-13T20:58:53-03:00",
+      "rows": 900,
+      "csv_sha256": "a1a59c047699d975cf258d23d85aac765db0b8ab85da247c19a4014cfbcc8fa2",
+      "last_committed_script_before_saved_at": "8f4f29c25b975772e9926ee2005334edf342bff3",
+      "source_file": "sm_reference.csv",
+      "observed_radii": [
+        {
+          "pose": "01",
+          "x": 5,
+          "y": 21,
+          "samples": 1
+        },
+        {
+          "pose": "09",
+          "x": 5,
+          "y": 21,
+          "samples": 197
+        },
+        {
+          "pose": "26",
+          "x": 5,
+          "y": 21,
+          "samples": 5
+        },
+        {
+          "pose": "26",
+          "x": 5,
+          "y": 24,
+          "samples": 1
+        },
+        {
+          "pose": "29",
+          "x": 5,
+          "y": 19,
+          "samples": 33
+        },
+        {
+          "pose": "29",
+          "x": 5,
+          "y": 21,
+          "samples": 1
+        },
+        {
+          "pose": "89",
+          "x": 5,
+          "y": 21,
+          "samples": 661
+        },
+        {
+          "pose": "A4",
+          "x": 5,
+          "y": 19,
+          "samples": 1
+        }
+      ]
+    },
+    "walk_spin": {
+      "file": "walk_spin.csv.gz",
+      "saved_at": "2026-10-18T15:57:16-03:00",
+      "rows": 335,
+      "csv_sha256": "9b98adf8b3692f522170de88fed947c6efb97cd3f20c91d4019af1fc0556db0f",
+      "last_committed_script_before_saved_at": "982cadc5a9af7bbf81c6908f6199aa5c8b624cc4",
+      "source_file": "ref_walk_spin.csv",
+      "observed_radii": [
+        {
+          "pose": "01",
+          "x": 5,
+          "y": 21,
+          "samples": 34
+        },
+        {
+          "pose": "09",
+          "x": 5,
+          "y": 21,
+          "samples": 176
+        },
+        {
+          "pose": "19",
+          "x": 5,
+          "y": 12,
+          "samples": 70
+        },
+        {
+          "pose": "19",
+          "x": 5,
+          "y": 21,
+          "samples": 1
+        },
+        {
+          "pose": "26",
+          "x": 5,
+          "y": 21,
+          "samples": 5
+        },
+        {
+          "pose": "26",
+          "x": 5,
+          "y": 24,
+          "samples": 1
+        },
+        {
+          "pose": "29",
+          "x": 5,
+          "y": 19,
+          "samples": 33
+        },
+        {
+          "pose": "29",
+          "x": 5,
+          "y": 21,
+          "samples": 1
+        },
+        {
+          "pose": "89",
+          "x": 5,
+          "y": 21,
+          "samples": 12
+        },
+        {
+          "pose": "A4",
+          "x": 5,
+          "y": 19,
+          "samples": 1
+        },
+        {
+          "pose": "A6",
+          "x": 5,
+          "y": 12,
+          "samples": 1
+        }
+      ]
+    },
+    "walk_stop": {
+      "file": "walk_stop.csv.gz",
+      "saved_at": "2026-10-13T20:58:53-03:00",
+      "rows": 285,
+      "csv_sha256": "21c465e7505a5e7444395f3adfad086fb5bb94d8df766938754c3a2dda6df860",
+      "last_committed_script_before_saved_at": "8f4f29c25b975772e9926ee2005334edf342bff3",
+      "source_file": "sm_reference.csv",
+      "observed_radii": [
+        {
+          "pose": "01",
+          "x": 5,
+          "y": 21,
+          "samples": 67
+        },
+        {
+          "pose": "09",
+          "x": 5,
+          "y": 21,
+          "samples": 177
+        },
+        {
+          "pose": "26",
+          "x": 5,
+          "y": 21,
+          "samples": 5
+        },
+        {
+          "pose": "26",
+          "x": 5,
+          "y": 24,
+          "samples": 1
+        },
+        {
+          "pose": "29",
+          "x": 5,
+          "y": 19,
+          "samples": 33
+        },
+        {
+          "pose": "29",
+          "x": 5,
+          "y": 21,
+          "samples": 1
+        },
+        {
+          "pose": "A4",
+          "x": 5,
+          "y": 19,
+          "samples": 1
+        }
+      ]
+    },
+    "wall_jump": {
+      "file": "wall_jump.csv.gz",
+      "saved_at": "2026-10-13T20:58:53-03:00",
+      "rows": 421,
+      "csv_sha256": "d6f82cd8b007b7ed5a2a7118b779ba7351aa7d0d25d2cf849613dc1f8bde5f85",
+      "last_committed_script_before_saved_at": "8f4f29c25b975772e9926ee2005334edf342bff3",
+      "source_file": "sm_reference.csv",
+      "observed_radii": [
+        {
+          "pose": "01",
+          "x": 5,
+          "y": 21,
+          "samples": 1
+        },
+        {
+          "pose": "02",
+          "x": 5,
+          "y": 21,
+          "samples": 2
+        },
+        {
+          "pose": "09",
+          "x": 5,
+          "y": 21,
+          "samples": 61
+        },
+        {
+          "pose": "0A",
+          "x": 5,
+          "y": 21,
+          "samples": 245
+        },
+        {
+          "pose": "19",
+          "x": 5,
+          "y": 12,
+          "samples": 2
+        },
+        {
+          "pose": "1A",
+          "x": 5,
+          "y": 12,
+          "samples": 13
+        },
+        {
+          "pose": "1A",
+          "x": 5,
+          "y": 21,
+          "samples": 1
+        },
+        {
+          "pose": "25",
+          "x": 5,
+          "y": 21,
+          "samples": 11
+        },
+        {
+          "pose": "25",
+          "x": 5,
+          "y": 24,
+          "samples": 1
+        },
+        {
+          "pose": "26",
+          "x": 5,
+          "y": 21,
+          "samples": 6
+        },
+        {
+          "pose": "2A",
+          "x": 5,
+          "y": 19,
+          "samples": 28
+        },
+        {
+          "pose": "2A",
+          "x": 5,
+          "y": 21,
+          "samples": 1
+        },
+        {
+          "pose": "83",
+          "x": 5,
+          "y": 12,
+          "samples": 1
+        },
+        {
+          "pose": "83",
+          "x": 5,
+          "y": 19,
+          "samples": 25
+        },
+        {
+          "pose": "8A",
+          "x": 5,
+          "y": 21,
+          "samples": 21
+        },
+        {
+          "pose": "A5",
+          "x": 5,
+          "y": 19,
+          "samples": 1
+        },
+        {
+          "pose": "A6",
+          "x": 5,
+          "y": 19,
+          "samples": 1
+        }
+      ]
+    },
+    "wall_push_jump": {
+      "file": "wall_push_jump.csv.gz",
+      "saved_at": "2026-10-14T20:40:29-03:00",
+      "rows": 380,
+      "csv_sha256": "4ae01fe29b494805ba6f010cc9a683121c5eef18a3ae2c73c80e6b8fd742f939",
+      "last_committed_script_before_saved_at": "8a3167698fd8489ee2803ea0809d9ee95c34ea8c",
+      "source_file": "sm_wall_push_jump.csv",
+      "observed_radii": [
+        {
+          "pose": "02",
+          "x": 5,
+          "y": 21,
+          "samples": 1
+        },
+        {
+          "pose": "0A",
+          "x": 5,
+          "y": 21,
+          "samples": 242
+        },
+        {
+          "pose": "25",
+          "x": 5,
+          "y": 21,
+          "samples": 5
+        },
+        {
+          "pose": "25",
+          "x": 5,
+          "y": 24,
+          "samples": 1
+        },
+        {
+          "pose": "2A",
+          "x": 5,
+          "y": 19,
+          "samples": 28
+        },
+        {
+          "pose": "2A",
+          "x": 5,
+          "y": 21,
+          "samples": 1
+        },
+        {
+          "pose": "4C",
+          "x": 5,
+          "y": 21,
+          "samples": 1
+        },
+        {
+          "pose": "4E",
+          "x": 5,
+          "y": 19,
+          "samples": 1
+        },
+        {
+          "pose": "52",
+          "x": 5,
+          "y": 19,
+          "samples": 30
+        },
+        {
+          "pose": "8A",
+          "x": 5,
+          "y": 21,
+          "samples": 68
+        },
+        {
+          "pose": "A5",
+          "x": 5,
+          "y": 19,
+          "samples": 2
+        }
+      ]
+    }
+  },
+  "reference": {
+    "rom_sha256": "12b77c4bc9c1832cee8881244659065ee1d84c70c3d29e6eaf92e6798cc2ca72",
+    "state_sha256": "19fc0e06e192cf66662e18b9853de096065b950092ee02fed3b005329bd1366c",
+    "hashes_checked_at_import": "2026-10-18T16:18:21-03:00"
+  }
+}

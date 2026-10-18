@@ -1,0 +1,116 @@
+"""Preserve Mesen RAM traces for reuse without starting the emulator.
+
+Import: python scripts/sm_reference_cache.py import 'tests/out/*.csv'
+Check:  python scripts/sm_reference_cache.py check
+"""
+import argparse
+import csv
+from collections import Counter, defaultdict
+from datetime import datetime
+import glob
+import gzip
+import hashlib
+import io
+import json
+from pathlib import Path
+import subprocess
+import zipfile
+
+ROOT = Path(__file__).resolve().parents[1]
+DEST = ROOT / 'tests/reference/super_metroid'
+
+
+def digest(data):
+    return hashlib.sha256(data).hexdigest()
+
+
+def import_traces(patterns, rom, state):
+    if bool(rom) != bool(state):
+        raise SystemExit('Supply both --rom and --state, or neither.')
+    chosen = {}
+    for pattern in patterns:
+        for name in glob.glob(pattern):
+            path = Path(name)
+            with path.open(newline='') as stream:
+                reader = csv.DictReader(stream)
+                if not {'scenario', 'pose', 'xradius', 'yradius'} <= set(reader.fieldnames or []):
+                    continue
+                groups = defaultdict(list)
+                for row in reader:
+                    groups[row['scenario']].append(row)
+                for scenario, rows in groups.items():
+                    if scenario not in chosen or path.stat().st_mtime > chosen[scenario][0].stat().st_mtime:
+                        chosen[scenario] = (path, reader.fieldnames, rows)
+    if not chosen:
+        raise SystemExit('No Mesen traces found.')
+    DEST.mkdir(parents=True, exist_ok=True)
+    manifest_path = DEST / 'manifest.json'
+    manifest = json.loads(manifest_path.read_text(encoding='utf-8')) if manifest_path.exists() else {
+        'schema': 1, 'emulator': 'Mesen 2.1.1', 'system': 'SNES NTSC',
+        'method': 'WRAM sampled at endFrame; one integer/subpixel record per video frame',
+        'limits': [
+            'Observed scenarios only; not a complete extraction of the game logic.',
+            'RAM values are exact integers; timestamps identify saved trace files, not a hardware clock.',
+            'Pose and radii can disagree for a transition frame; preserve all samples, not just a modal size.',
+            'Old captures may omit animation columns. Inputs and RAM field meanings are in sm_reference.lua.',
+            'The recorded Git revision is the last committed script before the file timestamp; uncommitted capture edits may differ.',
+        ], 'scenarios': {}
+    }
+    if rom and state:
+        rom_path, state_path = Path(rom), Path(state)
+        if rom_path.suffix.lower() == '.zip':
+            with zipfile.ZipFile(rom_path) as archive:
+                entry = next(n for n in archive.namelist() if n.lower().endswith(('.sfc', '.smc')))
+                rom_data = archive.read(entry)
+        else:
+            rom_data = rom_path.read_bytes()
+        manifest['reference'] = {'rom_sha256': digest(rom_data), 'state_sha256': digest(state_path.read_bytes()),
+            'hashes_checked_at_import': datetime.now().astimezone().isoformat(timespec='seconds')}
+    for scenario, (path, columns, rows) in sorted(chosen.items()):
+        if not scenario.replace('_', '').isalnum():
+            raise SystemExit('Unsafe scenario name: ' + scenario)
+        captured = datetime.fromtimestamp(path.stat().st_mtime).astimezone().isoformat(timespec='seconds')
+        revision = subprocess.check_output(['git', 'log', '-1', '--format=%H', '--before=' + captured,
+            '--', 'scripts/sm_reference.lua'], cwd=ROOT, text=True).strip()
+        stream = io.StringIO(newline='')
+        writer = csv.DictWriter(stream, columns, lineterminator='\n')
+        writer.writeheader(); writer.writerows(rows)
+        data = stream.getvalue().encode()
+        (DEST / (scenario + '.csv.gz')).write_bytes(gzip.compress(data, mtime=0))
+        sizes = Counter((int(r['pose']), int(r['xradius']), int(r['yradius'])) for r in rows)
+        manifest['scenarios'][scenario] = {
+            'file': scenario + '.csv.gz', 'saved_at': captured, 'rows': len(rows),
+            'csv_sha256': digest(data), 'last_committed_script_before_saved_at': revision,
+            'source_file': path.name,
+            'observed_radii': [{'pose': f'{pose:02X}', 'x': x, 'y': y, 'samples': count}
+                              for (pose, x, y), count in sorted(sizes.items())]
+        }
+    manifest_path.write_text(json.dumps(manifest, indent=2, ensure_ascii=False) + '\n', encoding='utf-8')
+    print(f'Archived {len(chosen)} scenarios (existing scenarios retained).')
+
+
+def check():
+    manifest = json.loads((DEST / 'manifest.json').read_text(encoding='utf-8'))
+    total = 0
+    for name, item in manifest['scenarios'].items():
+        data = gzip.decompress((DEST / item['file']).read_bytes())
+        assert digest(data) == item['csv_sha256'], name + ': checksum mismatch'
+        rows = list(csv.DictReader(io.StringIO(data.decode())))
+        assert len(rows) == item['rows'] and all(r['scenario'] == name for r in rows), name
+        assert [int(r['frame']) for r in rows] == list(range(1, len(rows) + 1)), name + ': missing frames'
+        sizes = Counter((int(r['pose']), int(r['xradius']), int(r['yradius'])) for r in rows)
+        assert sizes == Counter({(int(s['pose'], 16), s['x'], s['y']): s['samples'] for s in item['observed_radii']}), name
+        total += len(rows)
+    print(f'PASS saved reference: {len(manifest["scenarios"])} scenarios, {total} RAM samples; no emulator needed')
+
+
+if __name__ == '__main__':
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument('action', choices=['import', 'check'])
+    parser.add_argument('patterns', nargs='*')
+    parser.add_argument('--rom')
+    parser.add_argument('--state')
+    args = parser.parse_args()
+    if args.action == 'import':
+        import_traces(args.patterns, args.rom, args.state)
+    check()

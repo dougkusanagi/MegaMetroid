@@ -10,6 +10,26 @@ O registro detalhado começa em 18/10/2026. A entrada anterior abaixo foi
 reconstituída do commit indicado; o histórico anterior completo permanece no Git
 (`git log`) e as entregas por etapa estão em [docs/PLANO.md](docs/PLANO.md).
 
+## 2026-10-18 16:17:35 −03:00 — Referência do original reutilizável
+
+### Adicionado
+
+- Arquivo de 71 cenários medidos no Mesen, com 20.442 amostras de RAM e entradas
+  por quadro, em CSV comprimido sem perdas. Manifesto com origem, datas,
+  checksums e variações de hitbox observadas; sem ROM ou save state no repositório.
+- Importador/validador das capturas, integrado aos testes do host.
+
+### Melhorado
+
+- `AGENTS.md` orienta reutilizar os dados salvos e iniciar o Mesen somente
+  quando faltar cobertura, surgir dúvida/contradição ou mudar a referência.
+- Documentados os limites: cenários finitos não descrevem toda a lógica do jogo;
+  raios transitórios e capturas antigas incompletas não são descartados.
+
+**Validação:** checksums e sequência das 20.442 amostras, regressões do núcleo,
+build SGDK e teste da ROM pela API GDB do BlastEm. Nenhuma nova execução do
+Mesen foi necessária para arquivar as medições existentes.
+
 ## 2026-10-18 16:03:11 −03:00 — Fidelidade de agachar, bola e pousos (2.8.3)
 
 ### Corrigido

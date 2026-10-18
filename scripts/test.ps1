@@ -3,6 +3,8 @@ $ErrorActionPreference = 'Stop'
 Push-Location (Split-Path $PSScriptRoot -Parent)
 try {
     New-Item -ItemType Directory -Force tests/out | Out-Null
+    python scripts/sm_reference_cache.py check
+    if ($LASTEXITCODE -ne 0) { throw 'Saved reference validation failed.' }
     python tests/check_assets.py
     if ($LASTEXITCODE -ne 0) { throw 'Asset validation failed.' }
     if (!$Compiler) {

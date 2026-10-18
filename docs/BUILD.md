@@ -67,6 +67,12 @@ O log também imprime `MM_SMOKE_FAILURE`, uma máscara dos grupos que falharam
 
 ## Medidas do Super Metroid original (Mesen 2)
 
+**Antes de executar o emulador**, consulte `tests/reference/super_metroid/`:
+as capturas existentes estão versionadas em CSV comprimido sem perdas, com
+manifesto e checksums. `python scripts/sm_reference_cache.py check` valida os
+dados sem iniciar o Mesen. Use o original apenas para lacunas, contradições ou
+mudanças na referência; consulte o README dessa pasta para importar medições.
+
 `scripts/sm_reference.ps1` roda o Super Metroid no Mesen 2 sem janela (`--testrunner`), com
 `scripts/sm_reference.lua`. Cada cenário carrega o save state, aperta uma sequência fixa de botões e
 grava posição, velocidade, pose e hitbox da Samus a cada quadro em `tests/out/sm_reference.csv`.
