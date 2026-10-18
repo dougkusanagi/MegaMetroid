@@ -6,7 +6,88 @@ import argparse
 from pathlib import Path
 import socket
 import subprocess
+import threading
 import time
+
+
+def secondary_monitor():
+    """Read Windows monitor work areas; never change the user's display settings."""
+    import ctypes as ct
+    from ctypes import wintypes as wt
+
+    class MonitorInfo(ct.Structure):
+        _fields_ = [('size', wt.DWORD), ('monitor', wt.RECT), ('work', wt.RECT),
+                    ('flags', wt.DWORD), ('device', wt.WCHAR * 32)]
+
+    user32 = ct.windll.user32
+    if hasattr(user32, 'SetProcessDpiAwarenessContext'):
+        user32.SetProcessDpiAwarenessContext(ct.c_void_p(-4))
+    user32.GetMonitorInfoW.argtypes = [wt.HANDLE, ct.POINTER(MonitorInfo)]
+    monitors = []
+    callback_type = ct.WINFUNCTYPE(wt.BOOL, wt.HANDLE, wt.HDC, ct.POINTER(wt.RECT), wt.LPARAM)
+
+    @callback_type
+    def collect(handle, dc, rect, data):
+        info = MonitorInfo()
+        info.size = ct.sizeof(info)
+        if user32.GetMonitorInfoW(handle, ct.byref(info)) and not info.flags & 1:
+            r = info.work
+            monitors.append((info.device, (r.left, r.top, r.right, r.bottom)))
+        return True
+
+    user32.EnumDisplayMonitors(None, None, collect, 0)
+    return monitors[0] if monitors else None
+
+
+def show_test_window(process, monitor):
+    """Place only our SDL window, then show it without activating or raising it."""
+    import ctypes as ct
+    from ctypes import wintypes as wt
+    user32 = ct.windll.user32
+    callback_type = ct.WINFUNCTYPE(wt.BOOL, wt.HWND, wt.LPARAM)
+    user32.GetWindow.restype = wt.HWND
+    user32.GetWindow.argtypes = [wt.HWND, wt.UINT]
+    user32.GetWindowThreadProcessId.argtypes = [wt.HWND, ct.POINTER(wt.DWORD)]
+    user32.GetWindowRect.argtypes = [wt.HWND, ct.POINTER(wt.RECT)]
+    user32.GetClassNameW.argtypes = [wt.HWND, wt.LPWSTR, ct.c_int]
+    user32.SetWindowPos.argtypes = [wt.HWND, wt.HWND, ct.c_int, ct.c_int, ct.c_int, ct.c_int, wt.UINT]
+    user32.ShowWindow.argtypes = [wt.HWND, ct.c_int]
+    # SDL creates its window after GDB resumes the CPU, so discovery runs beside GDB.
+    deadline = time.monotonic() + 20
+    found = []
+
+    @callback_type
+    def collect(hwnd, data):
+        pid = wt.DWORD()
+        user32.GetWindowThreadProcessId(hwnd, ct.byref(pid))
+        if pid.value != process.pid or user32.GetWindow(hwnd, 4): return True
+        name = ct.create_unicode_buffer(128)
+        user32.GetClassNameW(hwnd, name, len(name))
+        if name.value.startswith('SDL'):
+            found.append(hwnd)
+            return False
+        return True
+
+    while process.poll() is None and time.monotonic() < deadline:
+        user32.EnumWindows(collect, 0)
+        if found:
+            hwnd = found[0]
+            rect = wt.RECT()
+            user32.GetWindowRect(hwnd, ct.byref(rect))
+            left, top, right, bottom = monitor[1]
+            width, height = rect.right - rect.left, rect.bottom - rect.top
+            scale = min(1, (right-left)/max(1,width), (bottom-top)/max(1,height))
+            width, height = int(width*scale), int(height*scale)
+            # SWP_NOZORDER | SWP_NOACTIVATE, followed by SW_SHOWNOACTIVATE.
+            if user32.SetWindowPos(hwnd, None, left+(right-left-width)//2,
+                    top+(bottom-top-height)//2, width, height, 0x14):
+                user32.ShowWindow(hwnd, 4)
+                print(f'BlastEm visible on {monitor[0]} (secondary), without activation.', flush=True)
+            else:
+                print('Could not position the test window; keeping it hidden.', flush=True)
+            return
+        time.sleep(0.1)
+    print('No test window found; GDB validation continues without a visible window.', flush=True)
 
 
 def main():
@@ -14,6 +95,7 @@ def main():
     parser.add_argument('--blastem', default='D:/emuladores/blastem/blastem-win64-1.0.0/blastem.exe')
     parser.add_argument('--timeout', type=float, default=45)
     parser.add_argument('--gdb', default='D:/apps/sgdk/bin/gdb.exe')
+    parser.add_argument('--hidden', action='store_true', help='Keep the emulator hidden even with a secondary monitor')
     args = parser.parse_args()
     root = Path(__file__).resolve().parents[1]
     symbols = {}
@@ -28,6 +110,9 @@ def main():
         if probe.connect_ex(('127.0.0.1', 1234)) == 0:
             raise SystemExit('Port 1234 already in use; close that debug session before running this test.')
     flags = subprocess.CREATE_NO_WINDOW if hasattr(subprocess, 'CREATE_NO_WINDOW') else 0
+    monitor = secondary_monitor() if not args.hidden and hasattr(subprocess, 'STARTUPINFO') else None
+    if not args.hidden and not monitor:
+        print('No secondary monitor available; keeping BlastEm hidden.', flush=True)
     startup = None
     if hasattr(subprocess, 'STARTUPINFO'):
         startup = subprocess.STARTUPINFO()
@@ -36,6 +121,8 @@ def main():
     process = subprocess.Popen([args.blastem, '-D', str(root / 'tests/out/smoke.bin')],
         cwd=Path(args.blastem).parent, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL,
         creationflags=flags, startupinfo=startup)
+    if monitor:
+        threading.Thread(target=show_test_window, args=(process, monitor), daemon=True).start()
     try:
         # Wait for the listener without consuming its single accepted GDB connection.
         time.sleep(1)

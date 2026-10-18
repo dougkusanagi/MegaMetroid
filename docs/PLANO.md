@@ -48,6 +48,12 @@ Cada etapa é pequena, testável no emulador e termina em **commit + push** (ver
 | 0.2 ✅ | `.gitignore` e limpeza | Ignorar `out/`, `git rm -r --cached out`; remover `src/better-org` e `src/working-v-col` | Build gera `rom.bin`; `git status` limpo após build |
 | 0.3 ✅ | Corrigir bugs conhecidos | `stopSoundJump` (recursão), `control` movido para `.c` + `extern`, warnings | Build sem warnings; som de pulo toca e para |
 | 0.4 ✅ | Usar `level_def` de verdade | Colisão lida pelo `level_def` (`game_init` aponta `MmWorld` para `level->map_collision`); `src/map.c` ficou só com `level_get` | Colisão igual à atual em Crateria 1 |
+| 0.5 ✅ | Smoke visível no monitor secundário | Janela sem ativação; `--hidden` e fallback oculto | `SMOKE PASS` via GDB no `DISPLAY2` |
+
+**0.5 Smoke visível no monitor secundário** ✅ (2026-10-18). BlastEm é
+posicionado no monitor secundário sem ativação. `--hidden` força a execução
+oculta; sem monitor secundário o teste permanece oculto. Validado no
+`DISPLAY2` com `SMOKE PASS` via GDB.
 
 ### Fase 1 — Refatoração do núcleo
 

@@ -10,6 +10,21 @@ O registro detalhado começa em 18/10/2026. A entrada anterior abaixo foi
 reconstituída do commit indicado; o histórico anterior completo permanece no Git
 (`git log`) e as entregas por etapa estão em [docs/PLANO.md](docs/PLANO.md).
 
+## 2026-10-18 17:01:00 −03:00 (America/Sao_Paulo) — Smoke no monitor secundário (0.5)
+
+### Melhorado
+
+- O BlastEm do smoke test aparece no primeiro monitor secundário, centralizado
+  na área útil e sem ativação ou alteração da ordem das janelas. A validação
+  continua pela API GDB, sem injetar entrada de interface.
+- A janela inicia oculta e só aparece após o posicionamento. `--hidden`, ausência
+  de monitor secundário ou falha ao posicionar mantêm a sessão oculta. Apenas
+  o processo iniciado pelo teste é movimentado e encerrado.
+
+**Validação:** `SMOKE PASS` no BlastEm via GDB; janela do teste encontrada e
+posicionada no `DISPLAY2`, à esquerda do principal. Opções Win32
+`SWP_NOACTIVATE`, `SWP_NOZORDER` e `SW_SHOWNOACTIVATE` preservam o foco.
+
 ## 2026-10-18 16:37:00 −03:00 — Velocidade e aceleração do Power Beam (2.8.5)
 
 ### Corrigido

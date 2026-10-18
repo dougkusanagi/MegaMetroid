@@ -4,6 +4,10 @@ Powered by  <a href="https://github.com/Stephane-D/SGDK">SGDK</a>
 
 Build instructions: [`docs/BUILD.md`](docs/BUILD.md).
 
+Os smoke tests mostram o BlastEm no monitor secundário sem retirar o foco.
+Use `python scripts/smoke_test.py --hidden` para mantê-lo oculto; sem monitor secundário,
+a execução fica oculta automaticamente.
+
 Pipeline de extração e importação de sprites: [`docs/SPRITES.md`](docs/SPRITES.md).
 
 Histórico de correções, melhorias e adições: [`CHANGELOG.md`](CHANGELOG.md).
