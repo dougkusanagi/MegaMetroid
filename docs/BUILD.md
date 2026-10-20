@@ -64,7 +64,8 @@ ou se não for possível posicioná-la, permanece oculta. `python scripts/smoke_
 força o teste oculto. Apenas a janela pertencente ao processo do teste é movida.
 Não usa cliques, teclado ou captura da área de trabalho. Se a porta já estiver
 ocupada, recusa executar para não interferir em outra sessão. Ajuste os caminhos
-com `--blastem` e `--gdb`; `--timeout` limita a espera (padrão: 45 segundos).
+com `--blastem` e `--gdb`; `--timeout` limita a espera (padrão: 120 segundos; o
+smoke completo leva cerca de 50).
 O `out/symbol.txt` deve pertencer à mesma build `-SmokeTest`. Para uma ROM em
 outro diretório, passe os caminhos correspondentes com `--rom` e `--symbols`.
 O log também imprime `MM_SMOKE_FAILURE`, uma máscara dos grupos que falharam
@@ -151,7 +152,7 @@ com Pillow e numpy, sem abrir emulador:
 ```powershell
 python scripts/build_landing_site.py
 ./scripts/build.ps1 -Sgdk D:/apps/sgdk -Java D:/apps/jre/bin/java.exe -SmokeTest
-python scripts/smoke_test.py --capture-scenes --timeout 60
+python scripts/smoke_test.py --capture-scenes
 ```
 
 `--capture-scenes` salva o readback da VRAM/CRAM e reconstrói a nave, as quatro

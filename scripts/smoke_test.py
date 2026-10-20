@@ -93,7 +93,7 @@ def show_test_window(process, monitor):
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--blastem', default='D:/emuladores/blastem/blastem-win64-1.0.0/blastem.exe')
-    parser.add_argument('--timeout', type=float, default=45)
+    parser.add_argument('--timeout', type=float, default=120)
     parser.add_argument('--gdb', default='D:/apps/sgdk/bin/gdb.exe')
     parser.add_argument('--rom', default='tests/out/smoke.bin', help='ROM path relative to the project root')
     parser.add_argument('--symbols', default='out/symbol.txt', help='SGDK symbol table relative to the project root')

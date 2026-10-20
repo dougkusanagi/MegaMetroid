@@ -169,6 +169,10 @@ const u8 map_collision_crateria_2[160][160] = {
   {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
 };
 
+static const RoomDoorDef crateria_2_doors[] = {
+    {{0, 96}, ROOM_CRATERIA_1, {2240, 368}, ROOM_DOOR_BLUE, ROOM_DOOR_FACING_RIGHT}
+};
+
 const room_def room_crateria_2 = {
     .tileset_fg = &crateria_2_fg_tileset,
     .tileset_bg = &crateria_2_bg_tileset,
@@ -187,6 +191,6 @@ const room_def room_crateria_2 = {
     .camera_zone_count = 0,
     .enemy_spawns = NULL,
     .enemy_spawn_count = 0,
-    .doors = NULL,
-    .door_count = 0,
+    .doors = crateria_2_doors,
+    .door_count = sizeof(crateria_2_doors) / sizeof(crateria_2_doors[0]),
 };

@@ -20,6 +20,10 @@ typedef struct {
 } Game;
 
 bool game_init(Game *game, u16 room_index);
+/* Fades out, swaps the room's tiles, maps, palettes and collision, puts Samus at spawn (the
+   room's pixel coordinates, as for room_def.player_initial_pos) and fades in. Samus keeps her
+   facing. Returns FALSE, with the old room already released, only if the new maps do not fit. */
+bool game_change_room(Game *game, u16 room_index, Vect2D_s16 spawn);
 /* One video frame: read input, simulate (1 tick, or 2 every fifth PAL frame), draw. */
 void game_frame(Game *game);
 

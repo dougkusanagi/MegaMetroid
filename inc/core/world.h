@@ -108,4 +108,12 @@ const char *mm_state_name(MmState state);
 MmCamera mm_camera(int x, int y, int width, int height, MmRect bounds);
 MmRect mm_camera_bounds(int x, int y, MmRect fallback,
                         const MmCameraZone *zones, int count);
+
+/* Doors: the side a door faces is where the room is; the far edge is the wall it sits in. */
+#define MM_DOOR_DEPTH 32 /* Across the opening. */
+#define MM_DOOR_LENGTH 64 /* Along the wall. */
+#define MM_DOOR_EDGE 8 /* Depth of the strip at the far edge that Samus must reach to go through. */
+enum { MM_DOOR_FACING_LEFT, MM_DOOR_FACING_RIGHT, MM_DOOR_FACING_UP, MM_DOOR_FACING_DOWN };
+MmRect mm_door_rect(int x, int y, int facing);
+int mm_door_touched(MmRect body, int x, int y, int facing);
 #endif

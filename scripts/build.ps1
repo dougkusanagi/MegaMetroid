@@ -7,7 +7,7 @@ try {
     $extra = @()
     if ($SmokeTest) {
         $maps = (Get-ChildItem src -Filter 'map*.c' | Sort-Object Name | ForEach-Object { "src/$($_.Name)" }) -join ' '
-        $extra = @("SRC_C=src/game.c $maps src/core/world.c src/core/weapon.c src/core/input.c src/core/camera.c tests/rom_smoke.c")
+        $extra = @("SRC_C=src/game.c $maps src/core/world.c src/core/weapon.c src/core/input.c src/core/camera.c src/core/door.c tests/rom_smoke.c")
     }
     # Defines change objects without changing their sources; give each define a stable object directory.
     if ($Define) {

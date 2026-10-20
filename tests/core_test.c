@@ -249,6 +249,43 @@ static void slope_spin_takeoff(void) {
     }
     puts("PASS spin takeoff uphill: both slopes, 64 subpixel phases, walking and full dash");
 }
+/* A door is gone through by pushing into its far-edge strip, never by standing next to it. */
+static void doors(void) {
+    /* Left-facing door in the east wall of a 2304 px room: rect 2272..2304 x 352..416. */
+    MmRect r = mm_door_rect(2272, 352, MM_DOOR_FACING_LEFT);
+    MmRect vertical = mm_door_rect(100, 200, MM_DOOR_FACING_UP);
+    MmRect body = {2264, 372, 2274, 414};
+    assert(r.left == 2272 && r.top == 352 && r.right == 2304 && r.bottom == 416);
+    assert(vertical.right - vertical.left == MM_DOOR_LENGTH && vertical.bottom - vertical.top == MM_DOOR_DEPTH);
+    assert(!mm_door_touched(body, 2272, 352, MM_DOOR_FACING_LEFT)); /* In the doorway, not at the wall. */
+    body.left = 2286; body.right = 2296;
+    assert(!mm_door_touched(body, 2272, 352, MM_DOOR_FACING_LEFT)); /* Strip starts at 2296: touching is not enough. */
+    body.right = 2297;
+    assert(mm_door_touched(body, 2272, 352, MM_DOOR_FACING_LEFT));
+    body.left = 2294; body.right = 2304;
+    assert(mm_door_touched(body, 2272, 352, MM_DOOR_FACING_LEFT));
+    body.top = 416; body.bottom = 458; /* Standing below the door. */
+    assert(!mm_door_touched(body, 2272, 352, MM_DOOR_FACING_LEFT));
+    body.top = 300; body.bottom = 352; /* Above it: the edges are exclusive. */
+    assert(!mm_door_touched(body, 2272, 352, MM_DOOR_FACING_LEFT));
+    /* Right-facing door in the west wall: strip 0..8. */
+    body = (MmRect){0, 372, 10, 414};
+    assert(mm_door_touched(body, 0, 352, MM_DOOR_FACING_RIGHT));
+    body = (MmRect){8, 372, 18, 414};
+    assert(!mm_door_touched(body, 0, 352, MM_DOOR_FACING_RIGHT));
+    /* Up door (horizontal) in a floor: strip is its bottom 8 px; down door: its top 8 px. */
+    body = (MmRect){110, 224, 120, 236};
+    assert(mm_door_touched(body, 100, 200, MM_DOOR_FACING_UP));
+    body = (MmRect){110, 200, 120, 220};
+    assert(!mm_door_touched(body, 100, 200, MM_DOOR_FACING_UP));
+    assert(mm_door_touched(body, 100, 200, MM_DOOR_FACING_DOWN));
+    body = (MmRect){110, 200, 120, 208};
+    assert(mm_door_touched(body, 100, 200, MM_DOOR_FACING_DOWN));
+    body = (MmRect){164, 200, 170, 208}; /* Past the 64 px length. */
+    assert(!mm_door_touched(body, 100, 200, MM_DOOR_FACING_DOWN));
+    puts("PASS doors: only the far-edge strip triggers, for all four facings");
+}
+
 static void camera_and_input(void) {
     MmRect r = {0, 0, 2304, 1248}, small = {0,0,128,128};
     MmCameraZone zone = {{0,960,608,1248},{0,1024,768,1248}};
@@ -1288,6 +1325,6 @@ int main(void) {
     measured_beams();
     movement(); air_steering(); collisions(); jump_and_ledge(); states(); physics(); variable_jump(); ledge_jump();
     slopes(); slope_sweep(); tunnels(); wall_climb(); wall_jump_rules(); poses(); crouch_poses(); crouch_tap(); double_tap(); ball_poses(); aiming(); beam_from_muzzle(); morph_rules(); ball_stands_on_slope();
-    ball_stand_real(); camera_and_input(); real_levels();
+    ball_stand_real(); camera_and_input(); doors(); real_levels();
     puts("All core regression tests passed."); return 0;
 }

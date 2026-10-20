@@ -11,7 +11,7 @@
  "tilewidth": 8,
  "tileheight": 8,
  "nextlayerid": 6,
- "nextobjectid": 2,
+ "nextobjectid": 3,
  "properties": [
   {
    "name": "fg_image",
@@ -253,7 +253,46 @@
    "opacity": 1,
    "visible": true,
    "draworder": "topdown",
-   "objects": []
+   "objects": [
+    {
+     "id": 2,
+     "name": "",
+     "type": "door",
+     "x": 0,
+     "y": 96,
+     "width": 32,
+     "height": 64,
+     "rotation": 0,
+     "visible": true,
+     "properties": [
+      {
+       "name": "color",
+       "type": "string",
+       "value": "blue"
+      },
+      {
+       "name": "facing",
+       "type": "string",
+       "value": "right"
+      },
+      {
+       "name": "target_room",
+       "type": "string",
+       "value": "crateria_1"
+      },
+      {
+       "name": "target_x",
+       "type": "int",
+       "value": 2240
+      },
+      {
+       "name": "target_y",
+       "type": "int",
+       "value": 368
+      }
+     ]
+    }
+   ]
   },
   {
    "id": 5,

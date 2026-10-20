@@ -251,7 +251,7 @@ Para a 3.2: o tamanho de quadro é 64×64 (8×8 tiles); com a Samus em pé, os p
 | 6.0.1 ✅ | Revisão do scroll e relatos de física | Y contínuo no MAP; métricas de CPU/DMA/VInt e novas referências do original | Sem quadros perdidos nos dois saltos medidos; seis vistas validadas |
 | 6.1 ✅ | Formato de sala | `room_def`: tilemaps, colisão, spawn, inimigos, portas, zonas de câmera e tamanho | Crateria 1 e 2 inicializadas pelo carregador comum |
 | 6.2 ✅ | Ferramenta de exportação | Script (Tiled → `.c`/`.res`) para colisão, spawn, câmera, portas e inimigos | Regenerar sala sem editar array à mão |
-| 6.3 | Transição de sala | Portas, fade/scroll, trocar tiles e paletas | Crateria 1 → 2 e volta |
+| 6.3 ✅ | Transição de sala | Portas, fade, trocar tiles, mapas, paletas e colisão | Crateria 1 → 2 e volta |
 | 6.4 | Streaming do mapa | Verificar limites de ROM/RAM; compressão/tiles de colisão 16x16 | Sem estouro em salas grandes |
 | 6.5 | Mapa do mundo | Tabela de salas e conexões de Crateria | Percorrer a região inteira |
 | 6.6 | Portas e blocos | Portas azul/vermelha/verde, blocos destrutíveis | Abrir com o tiro correto |
@@ -304,6 +304,24 @@ convertidas dos arrays escritos à mão e a ROM resultante é idêntica byte a b
 anterior (mesmo SHA256). O exportador valida o mapa e recusa dados inconsistentes.
 Não foi aberto o editor Tiled: o formato segue a especificação JSON, mas a abertura
 no programa ainda não foi conferida. Aseprite não é usado. Detalhes em `docs/BUILD.md`.
+
+**6.3 Transição de sala** ✅ (2026-10-20). Encostar na faixa de 8 px da borda
+externa de uma porta conectada (`mm_door_touched`, núcleo testado no host) chama
+`game_change_room`: fade para preto (20 quadros), libera os mapas, recarrega
+tiles, mapas, colisão e paletas da sala de destino, posiciona a Samus em
+`target_spawn` mantendo o lado para o qual olha e faz o fade de volta. Música e
+mecanismo de sprites seguem sem reinício; o tiro em voo é descartado.
+A rota **Landing Site (porta leste) ↔ Crateria 2 (porta oeste) é provisória**:
+serve para exercitar a mecânica; a topologia real do original ainda não foi
+levantada (6.5). As demais portas continuam sem destino e não fazem nada.
+A Samus perde agachada/bola ao atravessar (reinicia em pé). Sem rolagem entre salas;
+a abertura da porta por tiro e sua animação ficam na 6.6.
+
+Validação: `doors` no núcleo; no BlastEm, a ROM atravessa a porta leste de verdade
+(Landing Site → Crateria 2 → Landing Site), confere em cada chegada a
+VRAM (tiles dos dois planos lidos pelo VDP), CRAM, colisão, posição, chão e lado;
+uma porta sem rota não transiciona. Depois da ida e volta, as seis vistas do
+Landing Site continuam idênticas pixel a pixel (`--capture-scenes`).
 
 ### Fase 7 — Itens, progressão e HUD
 

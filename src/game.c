@@ -2,6 +2,7 @@
 #include "resources.h"
 #include "player_anim.h"
 
+#define ROOM_FADE_FRAMES 20
 #define VIEW_WIDTH 256
 #define VIEW_HEIGHT 224
 /* The 64x64 frame has the body on column 32 and the feet on row 58. These offsets put
@@ -184,34 +185,47 @@ static void render(Game *g)
 #endif
 }
 
+/* Everything that belongs to the room itself: collision, Samus and her shots. */
+static void enter_room(Game *g, const room_def *room, int x, int y)
+{
+    g->room = room;
+    g->animation = 0xFFFF;
+    mm_weapon_init(&g->weapon);
+    g->world.tiles = room->map_collision;
+    g->world.columns = room->map_width / MM_TILE;
+    g->world.rows = room->map_height / MM_TILE;
+    mm_samus_init(&g->player, x, y);
+}
+
+/* Foreground tiles, then background tiles, from the start of the user VRAM. CPU transfers keep
+   setup from queuing data across buffer resizing; interrupts are off around the call. */
+static bool load_room_maps(Game *g)
+{
+    u16 tile = TILE_USER_INDEX;
+    VDP_loadTileSet(g->room->tileset_fg, tile, CPU);
+    g->foreground = MAP_create(g->room->map_fg, BG_A, TILE_ATTR_FULL(PAL0, FALSE, FALSE, FALSE, tile));
+    tile += g->room->tileset_fg->numTile;
+    VDP_loadTileSet(g->room->tileset_bg, tile, CPU);
+    g->background = MAP_create(g->room->map_bg, BG_B, TILE_ATTR_FULL(PAL1, FALSE, FALSE, FALSE, tile));
+    return g->foreground && g->background;
+}
+
 bool game_init(Game *g, u16 room_index)
 {
     int i;
-    u16 tile = TILE_USER_INDEX;
-    g->room = room_get(room_index);
-    if (!g->room) return FALSE;
+    const room_def *room = room_get(room_index);
+    if (!room) return FALSE;
     g->input.previous = 0; g->pal_phase = 0; g->frame = 0;
     g->music_looping = FALSE;
-    mm_weapon_init(&g->weapon);
-    g->animation = 0xFFFF;
-    g->world.tiles = g->room->map_collision;
-    g->world.columns = g->room->map_width / MM_TILE;
-    g->world.rows = g->room->map_height / MM_TILE;
-    mm_samus_init(&g->player, g->room->player_initial_pos.x,
-                 g->room->player_initial_pos.y);
+    enter_room(g, room, room->player_initial_pos.x, room->player_initial_pos.y);
     SYS_disableInts();
     VDP_setScreenWidth256();
     VDP_setScreenHeight224();
     JOY_init();
     SPR_init();
-    /* CPU transfers during setup avoid queuing data across buffer resizing. */
     PAL_setPalette(PAL0, g->room->palette_fg->data, CPU);
-    VDP_loadTileSet(g->room->tileset_fg, tile, CPU);
-    g->foreground = MAP_create(g->room->map_fg, BG_A, TILE_ATTR_FULL(PAL0, FALSE, FALSE, FALSE, tile));
-    tile += g->room->tileset_fg->numTile;
     PAL_setPalette(PAL1, g->room->palette_bg->data, CPU);
-    VDP_loadTileSet(g->room->tileset_bg, tile, CPU);
-    g->background = MAP_create(g->room->map_bg, BG_B, TILE_ATTR_FULL(PAL1, FALSE, FALSE, FALSE, tile));
+    load_room_maps(g);
     PAL_setPalette(PAL2, pal_samus_power_suit.data, CPU);
     g->sprite = SPR_addSprite(&player_sprite, 0, 0, TILE_ATTR(PAL2, TRUE, FALSE, FALSE));
     if (!g->foreground || !g->background || !g->sprite) {
@@ -247,6 +261,49 @@ bool game_init(Game *g, u16 room_index)
     render(g);
     SYS_doVBlankProcess();
     return TRUE;
+}
+
+bool game_change_room(Game *g, u16 room_index, Vect2D_s16 spawn)
+{
+    const room_def *room = room_get(room_index);
+    bool facing_left = g->player.facing_left, loaded;
+    u16 colors[64], i;
+    if (!room) return FALSE;
+    /* The picture goes black before anything in VRAM changes, so the swap is never seen. */
+    PAL_fadeOutAll(ROOM_FADE_FRAMES, FALSE);
+    for (i = 0; i < MM_BEAM_COUNT; ++i) SPR_setVisibility(g->beam_sprites[i], HIDDEN);
+    MAP_release(g->foreground);
+    MAP_release(g->background);
+    g->foreground = g->background = NULL;
+    SYS_disableInts();
+    enter_room(g, room, spawn.x, spawn.y);
+    g->player.facing_left = facing_left;
+    loaded = load_room_maps(g);
+    SYS_enableInts();
+    if (!loaded) return FALSE;
+    render(g);
+    SYS_doVBlankProcess(); /* Flushes the first full redraw of both planes while still black. */
+    memcpy(&colors[0], room->palette_fg->data, 16 * sizeof(u16));
+    memcpy(&colors[16], room->palette_bg->data, 16 * sizeof(u16));
+    memcpy(&colors[32], pal_samus_power_suit.data, 16 * sizeof(u16));
+    memcpy(&colors[48], beam_sprite.palette->data, 16 * sizeof(u16));
+    PAL_fadeInAll(colors, ROOM_FADE_FRAMES, FALSE);
+    return TRUE;
+}
+
+/* The connected door Samus is pushing into, if any. */
+static const RoomDoorDef *door_touched(const Game *g)
+{
+    int x = mm_pixel(g->player.x), y = mm_pixel(g->player.y);
+    MmRect body = {x + g->player.hitbox.left, y + g->player.hitbox.top,
+                   x + g->player.hitbox.right, y + g->player.hitbox.bottom};
+    u16 i;
+    for (i = 0; i < g->room->door_count; ++i) {
+        const RoomDoorDef *door = &g->room->doors[i];
+        if (door->target_room != ROOM_NO_CONNECTION &&
+            mm_door_touched(body, door->position.x, door->position.y, door->facing)) return door;
+    }
+    return NULL;
 }
 
 /* PCM sound effects from res/sound/Sound-Effects. Channel 1 stays free for the music; the spin loop
@@ -296,6 +353,16 @@ void game_update(Game *g, MmInput input)
         input.up_pressed = 0;
     }
     update_music(g);
+    {
+        const RoomDoorDef *door = door_touched(g);
+        if (door) {
+            if (!game_change_room(g, door->target_room, door->target_spawn)) {
+                VDP_drawText("Unable to load room", 1, 1);
+                while (1) SYS_doVBlankProcess();
+            }
+            return;
+        }
+    }
     render(g);
 }
 

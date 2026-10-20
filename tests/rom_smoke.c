@@ -18,32 +18,40 @@ volatile u16 mm_smoke_video_header[76];
 volatile u16 mm_smoke_video_chunk;
 volatile u16 mm_smoke_perf[10]; /* CPU/DMA/missed VInts per jump, then initial/minimum camera Y. */
 
+/* Samus placed at pos stands in the open, inside the room. */
+static int spawn_valid(const room_def *room, Vect2D_s16 pos)
+{
+    MmWorld world;
+    MmBody player;
+    world.tiles = room->map_collision;
+    world.columns = room->map_width / MM_TILE;
+    world.rows = room->map_height / MM_TILE;
+    mm_samus_init(&player, pos.x, pos.y);
+    return !mm_blocked(&world, &player, mm_pixel(player.x), mm_pixel(player.y)) &&
+        mm_pixel(player.x) + player.hitbox.right <= room->map_width &&
+        mm_pixel(player.y) + player.hitbox.bottom <= room->map_height;
+}
+
 static int room_catalog_valid(void)
 {
     u16 i;
     for (i = 0; i < ROOM_COUNT; ++i) {
         const room_def *room = room_get(i);
-        MmWorld world;
-        MmBody player;
         int door;
         if (!room || !room->tileset_fg || !room->tileset_bg || !room->map_fg || !room->map_bg ||
             !room->palette_fg || !room->palette_bg || !room->map_collision ||
             !room->map_width || !room->map_height || room->map_width % MM_TILE || room->map_height % MM_TILE ||
             (room->camera_zone_count && !room->camera_zones) ||
             (room->enemy_spawn_count && !room->enemy_spawns) || (room->door_count && !room->doors)) return 0;
-        world.tiles = room->map_collision;
-        world.columns = room->map_width / MM_TILE;
-        world.rows = room->map_height / MM_TILE;
-        mm_samus_init(&player, room->player_initial_pos.x, room->player_initial_pos.y);
-        if (mm_blocked(&world, &player, mm_pixel(player.x), mm_pixel(player.y)) ||
-            mm_pixel(player.x) + player.hitbox.right > room->map_width ||
-            mm_pixel(player.y) + player.hitbox.bottom > room->map_height) return 0;
+        if (!spawn_valid(room, room->player_initial_pos)) return 0;
         for (door = 0; door < room->door_count; ++door) {
             const RoomDoorDef *entry = &room->doors[door];
+            MmRect rect = mm_door_rect(entry->position.x, entry->position.y, entry->facing);
             if (entry->position.x < 0 || entry->position.y < 0 ||
-                entry->position.x + 32 > room->map_width || entry->position.y + 64 > room->map_height ||
-                entry->color > ROOM_DOOR_GREEN || entry->facing > ROOM_DOOR_FACING_DOWN ||
-                (entry->target_room != ROOM_NO_CONNECTION && entry->target_room >= ROOM_COUNT)) return 0;
+                rect.right > room->map_width || rect.bottom > room->map_height ||
+                entry->color > ROOM_DOOR_GREEN || entry->facing > ROOM_DOOR_FACING_DOWN) return 0;
+            if (entry->target_room != ROOM_NO_CONNECTION &&
+                (entry->target_room >= ROOM_COUNT || !spawn_valid(room_get(entry->target_room), entry->target_spawn))) return 0;
         }
     }
     return room_get(ROOM_COUNT) == NULL && room_get(ROOM_CRATERIA_1)->door_count == 4;
@@ -84,6 +92,85 @@ static int jump_performance(Game *g)
     }
     return failed;
 }
+/* VRAM from first_tile on holds exactly the tiles of set (read back through the VDP). */
+static int vram_holds(const TileSet *set, u16 first_tile)
+{
+    vu32 *control = (vu32 *)VDP_CTRL_PORT;
+    vu16 *data = (vu16 *)VDP_DATA_PORT;
+    TileSet *raw = set->compression == COMPRESSION_NONE ? NULL : unpackTileSet(set, NULL);
+    const u16 *expected = (const u16 *)(raw ? raw->tiles : set->tiles);
+    u16 i, ok = raw || set->compression == COMPRESSION_NONE;
+    if (!ok) return 0;
+    SYS_disableInts();
+    VDP_setAutoInc(2);
+    *control = VDP_READ_VRAM_ADDR((u32)first_tile * 32);
+    for (i = 0; i < set->numTile * 16; ++i) if (*data != expected[i]) { ok = 0; break; }
+    SYS_enableInts();
+    if (raw) MEM_free(raw);
+    return ok;
+}
+
+/* The room on screen is the room in memory: tiles in VRAM, palettes in CRAM, collision and maps. */
+static int room_loaded(const Game *g)
+{
+    const room_def *room = g->room;
+    return g->world.tiles == room->map_collision && g->world.columns == room->map_width / MM_TILE &&
+        g->world.rows == room->map_height / MM_TILE && g->foreground && g->background &&
+        PAL_getColor(1) == room->palette_fg->data[1] && PAL_getColor(17) == room->palette_bg->data[1] &&
+        PAL_getColor(33) == pal_samus_power_suit.data[1] &&
+        vram_holds(room->tileset_fg, TILE_USER_INDEX) &&
+        vram_holds(room->tileset_bg, TILE_USER_INDEX + room->tileset_fg->numTile) &&
+        !mm_blocked(&g->world, &g->player, mm_pixel(g->player.x), mm_pixel(g->player.y));
+}
+
+/* Walks until the room changes (or gives up after 240 frames); returns the frames it took. */
+static int walk_through(Game *g, int axis)
+{
+    const room_def *start = g->room;
+    int frame;
+    for (frame = 0; frame < 240 && g->room == start; ++frame) {
+        game_update(g, (MmInput){.axis = axis});
+        SYS_doVBlankProcess();
+    }
+    return g->room == start ? -1 : frame;
+}
+
+static void idle(Game *g, int frames)
+{
+    while (frames--) {
+        game_update(g, (MmInput){0});
+        SYS_doVBlankProcess();
+    }
+}
+
+/* Etapa 6.3, with the real doors: the Landing Site's east door leads to Crateria 2 and its west
+   door leads back; an unconnected door stays shut. */
+static int room_transitions(Game *g)
+{
+    int failed = 0;
+    int px, py;
+    /* The west door of the Landing Site has no route: Samus reaches its strip and stays. */
+    mm_samus_init(&g->player, 40, 624);
+    idle(g, 40);
+    if (walk_through(g, -1) != -1 || g->room != room_get(ROOM_CRATERIA_1) ||
+        mm_pixel(g->player.x) + g->player.hitbox.left >= MM_DOOR_EDGE) failed |= 1;
+    /* East door: Samus emerges in Crateria 2, facing the way she was walking. */
+    mm_samus_init(&g->player, 2210, 368);
+    idle(g, 30);
+    if (walk_through(g, 1) < 0 || g->room != room_get(ROOM_CRATERIA_2)) return failed | 2;
+    idle(g, 40);
+    px = mm_pixel(g->player.x); py = mm_pixel(g->player.y);
+    if (!room_loaded(g) || g->player.facing_left || !g->player.grounded ||
+        px != 24 || py + g->player.hitbox.bottom != 160 || g->camera.x != 0) failed |= 4;
+    /* And back through Crateria 2's west door, now walking left. */
+    if (walk_through(g, -1) < 0 || g->room != room_get(ROOM_CRATERIA_1)) return failed | 8;
+    idle(g, 40);
+    px = mm_pixel(g->player.x); py = mm_pixel(g->player.y);
+    if (!room_loaded(g) || !g->player.facing_left || !g->player.grounded ||
+        px != 2240 || py + g->player.hitbox.bottom != 416) failed |= 16;
+    return failed;
+}
+
 __attribute__((noinline, used, externally_visible)) void mm_smoke_video_ready(void)
 {
     __asm__ volatile ("nop");
@@ -350,6 +437,7 @@ int main(bool hardReset)
         if (impact_frames != 31 || g.weapon.beams[0].impact_ticks) failed |= 8192;
     }
     if (jump_performance(&g)) failed |= 65536;
+    failed |= room_transitions(&g) << 17; /* Bits 17-21: which door check failed. */
     room_video(&g);
     /* Window plane keeps the result on screen; plane A scrolls with the camera. */
     VDP_setWindowVPos(FALSE, 2);

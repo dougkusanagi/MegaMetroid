@@ -10,6 +10,31 @@ O registro detalhado começa em 18/10/2026. A entrada anterior abaixo foi
 reconstituída do commit indicado; o histórico anterior completo permanece no Git
 (`git log`) e as entregas por etapa estão em [docs/PLANO.md](docs/PLANO.md).
 
+## 2026-10-20 20:10:00 −03:00 (America/Sao_Paulo) — Transição entre salas (6.3)
+
+### Adicionado
+
+- Ao empurrar a faixa de 8 px na borda externa de uma porta com destino, o jogo
+  escurece, troca tiles, mapas, colisão e paletas, coloca a Samus no ponto de chegada
+  (mantendo o lado para o qual olha) e clareia. `game_change_room` faz a troca sem
+  reiniciar sprites nem música.
+- Rota provisória para exercitar a mecânica: porta leste do Landing Site ↔ porta oeste
+  de Crateria 2 (nova, em `rooms/crateria_2.tmj`). A topologia real fica para a 6.5.
+- `mm_door_rect`/`mm_door_touched` no núcleo, com teste no host para as quatro direções.
+
+### Melhorado
+
+- `game_init` compartilha o carregamento de sala com a transição.
+- Exportador e smoke usam o tamanho real da porta por direção (32×64 ou 64×32); o smoke
+  valida também que cada destino de porta é um ponto livre da sala de chegada.
+- O timeout padrão do smoke passou de 45 para 120 s (o teste completo leva cerca de 50 s).
+
+**Validação:** regressões do host; smoke no BlastEm via GDB atravessando as portas de
+verdade (ida e volta), conferindo VRAM, CRAM, colisão, posição e lado em cada chegada,
+e que a porta sem rota não transiciona. As seis vistas do Landing Site continuam
+idênticas pixel a pixel depois da ida e volta. O fade em si não foi capturado quadro a
+quadro; só seus estados inicial e final. Sem rolagem entre salas; a Samus reinicia em pé.
+
 ## 2026-10-20 19:03:00 −03:00 (America/Sao_Paulo) — Exportador de salas (6.2)
 
 ### Adicionado

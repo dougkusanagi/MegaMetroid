@@ -417,17 +417,17 @@
       {
        "name": "target_room",
        "type": "string",
-       "value": ""
+       "value": "crateria_2"
       },
       {
        "name": "target_x",
        "type": "int",
-       "value": 0
+       "value": 24
       },
       {
        "name": "target_y",
        "type": "int",
-       "value": 0
+       "value": 112
       }
      ]
     },
