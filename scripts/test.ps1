@@ -9,6 +9,8 @@ try {
     if ($LASTEXITCODE -ne 0) { throw 'Asset validation failed.' }
     python tests/check_rooms.py
     if ($LASTEXITCODE -ne 0) { throw 'Room exporter validation failed.' }
+    python tests/check_world.py
+    if ($LASTEXITCODE -ne 0) { throw 'World graph validation failed.' }
     if (!$Compiler) {
         $vswhere = "${env:ProgramFiles(x86)}/Microsoft Visual Studio/Installer/vswhere.exe"
         $vs = & $vswhere -latest -products '*' -requires Microsoft.VisualStudio.Component.VC.Tools.x86.x64 -property installationPath

@@ -3,6 +3,7 @@
 Build with scripts/build.ps1 -SmokeTest first. Only the process started here is stopped.
 """
 import argparse
+import os
 from pathlib import Path
 import socket
 import subprocess
@@ -99,6 +100,7 @@ def main():
     parser.add_argument('--symbols', default='out/symbol.txt', help='SGDK symbol table relative to the project root')
     parser.add_argument('--capture-scenes', action='store_true', help='Read back VDP video memory through GDB')
     parser.add_argument('--hidden', action='store_true', help='Keep the emulator hidden even with a secondary monitor')
+    parser.add_argument('--realtime', action='store_true', help='Run at 60 fps with audio instead of unthrottled')
     args = parser.parse_args()
     root = Path(__file__).resolve().parents[1]
     symbols = {}
@@ -121,9 +123,14 @@ def main():
         startup = subprocess.STARTUPINFO()
         startup.dwFlags = subprocess.STARTF_USESHOWWINDOW
         startup.wShowWindow = subprocess.SW_HIDE
+    env = os.environ.copy()
+    if not args.realtime:
+        # BlastEm syncs emulation to audio output; SDL's disk driver with no delay removes the 60 fps
+        # cap for this process only. Emulated timing (VInts, CPU/DMA budgets) is unchanged.
+        env.update(SDL_AUDIODRIVER='disk', SDL_DISKAUDIOFILE=os.devnull, SDL_DISKAUDIODELAY='0')
     process = subprocess.Popen([args.blastem, '-D', str(root / args.rom)],
         cwd=Path(args.blastem).parent, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL,
-        creationflags=flags, startupinfo=startup)
+        creationflags=flags, startupinfo=startup, env=env)
     if monitor:
         threading.Thread(target=show_test_window, args=(process, monitor), daemon=True).start()
     try:

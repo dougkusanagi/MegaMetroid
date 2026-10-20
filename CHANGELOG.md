@@ -10,6 +10,33 @@ O registro detalhado começa em 18/10/2026. A entrada anterior abaixo foi
 reconstituída do commit indicado; o histórico anterior completo permanece no Git
 (`git log`) e as entregas por etapa estão em [docs/PLANO.md](docs/PLANO.md).
 
+## 2026-10-20 19:25:00 −03:00 (America/Sao_Paulo) — Grafo real de Crateria (6.5.1)
+
+### Adicionado
+
+- `scripts/extract_world.py` e `rooms/world.json`: as 34 salas de Crateria do original, com
+  tamanho, posição no mapa e as 80 portas (parede, posição, sala de destino, chegada).
+  Nenhum dado da ROM é guardado, só o desenho do mapa. 29 salas se ligam ao Landing Site por
+  portas de Crateria; 5 (Forgotten Highway) só pelo Wrecked Ship e por Maridia.
+- `scripts/world_graph.py` e `tests/check_world.py`, ligado a `scripts/test.ps1`.
+
+**Validação:** `scripts/test.ps1` completo (gcc do host), incluindo o novo teste: grafo
+simétrico, chegadas dentro das salas, alcançabilidade e as quatro portas do Landing Site
+idênticas às de `rooms/crateria_1.tmj`. O jogo ainda não usa o grafo (6.5.2).
+
+## 2026-10-20 19:23:35 −03:00 (America/Sao_Paulo) — Smoke no BlastEm sem limite de 60 fps
+
+### Melhorado
+
+- `scripts/smoke_test.py` roda o BlastEm sem a trava de tempo real: o driver de áudio
+  `disk` do SDL com atraso zero, definido só no processo do teste, deixa a emulação
+  correr na velocidade da CPU. O smoke completo passou de ~58 s para ~11 s, sem mudar
+  a configuração do usuário. `--realtime` mantém o comportamento anterior.
+
+**Validação:** smoke completo oculto, visível no monitor secundário e com
+`--capture-scenes`; todas as linhas `MM_SMOKE_*`, `NORMAL_*`, `SPIN_*`, `VRAM_*` e
+`HEAP_*` idênticas às da execução em tempo real.
+
 ## 2026-10-20 20:45:00 −03:00 (America/Sao_Paulo) — Orçamentos de VRAM, heap e ROM (6.4)
 
 ### Adicionado

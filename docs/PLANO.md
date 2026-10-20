@@ -253,7 +253,7 @@ Para a 3.2: o tamanho de quadro é 64×64 (8×8 tiles); com a Samus em pé, os p
 | 6.2 ✅ | Ferramenta de exportação | Script (Tiled → `.c`/`.res`) para colisão, spawn, câmera, portas e inimigos | Regenerar sala sem editar array à mão |
 | 6.3 ✅ | Transição de sala | Portas, fade, trocar tiles, mapas, paletas e colisão | Crateria 1 → 2 e volta |
 | 6.4 ✅ | Limites de ROM/RAM/VRAM | Medir os orçamentos, recusar sala que não cabe na VRAM, provar que a troca não vaza heap; formato da colisão decidido | Sem estouro em salas grandes |
-| 6.5 | Mapa do mundo | Tabela de salas e conexões de Crateria | Percorrer a região inteira |
+| 6.5 | Mapa do mundo | Tabela de salas e conexões de Crateria (6.5.1 grafo extraído ✅) | Percorrer a região inteira |
 | 6.6 | Portas e blocos | Portas azul/vermelha/verde, blocos destrutíveis | Abrir com o tiro correto |
 
 **6.0 Integração visual antecipada, incluindo a nave** ✅ (2026-10-18).
@@ -343,6 +343,22 @@ exportador (6.2), então trocar o formato depois não exige editar salas. O que 
 ROM são música e arte, não a colisão. Limite conhecido: o maior bloco livre do heap
 (9,9 KB) é menor que o livre total (27 KB) e as futuras salas grandes precisam de
 um par de MAPs que caiba nele; a medição por sala entra a cada sala nova no smoke.
+
+**6.5 Mapa do mundo, em passos.**
+
+*6.5.1 Grafo real de Crateria* ✅ (2026-10-20). `scripts/extract_world.py` lê do Super
+Metroid original só os cabeçalhos de sala e as tabelas de porta (tamanho em telas, posição
+no mapa da área e, por porta, parede, posição, destino e chegada) e grava `rooms/world.json`
+(34 salas, 80 portas, sem bytes da ROM, arte ou colisão). A posição de uma porta na sala é a
+chegada da porta par da sala vizinha; várias portas entre as mesmas duas salas são casadas em
+ordem ao longo da parede. 29 salas se ligam ao Landing Site só por portas de Crateria; as outras
+cinco (Forgotten Highway) só se alcançam pelo Wrecked Ship e por Maridia, e 12 portas saem da
+região (Wrecked Ship, Maridia, Brinstar, Tourian). Só o Landing Site tem nome registrado: os
+demais ficam pelo endereço do cabeçalho (`92FD`...) até serem conferidos. As quatro portas do
+Landing Site no port batem com as do original (esquerda y=38 e y=70, direita y=22 e y=70, em
+blocos de 16 px). Duas portas (`95D4`) não têm tampa de porta no original (posição 0,0).
+Validação: `tests/check_world.py` (grafo simétrico, chegadas dentro das salas, alcançabilidade,
+portas do Landing Site contra `crateria_1.tmj`, grafos inválidos recusados).
 
 ### Fase 7 — Itens, progressão e HUD
 
