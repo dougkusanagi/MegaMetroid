@@ -64,12 +64,8 @@ ou se não for possível posicioná-la, permanece oculta. `python scripts/smoke_
 força o teste oculto. Apenas a janela pertencente ao processo do teste é movida.
 Não usa cliques, teclado ou captura da área de trabalho. Se a porta já estiver
 ocupada, recusa executar para não interferir em outra sessão. Ajuste os caminhos
-com `--blastem` e `--gdb`; `--timeout` limita a espera (padrão: 120 segundos).
-Por padrão o BlastEm do teste roda sem limite de 60 fps: como ele sincroniza a emulação
-pelo áudio, o script define, só no processo filho, `SDL_AUDIODRIVER=disk`,
-`SDL_DISKAUDIOFILE` nulo e `SDL_DISKAUDIODELAY=0`. O tempo emulado (VInts, CPU, DMA)
-não muda — as métricas saem idênticas às do tempo real —, e o smoke completo cai de
-cerca de 58 para 11 segundos. `--realtime` volta a 60 fps com som, para assistir.
+com `--blastem` e `--gdb`; `--timeout` limita a espera (padrão: 120 segundos; o
+smoke completo leva cerca de 50).
 O `out/symbol.txt` deve pertencer à mesma build `-SmokeTest`. Para uma ROM em
 outro diretório, passe os caminhos correspondentes com `--rom` e `--symbols`.
 Ao fim, o smoke imprime também as métricas de orçamento (`VRAM_TILES_*`, `HEAP_*`;
@@ -204,7 +200,7 @@ amostra controlada com uma travessia normal da sala.
 
 `rooms/world.json` guarda as salas de Crateria do Super Metroid e as portas entre elas,
 extraídas do original; o jogo e os testes só leem esse arquivo versionado. Para regenerar
-(precisa da ROM, só leitura; padrão `D:oms\snes\Super Metroid (Japan, USA) (En,Ja).zip`):
+(precisa da ROM, só leitura; padrão `D:/roms/snes/Super Metroid (Japan, USA) (En,Ja).zip`):
 
 ```powershell
 python scripts/extract_world.py                 # reescreve rooms/world.json
