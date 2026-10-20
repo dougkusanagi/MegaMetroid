@@ -120,6 +120,29 @@ L e R chegam ao jogo como Z e Y do controle de 6 botões (ainda sem uso).
 - Se uma build antiga deixou `out/` com arquivos `.d` que apontam para outro caminho (ex.: `D:/MegaDrive/Projects/MegaMetroid`), a build falha com `No rule to make target ...`. Solução: apague `out/` e compile de novo.
 
 
+## Salas: mapas Tiled e exportador (etapa 6.2)
+
+As salas não são mais editadas em C. Cada `rooms/<id>.tmj` é um mapa do
+[Tiled](https://www.mapeditor.org/) (JSON, tiles 8×8) com a camada de colisão
+(`collision.tsj`: sólido, aberto e duas rampas), o ponto de partida (`spawn`),
+zonas de câmera (`camera`), portas (`doors`) e inimigos (`enemies`); as
+propriedades do mapa dão as imagens de cenário e a rolagem do fundo. A ordem em
+`rooms/index.json` define os números `ROOM_*`. O cabeçalho de `scripts/export_rooms.py`
+descreve cada camada e propriedade.
+
+```powershell
+python scripts/export_rooms.py           # rooms/*.tmj -> src/map_*.c, inc/map*.h, res/*.res, src/map.c
+python scripts/export_rooms.py --check   # falha se algum gerado estiver desatualizado
+```
+
+Os arquivos gerados têm aviso de "Generated" no topo e ficam no Git; não os edite
+à mão. No Tiled, mantenha o formato da camada de tiles em CSV. O exportador
+recusa mapa com célula de colisão vazia, imagem de tamanho diferente do mapa,
+spawn/porta/inimigo/zona fora dos limites, porta para sala inexistente ou sala
+fora do índice. `tests/check_rooms.py` (parte de `scripts/test.ps1`) cobre isso.
+Para criar uma sala nova: copie um `.tmj`, ajuste e acrescente o id em `index.json`.
+O `-SmokeTest` compila automaticamente todo `src/map*.c`.
+
 ## Arte e verificação visual do Landing Site
 
 Os PNGs e dados de referência necessários estão versionados. Para regenerar

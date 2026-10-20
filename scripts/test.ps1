@@ -7,6 +7,8 @@ try {
     if ($LASTEXITCODE -ne 0) { throw 'Saved reference validation failed.' }
     python tests/check_assets.py
     if ($LASTEXITCODE -ne 0) { throw 'Asset validation failed.' }
+    python tests/check_rooms.py
+    if ($LASTEXITCODE -ne 0) { throw 'Room exporter validation failed.' }
     if (!$Compiler) {
         $vswhere = "${env:ProgramFiles(x86)}/Microsoft Visual Studio/Installer/vswhere.exe"
         $vs = & $vswhere -latest -products '*' -requires Microsoft.VisualStudio.Component.VC.Tools.x86.x64 -property installationPath

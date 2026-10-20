@@ -1,0 +1,33 @@
+{
+ "type": "tileset",
+ "version": "1.10",
+ "tiledversion": "1.10.2",
+ "name": "collision",
+ "image": "collision.png",
+ "imagewidth": 32,
+ "imageheight": 8,
+ "tilewidth": 8,
+ "tileheight": 8,
+ "tilecount": 4,
+ "columns": 4,
+ "margin": 0,
+ "spacing": 0,
+ "tiles": [
+  {
+   "id": 0,
+   "type": "solid"
+  },
+  {
+   "id": 1,
+   "type": "open"
+  },
+  {
+   "id": 2,
+   "type": "slope_rise_right"
+  },
+  {
+   "id": 3,
+   "type": "slope_rise_left"
+  }
+ ]
+}

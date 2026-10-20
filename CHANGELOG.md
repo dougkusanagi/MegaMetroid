@@ -10,6 +10,28 @@ O registro detalhado começa em 18/10/2026. A entrada anterior abaixo foi
 reconstituída do commit indicado; o histórico anterior completo permanece no Git
 (`git log`) e as entregas por etapa estão em [docs/PLANO.md](docs/PLANO.md).
 
+## 2026-10-20 19:03:00 −03:00 (America/Sao_Paulo) — Exportador de salas (6.2)
+
+### Adicionado
+
+- `rooms/*.tmj`: cada sala é um mapa Tiled com colisão, spawn, zonas de câmera,
+  portas e inimigos. `scripts/export_rooms.py` gera `src/map_<id>.c`, `inc/map_<id>.h`,
+  `res/<id>.res` e o catálogo `inc/map.h`/`src/map.c`; `--check` acusa arquivo gerado
+  desatualizado. Crateria 1 e 2 foram convertidas dos arrays escritos à mão.
+- `tests/check_rooms.py`, no `scripts/test.ps1`: confere os arquivos gerados, que pintar
+  um tile altera só aquela célula, que porta/inimigo/zona aparecem nas tabelas e que
+  mapas inválidos (célula vazia, spawn ou porta fora do mapa, destino inexistente,
+  tamanho de imagem divergente, sala fora do índice) são recusados.
+
+### Melhorado
+
+- O build de smoke compila todo `src/map*.c`; uma sala nova não exige editar o script.
+- Removidos os `extern` de largura/altura que nunca tiveram definição.
+
+**Validação:** regressões do host e `check_rooms.py`; a ROM padrão reconstruída ficou
+idêntica à anterior (SHA256 e403423354d8…1be0124) e o smoke completo passou no BlastEm
+via GDB. O formato Tiled segue a especificação, mas não foi aberto no editor.
+
 ## 2026-10-18 18:53:45 −03:00 (America/Sao_Paulo) — Formato de sala (6.1)
 
 ### Adicionado

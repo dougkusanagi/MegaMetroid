@@ -250,7 +250,7 @@ Para a 3.2: o tamanho de quadro é 64×64 (8×8 tiles); com a Samus em pé, os p
 | 6.0 ✅ | Integração visual do Landing Site e da nave | Cenário da referência, céu original, quatro portas azuis fechadas, blocos e nave estática | Seis vistas da ROM verificadas pela VRAM/CRAM no BlastEm |
 | 6.0.1 ✅ | Revisão do scroll e relatos de física | Y contínuo no MAP; métricas de CPU/DMA/VInt e novas referências do original | Sem quadros perdidos nos dois saltos medidos; seis vistas validadas |
 | 6.1 ✅ | Formato de sala | `room_def`: tilemaps, colisão, spawn, inimigos, portas, zonas de câmera e tamanho | Crateria 1 e 2 inicializadas pelo carregador comum |
-| 6.2 | Ferramenta de exportação | Script (Tiled/Aseprite → `.c`/`.res`) para colisão e entidades | Regenerar sala sem editar array à mão |
+| 6.2 ✅ | Ferramenta de exportação | Script (Tiled → `.c`/`.res`) para colisão, spawn, câmera, portas e inimigos | Regenerar sala sem editar array à mão |
 | 6.3 | Transição de sala | Portas, fade/scroll, trocar tiles e paletas | Crateria 1 → 2 e volta |
 | 6.4 | Streaming do mapa | Verificar limites de ROM/RAM; compressão/tiles de colisão 16x16 | Sem estouro em salas grandes |
 | 6.5 | Mapa do mundo | Tabela de salas e conexões de Crateria | Percorrer a região inteira |
@@ -296,6 +296,14 @@ etapa 6.3 confirmar rotas. As listas de inimigos continuam vazias até a fase 5.
 Crateria 1 e 2 são inicializadas pelo mesmo `game_init` e catálogo `room_get`;
 a ROM normal ainda começa na sala 1. Smoke do BlastEm iniciou cada sala em
 processo/build separado e confirmou colisão e spawn válidos.
+
+**6.2 Exportador de salas** ✅ (2026-10-20). `rooms/*.tmj` (Tiled) passa a ser a
+fonte de cada sala; `scripts/export_rooms.py` gera `src/map_<id>.c`, `inc/map_<id>.h`,
+`res/<id>.res` e o catálogo (`inc/map.h`, `src/map.c`). As duas salas atuais foram
+convertidas dos arrays escritos à mão e a ROM resultante é idêntica byte a byte à
+anterior (mesmo SHA256). O exportador valida o mapa e recusa dados inconsistentes.
+Não foi aberto o editor Tiled: o formato segue a especificação JSON, mas a abertura
+no programa ainda não foi conferida. Aseprite não é usado. Detalhes em `docs/BUILD.md`.
 
 ### Fase 7 — Itens, progressão e HUD
 
