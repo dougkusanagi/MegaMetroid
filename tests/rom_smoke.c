@@ -3,6 +3,7 @@
 #include "game.h"
 #include "player_anim.h"
 #include "resources.h"
+#include "world_map.h"
 
 #ifndef MM_SMOKE_ROOM
 #define MM_SMOKE_ROOM ROOM_CRATERIA_1
@@ -35,6 +36,26 @@ static int spawn_valid(const room_def *room, Vect2D_s16 pos)
         mm_pixel(player.y) + player.hitbox.bottom <= room->map_height;
 }
 
+/* Etapa 6.5: the room graph in ROM is consistent, and every catalog room is a node whose doors it draws;
+   a door is connected exactly when the room beyond it is built. */
+static int world_map_valid(void)
+{
+    u16 i;
+    if (WORLD_NODE_COUNT != 34 || !mm_world_consistent(world_nodes, WORLD_NODE_COUNT)) return 0;
+    for (i = 0; i < ROOM_COUNT; ++i) {
+        const room_def *room = room_get(i);
+        int node = mm_world_node_of_room(world_nodes, WORLD_NODE_COUNT, i), door, connected = 0, expected = 0;
+        if (node < 0 || world_nodes[node].door_count != room->door_count) return 0;
+        for (door = 0; door < room->door_count; ++door) connected += room->doors[door].target_room != ROOM_NO_CONNECTION;
+        for (door = 0; door < world_nodes[node].door_count; ++door) {
+            int to = world_nodes[node].doors[door].to;
+            expected += to != MM_NO_NODE && world_nodes[to].room != MM_NO_NODE;
+        }
+        if (connected != expected) return 0;
+    }
+    return mm_world_reach(world_nodes, WORLD_NODE_COUNT, WORLD_NODE_91F8, (int[WORLD_NODE_COUNT]){0}, WORLD_NODE_COUNT) == 29;
+}
+
 static int room_catalog_valid(void)
 {
     u16 i;
@@ -57,7 +78,7 @@ static int room_catalog_valid(void)
                 (entry->target_room >= ROOM_COUNT || !spawn_valid(room_get(entry->target_room), entry->target_spawn))) return 0;
         }
     }
-    return room_get(ROOM_COUNT) == NULL && room_get(ROOM_CRATERIA_1)->door_count == 4;
+    return room_get(ROOM_COUNT) == NULL && room_get(ROOM_CRATERIA_1)->door_count == 4 && world_map_valid();
 }
 
 static int jump_performance(Game *g)

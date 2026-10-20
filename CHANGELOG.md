@@ -10,6 +10,18 @@ O registro detalhado começa em 18/10/2026. A entrada anterior abaixo foi
 reconstituída do commit indicado; o histórico anterior completo permanece no Git
 (`git log`) e as entregas por etapa estão em [docs/PLANO.md](docs/PLANO.md).
 
+## 2026-10-20 20:10:00 −03:00 (America/Sao_Paulo) — Tabela do mundo na ROM (6.5.3)
+
+### Adicionado
+
+- `world_nodes[34]` na ROM (`src/world_map.c`, gerado de `rooms/world.json`) e o núcleo
+  `src/core/worldmap.c`: alcançabilidade a partir de uma sala, sala do catálogo de cada nó e
+  verificação de que toda porta é respondida pela porta par. Concluída a etapa 6.5.
+
+**Validação:** `scripts/test.ps1` (novo teste do mapa: 29 salas alcançáveis do Landing Site,
+5 no enclave da Forgotten Highway) e `SMOKE PASS` no BlastEm via GDB, com a conferência da
+tabela embutida; `build.bin` refeito. Só Landing Site e a substituta da `93AA` são jogáveis.
+
 ## 2026-10-20 19:50:00 −03:00 (America/Sao_Paulo) — Portas ligadas ao grafo real (6.5.2)
 
 ### Melhorado

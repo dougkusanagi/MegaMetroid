@@ -3,6 +3,8 @@
 #include <string.h>
 #include "core/world.h"
 #include "core/weapon.h"
+#include "core/worldmap.h"
+#include "world_map.h"
 #include "out/maps.h"
 #include "out/sm_hitboxes.h"
 #include "out/sm_beams.h"
@@ -284,6 +286,42 @@ static void doors(void) {
     body = (MmRect){164, 200, 170, 208}; /* Past the 64 px length. */
     assert(!mm_door_touched(body, 100, 200, MM_DOOR_FACING_DOWN));
     puts("PASS doors: only the far-edge strip triggers, for all four facings");
+}
+
+/* The Crateria room graph as it ships (rooms/world.json through the exporter). */
+static void world_map(void) {
+    int order[WORLD_NODE_COUNT], i, n;
+    const MmWorldNode *site = &world_nodes[WORLD_NODE_91F8];
+    assert(WORLD_NODE_COUNT == 34 && mm_world_consistent(world_nodes, WORLD_NODE_COUNT));
+    /* Walking from the Landing Site through Crateria doors alone reaches 29 rooms, no repeats. */
+    n = mm_world_reach(world_nodes, WORLD_NODE_COUNT, WORLD_NODE_91F8, order, WORLD_NODE_COUNT);
+    assert(n == 29 && order[0] == WORLD_NODE_91F8);
+    for (i = 0; i < n; ++i) { int j; for (j = 0; j < i; ++j) assert(order[j] != order[i]); }
+    /* The other five (Forgotten Highway) hang off the Wrecked Ship and Maridia. */
+    assert(mm_world_reach(world_nodes, WORLD_NODE_COUNT, WORLD_NODE_94FD, order, WORLD_NODE_COUNT) == 5);
+    assert(mm_world_reach(world_nodes, WORLD_NODE_COUNT, WORLD_NODE_91F8, order, 4) == 4); /* Capacity respected. */
+    assert(mm_world_reach(world_nodes, WORLD_NODE_COUNT, -1, order, 4) == 0 && mm_world_reach(world_nodes, WORLD_NODE_COUNT, 0, order, 0) == 0);
+    /* Landing Site: nine by five screens, four doors, each answered from the other side. */
+    assert(site->id == 0x91F8 && site->screens_w == 9 && site->screens_h == 5 && site->door_count == 4);
+    assert(site->doors[3].wall == MM_WALL_RIGHT && site->doors[3].to == WORLD_NODE_93AA &&
+           site->doors[3].at_x == 142 && site->doors[3].at_y == 22);
+    assert(world_nodes[WORLD_NODE_93AA].doors[site->doors[3].peer].to == WORLD_NODE_91F8);
+    /* Catalog rooms: Crateria 1 is the Landing Site, Crateria 2 stands in for room 93AA. */
+    assert(mm_world_node_of_room(world_nodes, WORLD_NODE_COUNT, 0) == WORLD_NODE_91F8);
+    assert(mm_world_node_of_room(world_nodes, WORLD_NODE_COUNT, 1) == WORLD_NODE_93AA);
+    assert(mm_world_node_of_room(world_nodes, WORLD_NODE_COUNT, 2) == MM_NO_NODE && mm_world_node_of_room(world_nodes, WORLD_NODE_COUNT, -1) == MM_NO_NODE);
+    /* Exits to other regions have a destination region and no room. */
+    assert(world_nodes[WORLD_NODE_962A].doors[1].to == MM_NO_NODE && world_nodes[WORLD_NODE_962A].doors[1].leaves_area == MM_AREA_BRINSTAR);
+    {   /* A graph whose door is not answered, or answered on the same wall, is refused. */
+        MmWorldDoor a[1] = {{MM_WALL_RIGHT, 1, 1, 1, 0, MM_AREA_HERE}}, b[1] = {{MM_WALL_RIGHT, 1, 1, 0, 0, MM_AREA_HERE}};
+        MmWorldNode two[2] = {{1, 1, 1, 0, 0, MM_NO_NODE, 1, a}, {2, 1, 1, 0, 0, MM_NO_NODE, 1, b}};
+        assert(!mm_world_consistent(two, 2));
+        b[0].wall = MM_WALL_LEFT;
+        assert(mm_world_consistent(two, 2));
+        b[0].peer = 1;
+        assert(!mm_world_consistent(two, 2));
+    }
+    puts("PASS world map: 34 rooms, 29 walkable from the Landing Site, doors answered both ways");
 }
 
 static void camera_and_input(void) {
@@ -1325,6 +1363,6 @@ int main(void) {
     measured_beams();
     movement(); air_steering(); collisions(); jump_and_ledge(); states(); physics(); variable_jump(); ledge_jump();
     slopes(); slope_sweep(); tunnels(); wall_climb(); wall_jump_rules(); poses(); crouch_poses(); crouch_tap(); double_tap(); ball_poses(); aiming(); beam_from_muzzle(); morph_rules(); ball_stands_on_slope();
-    ball_stand_real(); camera_and_input(); doors(); real_levels();
+    ball_stand_real(); camera_and_input(); doors(); world_map(); real_levels();
     puts("All core regression tests passed."); return 0;
 }

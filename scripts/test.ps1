@@ -22,7 +22,7 @@ try {
         $env:INCLUDE = "$($vc.FullName)/include;${env:ProgramFiles(x86)}/Windows Kits/10/Include/$($sdk.Name)/ucrt;${env:ProgramFiles(x86)}/Windows Kits/10/Include/$($sdk.Name)/shared;${env:ProgramFiles(x86)}/Windows Kits/10/Include/$($sdk.Name)/um"
         $env:LIB = "$($vc.FullName)/lib/x64;$($sdk.FullName)/ucrt/x64;$($sdk.FullName)/um/x64"
     }
-    $sources = @('tests/core_test.c','src/core/world.c','src/core/weapon.c','src/core/input.c','src/core/camera.c','src/core/door.c')
+    $sources = @('tests/core_test.c','src/core/world.c','src/core/weapon.c','src/core/input.c','src/core/camera.c','src/core/door.c','src/core/worldmap.c','src/world_map.c')
     if ((Split-Path $Compiler -Leaf) -eq 'cl.exe') {
         & $Compiler /nologo /W4 /WX /TC /Iinc @sources /Fe:tests/out/core_test.exe /Fo:tests/out/
     } else {

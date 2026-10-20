@@ -19,7 +19,8 @@ to be edited by hand in src/map_<id>.c:
                             this map is (or stands in for)
 
 Outputs (all committed, each with a "generated" banner): src/map_<id>.c,
-inc/map_<id>.h, res/<id>.res and, for the whole set, inc/map.h and src/map.c.
+inc/map_<id>.h, res/<id>.res and, for the whole set, inc/map.h and src/map.c, plus the
+room graph of rooms/world.json as inc/world_map.h and src/world_map.c.
 Room order (and so the ROOM_* numbers) comes from rooms/index.json.
 
   python scripts/export_rooms.py             write the files
@@ -312,10 +313,41 @@ def render_catalog_source(rooms):
                       '    return index < ROOM_COUNT ? rooms[index] : NULL;', '}', ''])
 
 
+def render_world_header(world):
+    return '\n'.join([f'/* {BANNER.format(src="world.json")} */', '#pragma once', '#include "core/worldmap.h"', '',
+                      f'#define WORLD_NODE_COUNT {len(world["nodes"])}'] +
+                     [f'#define WORLD_NODE_{n["id"]} {i}' for i, n in enumerate(world['nodes'])] +
+                     ['', 'extern const MmWorldNode world_nodes[WORLD_NODE_COUNT];', ''])
+
+
+def render_world_source(world, rooms):
+    index = {n['id']: i for i, n in enumerate(world['nodes'])}
+    built = {r['node']: i for i, r in enumerate(rooms) if r['node']}
+    out = [f'/* {BANNER.format(src="world.json")} */', '#include "world_map.h"', '']
+    for n in world['nodes']:
+        out.append(f'static const MmWorldDoor doors_{n["id"]}[] = {{')
+        for d in n['doors']:
+            leaves = world_graph.AREA_ENUM[d['leaves']['area']] if d['to'] is None else 'MM_AREA_HERE'
+            at = d['at'] or (-1, -1)
+            to = index[d['to']] if d['to'] else 'MM_NO_NODE'
+            peer = d['peer'] if d['to'] else 0
+            out.append('    {%s, %d, %d, %s, %d, %s},' % (world_graph.WALL_ENUM[d['wall']], at[0], at[1], to, peer, leaves))
+        out += ['};', '']
+    out.append('const MmWorldNode world_nodes[WORLD_NODE_COUNT] = {')
+    for n in world['nodes']:
+        room = built.get(n['id'], 'MM_NO_NODE')
+        out.append('    {0x%s, %d, %d, %d, %d, %s, %d, doors_%s},' % (
+            n['id'], n['screens'][0], n['screens'][1], n['map'][0], n['map'][1], room, len(n['doors']), n['id']))
+    out += ['};', '']
+    return '\n'.join(out)
+
+
 def generate(root=ROOT):
     """Relative path -> text of every generated file."""
     rooms = load_all(root)
-    files = {'inc/map.h': render_catalog_header(rooms), 'src/map.c': render_catalog_source(rooms)}
+    world = world_graph.load(root)
+    files = {'inc/map.h': render_catalog_header(rooms), 'src/map.c': render_catalog_source(rooms),
+             'inc/world_map.h': render_world_header(world), 'src/world_map.c': render_world_source(world, rooms)}
     for r in rooms:
         files[f'src/map_{r["id"]}.c'] = render_c(r)
         files[f'inc/map_{r["id"]}.h'] = render_header(r)

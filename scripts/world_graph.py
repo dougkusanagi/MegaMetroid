@@ -5,6 +5,10 @@ import json
 ROOT = Path(__file__).resolve().parents[1]
 OPPOSITE = {'right': 'left', 'left': 'right', 'bottom': 'top', 'top': 'bottom'}
 START = '91F8'
+# C names of the regions a door can lead out to (enum in inc/core/worldmap.h).
+AREA_ENUM = {'Brinstar': 'MM_AREA_BRINSTAR', 'Norfair': 'MM_AREA_NORFAIR', 'Wrecked Ship': 'MM_AREA_WRECKED_SHIP',
+             'Maridia': 'MM_AREA_MARIDIA', 'Tourian': 'MM_AREA_TOURIAN'}
+WALL_ENUM = {'right': 'MM_WALL_RIGHT', 'left': 'MM_WALL_LEFT', 'bottom': 'MM_WALL_BOTTOM', 'top': 'MM_WALL_TOP'}
 
 
 class WorldError(Exception):

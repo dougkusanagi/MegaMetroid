@@ -253,7 +253,7 @@ Para a 3.2: o tamanho de quadro é 64×64 (8×8 tiles); com a Samus em pé, os p
 | 6.2 ✅ | Ferramenta de exportação | Script (Tiled → `.c`/`.res`) para colisão, spawn, câmera, portas e inimigos | Regenerar sala sem editar array à mão |
 | 6.3 ✅ | Transição de sala | Portas, fade, trocar tiles, mapas, paletas e colisão | Crateria 1 → 2 e volta |
 | 6.4 ✅ | Limites de ROM/RAM/VRAM | Medir os orçamentos, recusar sala que não cabe na VRAM, provar que a troca não vaza heap; formato da colisão decidido | Sem estouro em salas grandes |
-| 6.5 | Mapa do mundo | Tabela de salas e conexões de Crateria (6.5.1 grafo extraído ✅, 6.5.2 portas pelo grafo ✅) | Percorrer a região inteira |
+| 6.5 ✅ | Mapa do mundo | Tabela de salas e conexões de Crateria, extraída do original e embutida na ROM | Percorrer a região inteira (no grafo; salas jogáveis conforme forem construídas) |
 | 6.6 | Portas e blocos | Portas azul/vermelha/verde, blocos destrutíveis | Abrir com o tiro correto |
 
 **6.0 Integração visual antecipada, incluindo a nave** ✅ (2026-10-18).
@@ -369,6 +369,20 @@ repetida ou ausente, nó repetido e `world.json` inválido. Só a porta leste su
 Site leva a uma sala construída; as outras três deixam de ser rota provisória e passam a ser
 "vizinha ainda não construída" (sem efeito, como antes). Os arquivos gerados saíram idênticos
 byte a byte, então a ROM não muda. Portas verticais ainda não têm ponto de chegada definido.
+
+*6.5.3 Tabela na ROM* ✅ (2026-10-20). `export_rooms.py` gera também `inc/world_map.h` e
+`src/world_map.c` a partir de `rooms/world.json`: `world_nodes[34]`, com endereço da sala
+original, tamanho em telas, posição no mapa, sala do catálogo (`room`, ou `MM_NO_NODE` se
+ainda não construída) e as portas (parede, posição, destino, porta par, região de saída).
+O núcleo portátil `src/core/worldmap.c` oferece `mm_world_reach` (salas alcançáveis a partir de
+uma sala), `mm_world_node_of_room` e `mm_world_consistent` (toda porta é respondida pela par,
+na parede oposta). Validação: o teste do host percorre o grafo (29 salas a partir do Landing
+Site, 5 no enclave da Forgotten Highway, limites de capacidade, grafo inconsistente recusado);
+o smoke da ROM, no BlastEm, confere a tabela embutida, que toda sala do catálogo é um nó cujas
+portas ela desenha e que uma porta é conectada exatamente quando a sala do outro lado existe.
+**Limite:** só duas das 34 salas existem como mapa jogável (Landing Site e a substituta da
+`93AA`); percorrer as demais no jogo depende de construí-las (arte e colisão), o que é trabalho
+de conteúdo, não de mecanismo: cada sala nova entra como `.tmj` com `world_node` e `link`.
 
 ### Fase 7 — Itens, progressão e HUD
 
