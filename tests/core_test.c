@@ -4,6 +4,7 @@
 #include "core/world.h"
 #include "core/weapon.h"
 #include "core/worldmap.h"
+#include "core/doorlock.h"
 #include "world_map.h"
 #include "out/maps.h"
 #include "out/sm_hitboxes.h"
@@ -11,7 +12,7 @@
 #include "out/sm_wall.h"
 
 static unsigned char tiles[64 * 32];
-static MmWorld world = {tiles, 64, 32};
+static MmWorld world = {tiles, 64, 32, 0, 0};
 static MmRect box = {0, 0, 8, 16};
 static MmInput idle = {0};
 static void reset(void) { memset(tiles, 1, sizeof tiles); }
@@ -324,6 +325,67 @@ static void world_map(void) {
     puts("PASS world map: 34 rooms, 29 walkable from the Landing Site, doors answered both ways");
 }
 
+/* Etapa 6.6: the cap blocks until the door has opened, and each colour takes its own shot. */
+static void door_locks(void) {
+    MmRect cap, solids[1];
+    MmWorld w = {tiles, 64, 32, solids, 1};
+    MmDoorLock lock;
+    MmBody body;
+    int i, steps;
+    /* The cap is the half of the door on the room's side, for the four facings. */
+    cap = mm_door_cap(2272, 352, MM_DOOR_FACING_LEFT);
+    assert(cap.left == 2272 && cap.right == 2288 && cap.top == 352 && cap.bottom == 416);
+    cap = mm_door_cap(0, 96, MM_DOOR_FACING_RIGHT);
+    assert(cap.left == 16 && cap.right == 32 && cap.top == 96 && cap.bottom == 160);
+    cap = mm_door_cap(100, 200, MM_DOOR_FACING_UP);
+    assert(cap.left == 100 && cap.right == 164 && cap.top == 200 && cap.bottom == 216);
+    cap = mm_door_cap(100, 200, MM_DOOR_FACING_DOWN);
+    assert(cap.top == 216 && cap.bottom == 232);
+    /* Blue: any shot, then the opening plays and only afterwards the cap lets go. */
+    mm_lock_init(&lock, 0);
+    assert(mm_lock_solid(&lock) && mm_lock_frame(&lock) == 0);
+    assert(mm_lock_hit(&lock, MM_LOCK_BLUE, MM_SHOT_BEAM) && lock.state == MM_DOOR_OPENING);
+    assert(!mm_lock_hit(&lock, MM_LOCK_BLUE, MM_SHOT_BEAM)); /* Already opening. */
+    for (i = 0; i < MM_DOOR_OPEN_TICKS - 1; ++i) { mm_lock_tick(&lock); assert(mm_lock_solid(&lock)); }
+    assert(mm_lock_frame(&lock) == MM_DOOR_FRAMES - 1);
+    mm_lock_tick(&lock);
+    assert(!mm_lock_solid(&lock) && mm_lock_frame(&lock) == MM_DOOR_FRAMES && lock.state == MM_DOOR_OPEN);
+    mm_lock_init(&lock, 1);
+    assert(!mm_lock_solid(&lock));
+    /* Red: five missiles or one super, never the beam. Green: a super only. */
+    mm_lock_init(&lock, 0);
+    assert(!mm_lock_hit(&lock, MM_LOCK_RED, MM_SHOT_BEAM) && lock.hits == 0);
+    for (i = 1; i < MM_RED_DOOR_HITS; ++i) assert(!mm_lock_hit(&lock, MM_LOCK_RED, MM_SHOT_MISSILE) && lock.state == MM_DOOR_CLOSED);
+    assert(mm_lock_hit(&lock, MM_LOCK_RED, MM_SHOT_MISSILE));
+    mm_lock_init(&lock, 0);
+    assert(mm_lock_hit(&lock, MM_LOCK_RED, MM_SHOT_SUPER));
+    mm_lock_init(&lock, 0);
+    assert(!mm_lock_hit(&lock, MM_LOCK_GREEN, MM_SHOT_BEAM) && !mm_lock_hit(&lock, MM_LOCK_GREEN, MM_SHOT_MISSILE));
+    assert(mm_lock_hit(&lock, MM_LOCK_GREEN, MM_SHOT_SUPER));
+    /* Samus walking right on a floor stops at a closed cap and goes on once it is not a solid. */
+    reset(); floor_at(20);
+    solids[0] = (MmRect){200, 100, 216, 164};
+    mm_samus_init(&body, 100, 100 - mm_samus_boxes[MM_BOX_STAND].top + 0);
+    body.y = (20 * MM_TILE - mm_samus_boxes[MM_BOX_STAND].bottom) * MM_UNIT;
+    body.grounded = 1;
+    {   MmInput right = {0}; right.axis = 1; steps = 0;
+        while (steps++ < 200) mm_tick(&w, &body, right);
+        assert(mm_pixel(body.x) + body.hitbox.right <= 200 && mm_pixel(body.x) + body.hitbox.right >= 198);
+        w.solid_count = 0; /* The door is open. */
+        for (steps = 0; steps < 60; ++steps) mm_tick(&w, &body, right);
+        assert(mm_pixel(body.x) + body.hitbox.right > 216);
+    }
+    /* A beam is stopped by a closed cap exactly like by a wall. */
+    {   MmRect probe = {198, 120, 202, 124};
+        w.solid_count = 1;
+        assert(mm_rect_blocked(&w, probe));
+        assert(!mm_rect_blocked(&w, (MmRect){190, 120, 198, 124}));
+        w.solid_count = 0;
+        assert(!mm_rect_blocked(&w, probe));
+    }
+    puts("PASS door locks: cap blocks until open; blue/red/green take the right shots");
+}
+
 static void camera_and_input(void) {
     MmRect r = {0, 0, 2304, 1248}, small = {0,0,128,128};
     MmCameraZone zone = {{0,960,608,1248},{0,1024,768,1248}};
@@ -343,7 +405,7 @@ static void camera_and_input(void) {
     puts("PASS camera bounds, rooms, undersized maps and input edges");
 }
 static void real_levels(void) {
-    MmWorld maps[2] = {{&real_map_1[0][0],288,156},{&real_map_2[0][0],160,160}};
+    MmWorld maps[2] = {{&real_map_1[0][0],288,156,0,0},{&real_map_2[0][0],160,160,0,0}};
     int starts[2][2] = {{256,1176},{1168,80}};
     MmRect hitbox = {8,8,32,48};
     unsigned int seed = 12345;
@@ -517,7 +579,7 @@ static void sweep_walk(const MmWorld *cw, MmBody *b, int dir, int ticks, int *st
 }
 /* Every 45-degree surface of Crateria 1 that the standing hitbox can reach. */
 static void slope_sweep(void) {
-    MmWorld crateria = {&real_map_1[0][0], 288, 156};
+    MmWorld crateria = {&real_map_1[0][0], 288, 156, 0, 0};
     MmRect hitbox = {8, 8, 32, 48};
     int c, r, walked = 0, too_narrow = 0, stalls = 0, floats = 0;
     for (c = 0; c < crateria.columns; ++c) {
@@ -547,7 +609,7 @@ static void slope_sweep(void) {
 }
 
 static void samus_slope_sweep(void) {
-    MmWorld crateria = {&real_map_1[0][0], 288, 156};
+    MmWorld crateria = {&real_map_1[0][0], 288, 156, 0, 0};
     int c, r, walked = 0, stalls = 0, floats = 0;
     for (c = 0; c < crateria.columns; ++c) {
         int top = -1;
@@ -903,7 +965,7 @@ static void ball_stands_on_slope(void) {
 /* Morphs in the air over every reachable landing of Crateria 1 and presses up. The standing box
    can be blocked by a wall a few pixels away or by a ceiling, so a few spots keep the ball. */
 static void ball_stand_real(void) {
-    MmWorld crateria = {&real_map_1[0][0], 288, 156};
+    MmWorld crateria = {&real_map_1[0][0], 288, 156, 0, 0};
     MmRect real = {8, 8, 32, 48};
     MmInput morph = {.down_pressed = 1, .aim_y = 1}, up = {.up_pressed = 1, .aim_y = -1}, idle_in = {0};
     int x, y, t, slopes = 0, stuck = 0;
@@ -1363,6 +1425,6 @@ int main(void) {
     measured_beams();
     movement(); air_steering(); collisions(); jump_and_ledge(); states(); physics(); variable_jump(); ledge_jump();
     slopes(); slope_sweep(); tunnels(); wall_climb(); wall_jump_rules(); poses(); crouch_poses(); crouch_tap(); double_tap(); ball_poses(); aiming(); beam_from_muzzle(); morph_rules(); ball_stands_on_slope();
-    ball_stand_real(); camera_and_input(); doors(); world_map(); real_levels();
+    ball_stand_real(); camera_and_input(); doors(); world_map(); door_locks(); real_levels();
     puts("All core regression tests passed."); return 0;
 }

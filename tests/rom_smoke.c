@@ -262,7 +262,7 @@ __attribute__((noinline, used, externally_visible)) void mm_smoke_finish(void)
 static int beam_motion(void)
 {
     static unsigned char air[32 * 32];
-    MmWorld world = {air, 32, 32};
+    MmWorld world = {air, 32, 32, 0, 0};
     MmBody b;
     MmWeapon w;
     MmCamera camera = {0, 0};

@@ -38,7 +38,8 @@
 #define MM_SHOOT_POSE_TICKS 10 /* The cannon stays out this long after the shot button is let go. */
 
 typedef struct { int left, top, right, bottom; } MmRect;
-typedef struct { const unsigned char *tiles; int columns, rows; } MmWorld;
+/* Tile grid plus rectangles that block like walls on top of it (closed doors); both optional by zero. */
+typedef struct { const unsigned char *tiles; int columns, rows; const MmRect *solids; int solid_count; } MmWorld;
 
 typedef enum {
     MM_BOX_STAND, MM_BOX_JUMP, MM_BOX_SPIN, MM_BOX_CROUCH, MM_BOX_BALL,
@@ -115,5 +116,7 @@ MmRect mm_camera_bounds(int x, int y, MmRect fallback,
 #define MM_DOOR_EDGE 8 /* Depth of the strip at the far edge that Samus must reach to go through. */
 enum { MM_DOOR_FACING_LEFT, MM_DOOR_FACING_RIGHT, MM_DOOR_FACING_UP, MM_DOOR_FACING_DOWN };
 MmRect mm_door_rect(int x, int y, int facing);
+/* The cap: the half of the door on the room's side, which stays solid until the door is open. */
+MmRect mm_door_cap(int x, int y, int facing);
 int mm_door_touched(MmRect body, int x, int y, int facing);
 #endif

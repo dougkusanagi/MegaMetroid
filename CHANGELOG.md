@@ -10,6 +10,18 @@ O registro detalhado começa em 18/10/2026. A entrada anterior abaixo foi
 reconstituída do commit indicado; o histórico anterior completo permanece no Git
 (`git log`) e as entregas por etapa estão em [docs/PLANO.md](docs/PLANO.md).
 
+## 2026-10-20 20:40:00 −03:00 (America/Sao_Paulo) — Núcleo de portas com tampa e cores (6.6.1)
+
+### Adicionado
+
+- `mm_door_cap`, sólidos extras em `MmWorld` e `src/core/doorlock.c`: a tampa de uma porta
+  fechada bloqueia Samus e tiros; abrir exige o tiro da cor (azul: qualquer um; vermelha:
+  5 mísseis ou 1 super; verde: super). Duração do quadro de abertura provisória (não medida).
+
+**Validação:** `scripts/test.ps1` com o novo `door_locks` (geometria da tampa nas quatro
+orientações, regras por cor, Samus parada pela tampa e livre depois, tiro barrado). O jogo
+ainda não usa o núcleo (6.6.2).
+
 ## 2026-10-20 20:10:00 −03:00 (America/Sao_Paulo) — Tabela do mundo na ROM (6.5.3)
 
 ### Adicionado

@@ -21,10 +21,14 @@ int mm_tile(const MmWorld *w, int x, int y)
 
 int mm_rect_blocked(const MmWorld *w, MmRect r)
 {
-    int tx, ty, first, last;
+    int tx, ty, first, last, i;
     if (r.left < 0 || r.top < 0 || r.right > w->columns * MM_TILE ||
         r.bottom > w->rows * MM_TILE) return 1;
     if (r.right <= r.left || r.bottom <= r.top) return 0;
+    for (i = 0; i < w->solid_count; ++i) {
+        MmRect s = w->solids[i];
+        if (r.left < s.right && r.right > s.left && r.top < s.bottom && r.bottom > s.top) return 1;
+    }
     first = r.left / MM_TILE;
     last = (r.right - 1) / MM_TILE;
     /* One lookup per tile instead of repeated ROM lookups for every pixel. */
