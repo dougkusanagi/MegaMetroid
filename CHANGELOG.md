@@ -10,6 +10,19 @@ O registro detalhado começa em 18/10/2026. A entrada anterior abaixo foi
 reconstituída do commit indicado; o histórico anterior completo permanece no Git
 (`git log`) e as entregas por etapa estão em [docs/PLANO.md](docs/PLANO.md).
 
+## 2026-10-20 19:50:00 −03:00 (America/Sao_Paulo) — Portas ligadas ao grafo real (6.5.2)
+
+### Melhorado
+
+- As portas dos mapas Tiled apontam para o grafo de Crateria (`world_node` no mapa, `link` na
+  porta). O exportador deriva sala de destino e ponto de chegada de `rooms/world.json` e
+  recusa porta na parede errada, fora da posição do original, repetida ou ausente. A rota
+  Landing Site ↔ Crateria 2 deixa de ser escrita à mão: Crateria 2 representa a sala `93AA`.
+
+**Validação:** `tests/check_rooms.py` (novos casos de recusa), `tests/check_world.py` e
+`scripts/test.ps1`; os oito arquivos gerados saíram byte a byte idênticos, portanto a ROM
+não mudou.
+
 ## 2026-10-20 19:25:00 −03:00 (America/Sao_Paulo) — Grafo real de Crateria (6.5.1)
 
 ### Adicionado

@@ -28,7 +28,7 @@ def validate(world):
     """Structural invariants; returns the nodes by id."""
     nodes = nodes_by_id(world)
     need(len(nodes) == len(world['nodes']), 'duplicate room ids')
-    need(world['nodes'][0]['id'] == START, 'the Landing Site must be node 0')
+    need(world['nodes'] and world['nodes'][0]['id'] == START, 'the Landing Site must be node 0')
     size = world['screen_blocks']
     for n in world['nodes']:
         w, h = n['screens'][0] * size, n['screens'][1] * size

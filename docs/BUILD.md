@@ -129,7 +129,10 @@ As salas não são mais editadas em C. Cada `rooms/<id>.tmj` é um mapa do
 [Tiled](https://www.mapeditor.org/) (JSON, tiles 8×8) com a camada de colisão
 (`collision.tsj`: sólido, aberto e duas rampas), o ponto de partida (`spawn`),
 zonas de câmera (`camera`), portas (`doors`) e inimigos (`enemies`); as
-propriedades do mapa dão as imagens de cenário e a rolagem do fundo. A ordem em
+propriedades do mapa dão as imagens de cenário, a rolagem do fundo e `world_node`, a sala
+do Super Metroid (`rooms/world.json`) que o mapa é ou representa. Cada porta tem `color`,
+`facing` e `link`, o índice da porta no nó dessa sala: destino e ponto de chegada vêm do
+grafo, e uma porta cuja sala vizinha ainda não foi construída fica sem destino. A ordem em
 `rooms/index.json` define os números `ROOM_*`. O cabeçalho de `scripts/export_rooms.py`
 descreve cada camada e propriedade.
 

@@ -27,6 +27,11 @@
    "name": "background_scroll_height",
    "type": "int",
    "value": 512
+  },
+  {
+   "name": "world_node",
+   "type": "string",
+   "value": "91F8"
   }
  ],
  "tilesets": [
@@ -339,19 +344,9 @@
        "value": "right"
       },
       {
-       "name": "target_room",
-       "type": "string",
-       "value": ""
-      },
-      {
-       "name": "target_x",
+       "name": "link",
        "type": "int",
-       "value": 0
-      },
-      {
-       "name": "target_y",
-       "type": "int",
-       "value": 0
+       "value": 2
       }
      ]
     },
@@ -377,17 +372,7 @@
        "value": "right"
       },
       {
-       "name": "target_room",
-       "type": "string",
-       "value": ""
-      },
-      {
-       "name": "target_x",
-       "type": "int",
-       "value": 0
-      },
-      {
-       "name": "target_y",
+       "name": "link",
        "type": "int",
        "value": 0
       }
@@ -415,19 +400,9 @@
        "value": "left"
       },
       {
-       "name": "target_room",
-       "type": "string",
-       "value": "crateria_2"
-      },
-      {
-       "name": "target_x",
+       "name": "link",
        "type": "int",
-       "value": 24
-      },
-      {
-       "name": "target_y",
-       "type": "int",
-       "value": 112
+       "value": 3
       }
      ]
     },
@@ -453,19 +428,9 @@
        "value": "left"
       },
       {
-       "name": "target_room",
-       "type": "string",
-       "value": ""
-      },
-      {
-       "name": "target_x",
+       "name": "link",
        "type": "int",
-       "value": 0
-      },
-      {
-       "name": "target_y",
-       "type": "int",
-       "value": 0
+       "value": 1
       }
      ]
     }

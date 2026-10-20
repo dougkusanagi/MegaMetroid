@@ -253,7 +253,7 @@ Para a 3.2: o tamanho de quadro é 64×64 (8×8 tiles); com a Samus em pé, os p
 | 6.2 ✅ | Ferramenta de exportação | Script (Tiled → `.c`/`.res`) para colisão, spawn, câmera, portas e inimigos | Regenerar sala sem editar array à mão |
 | 6.3 ✅ | Transição de sala | Portas, fade, trocar tiles, mapas, paletas e colisão | Crateria 1 → 2 e volta |
 | 6.4 ✅ | Limites de ROM/RAM/VRAM | Medir os orçamentos, recusar sala que não cabe na VRAM, provar que a troca não vaza heap; formato da colisão decidido | Sem estouro em salas grandes |
-| 6.5 | Mapa do mundo | Tabela de salas e conexões de Crateria (6.5.1 grafo extraído ✅) | Percorrer a região inteira |
+| 6.5 | Mapa do mundo | Tabela de salas e conexões de Crateria (6.5.1 grafo extraído ✅, 6.5.2 portas pelo grafo ✅) | Percorrer a região inteira |
 | 6.6 | Portas e blocos | Portas azul/vermelha/verde, blocos destrutíveis | Abrir com o tiro correto |
 
 **6.0 Integração visual antecipada, incluindo a nave** ✅ (2026-10-18).
@@ -359,6 +359,16 @@ Landing Site no port batem com as do original (esquerda y=38 e y=70, direita y=2
 blocos de 16 px). Duas portas (`95D4`) não têm tampa de porta no original (posição 0,0).
 Validação: `tests/check_world.py` (grafo simétrico, chegadas dentro das salas, alcançabilidade,
 portas do Landing Site contra `crateria_1.tmj`, grafos inválidos recusados).
+
+*6.5.2 Portas pelo grafo* ✅ (2026-10-20). Os mapas Tiled ganham a propriedade `world_node`
+(Landing Site = `91F8`; Crateria 2, que é uma sala provisória do projeto anterior, passa a
+representar a `93AA`, a sala vizinha da porta leste superior) e cada porta o `link` do grafo.
+`target_room`/`target_x`/`target_y` saem dos mapas: o exportador deriva destino e ponto de
+chegada de `rooms/world.json` e recusa porta na parede errada, fora da posição do original,
+repetida ou ausente, nó repetido e `world.json` inválido. Só a porta leste superior do Landing
+Site leva a uma sala construída; as outras três deixam de ser rota provisória e passam a ser
+"vizinha ainda não construída" (sem efeito, como antes). Os arquivos gerados saíram idênticos
+byte a byte, então a ROM não muda. Portas verticais ainda não têm ponto de chegada definido.
 
 ### Fase 7 — Itens, progressão e HUD
 

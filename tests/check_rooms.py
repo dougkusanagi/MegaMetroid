@@ -77,16 +77,19 @@ try:
     assert changed == [(5, 7)] and after[5][7] == data[index] - 1
     assert {k for k in edited if edited[k] != base[k]} == {'src/map_crateria_2.c'}
 
-    # 3. A door with a route, an enemy and a camera zone appear in the tables.
+    # 3. The route of a door comes from the world graph: Landing Site east door <-> Crateria 2 west door.
+    c1 = base['src/map_crateria_1.c']
+    assert '{{2272, 352}, ROOM_CRATERIA_2, {24, 112}, ROOM_DOOR_BLUE, ROOM_DOOR_FACING_LEFT}' in c1
+    assert c1.count('ROOM_NO_CONNECTION') == 3  # the three doors whose far rooms are not built
+    assert '{{0, 96}, ROOM_CRATERIA_1, {2240, 368}, ROOM_DOOR_BLUE, ROOM_DOOR_FACING_RIGHT}' in base['src/map_crateria_2.c']
+
+    # 4. A door without a link, an enemy and a camera zone appear in the tables.
     doc = load(tmp, 'crateria_2')
     next_id = doc['nextobjectid']
     layer(doc, 'doors')['objects'].append({
         'id': next_id, 'name': '', 'type': 'door', 'x': 64, 'y': 128, 'width': 32, 'height': 64, 'rotation': 0, 'visible': True,
         'properties': [{'name': 'color', 'type': 'string', 'value': 'red'},
-                       {'name': 'facing', 'type': 'string', 'value': 'up'},
-                       {'name': 'target_room', 'type': 'string', 'value': 'crateria_1'},
-                       {'name': 'target_x', 'type': 'int', 'value': 40},
-                       {'name': 'target_y', 'type': 'int', 'value': 1100}]})
+                       {'name': 'facing', 'type': 'string', 'value': 'up'}]})
     layer(doc, 'enemies')['objects'].append({
         'id': next_id + 1, 'name': '', 'type': 'enemy', 'x': 200, 'y': 300, 'width': 0, 'height': 0, 'rotation': 0,
         'visible': True, 'point': True, 'properties': [{'name': 'kind', 'type': 'int', 'value': 2}]})
@@ -96,19 +99,19 @@ try:
                                         for s, v in zip(('left', 'top', 'right', 'bottom'), (0, 0, 512, 256))]})
     save(tmp, 'crateria_2', doc)
     source = ex.generate(tmp)['src/map_crateria_2.c']
-    assert '{{64, 128}, ROOM_CRATERIA_1, {40, 1100}, ROOM_DOOR_RED, ROOM_DOOR_FACING_UP}' in source
+    assert '{{64, 128}, ROOM_NO_CONNECTION, {0, 0}, ROOM_DOOR_RED, ROOM_DOOR_FACING_UP}' in source
     assert '{2, {200, 300}}' in source
     assert '{{0, 0, 256, 128}, {0, 0, 512, 256}}' in source
     assert '.door_count = sizeof(crateria_2_doors)' in source and '.enemy_spawn_count = sizeof(crateria_2_enemies)' in source
 
-    # 4. Tiled may rewrite the data array on one line; the content is what counts.
+    # 5. Tiled may rewrite the data array on one line; the content is what counts.
     compact = json.loads(json.dumps(doc))
     (tmp / 'rooms/crateria_2.tmj').write_text(json.dumps(compact), newline='\n')
     assert ex.generate(tmp)['src/map_crateria_2.c'] == source
     save(tmp, 'crateria_2', load(tmp, 'crateria_2'))
     assert ex.generate(tmp)['src/map_crateria_2.c'] == source
 
-    # 5. Invalid maps stop the export instead of producing a broken room.
+    # 6. Invalid maps stop the export instead of producing a broken room.
     good = load(tmp, 'crateria_2')
 
     def broken(mutate, text):
@@ -123,7 +126,19 @@ try:
     broken(lambda d: layer(d, 'collision').update(encoding='base64'), 'CSV')
     broken(lambda d: layer(d, 'spawn')['objects'][0].update(x=99999), 'spawn outside')
     broken(lambda d: layer(d, 'spawn')['objects'].clear(), 'exactly one point')
-    broken(lambda d: layer(d, 'doors')['objects'][0]['properties'][2].update(value='nowhere'), 'target_room')
+    broken(lambda d: layer(d, 'doors')['objects'][0]['properties'][2].update(value=7), 'above 0')
+    broken(lambda d: layer(d, 'doors')['objects'][0]['properties'][1].update(value='left'), 'is on the left wall')
+    broken(lambda d: layer(d, 'doors')['objects'][0].update(y=320), 'belongs at block (0, 6)')
+    broken(lambda d: layer(d, 'doors')['objects'].clear(), 'have no door in the map')
+    broken(lambda d: layer(d, 'doors')['objects'].append(json.loads(json.dumps(layer(d, 'doors')['objects'][0]))),
+           'share one link')
+    broken(lambda d: [p.update(value='ZZZZ') for p in d['properties'] if p['name'] == 'world_node'], 'is not a room in rooms/world.json')
+    twins = [dict(id='a', node='91F8', doors=[]), dict(id='b', node='91F8', doors=[])]
+    try:
+        ex.resolve_routes(twins, ex.world_graph.load())
+        raise AssertionError('two rooms accepted for one world_node')
+    except ex.RoomError as error:
+        assert 'is also used by a' in str(error)
     broken(lambda d: layer(d, 'doors')['objects'][0]['properties'][0].update(value='pink'), 'door color')
     broken(lambda d: layer(d, 'doors')['objects'][0].update(x=1270), 'outside the map')
     broken(lambda d: layer(d, 'enemies')['objects'][0]['properties'][0].update(value=70000), 'above 65535')
@@ -134,11 +149,14 @@ try:
     broken(lambda d: d.update(layers=[l for l in d['layers'] if l['name'] != 'doors']), 'missing objectgroup "doors"')
 
     save(tmp, 'crateria_2', good)
+    (tmp / 'rooms/world.json').write_text('{"nodes": []}', newline=chr(10))
+    rejects(tmp, 'world.json')
+    shutil.copy(ROOT / 'rooms/world.json', tmp / 'rooms/world.json')
     shutil.copy(tmp / 'rooms/crateria_2.tmj', tmp / 'rooms/extra_room.tmj')
     rejects(tmp, 'not listed')
     (tmp / 'rooms/extra_room.tmj').unlink()
 
-    # 6. --check notices a hand edit of a generated file (and the write mode repairs it).
+    # 7. --check notices a hand edit of a generated file (and the write mode repairs it).
     with contextlib.redirect_stdout(io.StringIO()):
         ex.main(['--root', str(tmp)])
     target = tmp / 'src/map_crateria_1.c'
