@@ -254,7 +254,7 @@ Para a 3.2: o tamanho de quadro é 64×64 (8×8 tiles); com a Samus em pé, os p
 | 6.3 ✅ | Transição de sala | Portas, fade, trocar tiles, mapas, paletas e colisão | Crateria 1 → 2 e volta |
 | 6.4 ✅ | Limites de ROM/RAM/VRAM | Medir os orçamentos, recusar sala que não cabe na VRAM, provar que a troca não vaza heap; formato da colisão decidido | Sem estouro em salas grandes |
 | 6.5 ✅ | Mapa do mundo | Tabela de salas e conexões de Crateria, extraída do original e embutida na ROM | Percorrer a região inteira (no grafo; salas jogáveis conforme forem construídas) |
-| 6.6 | Portas e blocos (6.6.1 núcleo ✅) | Portas azul/vermelha/verde, blocos destrutíveis | Abrir com o tiro correto |
+| 6.6 | Portas e blocos (6.6.1 núcleo ✅, tempos medidos) | Portas azul/vermelha/verde, blocos destrutíveis | Abrir com o tiro correto |
 
 **6.0 Integração visual antecipada, incluindo a nave** ✅ (2026-10-18).
 Antecipada a pedido do mantenedor. `scripts/build_landing_site.py` usa a sala
@@ -390,8 +390,12 @@ de conteúdo, não de mecanismo: cada sala nova entra como `.tmj` com `world_nod
 sala, 16×64 px); `MmWorld` ganha `solids`, retângulos que bloqueiam como parede por cima da grade
 de tiles (Samus e tiros param neles pelo mesmo `mm_rect_blocked`). `src/core/doorlock.c` é a
 máquina de estados: fechada, abrindo (11 quadros) e aberta; azul abre com qualquer tiro, vermelha
-com 5 mísseis ou 1 super, verde só com super, e o que não serve é recusado. A duração do quadro
-(`MM_DOOR_FRAME_TICKS = 4`) é **provisória**: ainda não foi medida no original. Ainda não ligado
+com 5 mísseis ou 1 super, verde só com super, e o que não serve é recusado. Tempos **medidos no original**
+(Mesen, `scripts/sm_door_reference.lua`, arquivado em `tests/reference/super_metroid/door_open`): depois que o tiro
+bate, a tampa passa por três formas de 6 quadros e some; a Samus anda no quadro em que ela some
+(18 quadros após o impacto). As imagens são os quadros 0 a 4 de `doors_door_r00`: o metal (24 px)
+fica e só o bojo azul (8 px) muda, logo o fundo pode ter só o metal e a tampa ser um sprite de 8 px.
+Limite: um só porta, tiro sem carga, captura a cada 2 quadros. Ainda não ligado
 ao jogo (6.6.2: tiro abre a porta, travessia só com a porta aberta; 6.6.3: animação e arte;
 depois blocos destrutíveis). Mísseis e supers só existem na etapa 4.3: até lá, só a porta azul
 é aberta no jogo. Validação: `door_locks` em `tests/core_test.c`.

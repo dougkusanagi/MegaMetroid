@@ -36,5 +36,5 @@ int mm_lock_solid(const MmDoorLock *lock) { return lock->state != MM_DOOR_OPEN; 
 int mm_lock_frame(const MmDoorLock *lock)
 {
     if (lock->state == MM_DOOR_OPEN) return MM_DOOR_FRAMES;
-    return lock->state == MM_DOOR_CLOSED ? 0 : lock->ticks / MM_DOOR_FRAME_TICKS;
+    return lock->state == MM_DOOR_CLOSED ? 0 : 1 + lock->ticks / MM_DOOR_STEP_TICKS;
 }

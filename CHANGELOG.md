@@ -18,6 +18,9 @@ reconstituída do commit indicado; o histórico anterior completo permanece no G
   fechada bloqueia Samus e tiros; abrir exige o tiro da cor (azul: qualquer um; vermelha:
   5 mísseis ou 1 super; verde: super). Duração do quadro de abertura provisória (não medida).
 
+Duração medida no original (3 formas de 6 quadros, 18 quadros do impacto à passagem), arquivada em
+`tests/reference/super_metroid/door_open` (`sm_reference_cache.py import-door`).
+
 **Validação:** `scripts/test.ps1` com o novo `door_locks` (geometria da tampa nas quatro
 orientações, regras por cor, Samus parada pela tampa e livre depois, tiro barrado). O jogo
 ainda não usa o núcleo (6.6.2).

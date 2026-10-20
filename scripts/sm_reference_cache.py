@@ -154,6 +154,26 @@ def import_sky(prefixes):
     (target/'manifest.json').write_text(json.dumps(metadata, indent=2)+'\n')
 
 
+def import_door(shot_prefix, hold_prefix):
+    """Archive the original's blue door opening: one screenshot per frame, two runs (watch, and walk in)."""
+    target = DEST / 'door_open'
+    target.mkdir(exist_ok=True)
+    files, runs = {}, []
+    for prefix in (shot_prefix, hold_prefix):
+        source = Path(prefix)
+        origin = json.loads(Path(str(source) + '.source.json').read_text(encoding='utf-8-sig'))
+        runs.append({'file': source.name, 'reference': origin})
+        for path in [source, *sorted(source.parent.glob(source.name + '.f*.png'))]:
+            data = path.read_bytes()
+            (target / (path.name + '.gz')).write_bytes(gzip.compress(data, mtime=0))
+            files[path.name + '.gz'] = digest(data)
+    metadata = {'scenario': 'blue_door_opening', 'emulator': 'Mesen 2.1.1 --testrunner', 'runs': runs, 'files': files,
+        'limits': ['One door (Landing Site, lower west) shot with the uncharged Power Beam.',
+                   'Screenshots repeat every two frames, so timings are good to two frames.',
+                   'Run 2 keeps walking into the door; Samus stops at x=20 (no room change observed in 60 frames).']}
+    (target / 'manifest.json').write_text(json.dumps(metadata, indent=2) + chr(10))
+
+
 def check():
     manifest = json.loads((DEST / 'manifest.json').read_text(encoding='utf-8'))
     total = 0
@@ -206,7 +226,7 @@ def check():
     reloads = [int(r['frame']) for i,r in enumerate(held) if i and int(r['cooldown'])>int(held[i-1]['cooldown'])]
     assert reloads[:3] == [216,231,256], 'Original held Power Beam repeats (first gap 15, then 25)'
     print(f'PASS saved reference: {len(manifest["scenarios"])} scenarios, {total} RAM samples; no emulator needed')
-    for scene in (DEST/'landing_site', DEST/'landing_sky'):
+    for scene in (DEST/'landing_site', DEST/'landing_sky', DEST/'door_open'):
         if scene.exists():
             metadata = json.loads((scene / 'manifest.json').read_text())
             for name, expected in metadata['files'].items():
@@ -226,7 +246,7 @@ def check():
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('action', choices=['import', 'import-scene', 'import-sky', 'check'])
+    parser.add_argument('action', choices=['import', 'import-scene', 'import-sky', 'import-door', 'check'])
     parser.add_argument('patterns', nargs='*')
     parser.add_argument('--rom')
     parser.add_argument('--state')
@@ -235,6 +255,8 @@ if __name__ == '__main__':
         import_traces(args.patterns, args.rom, args.state)
     elif args.action == 'import-scene':
         import_scene(args.patterns[0])
+    elif args.action == 'import-door':
+        import_door(*args.patterns)
     elif args.action == 'import-sky':
         import_sky(args.patterns)
     check()

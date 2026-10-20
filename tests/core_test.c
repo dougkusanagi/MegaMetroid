@@ -347,7 +347,7 @@ static void door_locks(void) {
     assert(mm_lock_hit(&lock, MM_LOCK_BLUE, MM_SHOT_BEAM) && lock.state == MM_DOOR_OPENING);
     assert(!mm_lock_hit(&lock, MM_LOCK_BLUE, MM_SHOT_BEAM)); /* Already opening. */
     for (i = 0; i < MM_DOOR_OPEN_TICKS - 1; ++i) { mm_lock_tick(&lock); assert(mm_lock_solid(&lock)); }
-    assert(mm_lock_frame(&lock) == MM_DOOR_FRAMES - 1);
+    assert(mm_lock_frame(&lock) == MM_DOOR_STEPS && MM_DOOR_OPEN_TICKS == 18);
     mm_lock_tick(&lock);
     assert(!mm_lock_solid(&lock) && mm_lock_frame(&lock) == MM_DOOR_FRAMES && lock.state == MM_DOOR_OPEN);
     mm_lock_init(&lock, 1);
