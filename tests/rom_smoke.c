@@ -16,6 +16,9 @@ volatile u32 mm_smoke_failure; /* Failure bitmask, printed through the GDB API. 
 volatile u16 mm_smoke_video[4096];
 volatile u16 mm_smoke_video_header[76];
 volatile u16 mm_smoke_video_chunk;
+/* VRAM tiles available, tiles used by each room, then heap bytes free at the start and after each
+   trip through the doors, and the largest free block at the end. */
+volatile u16 mm_smoke_memory[10];
 volatile u16 mm_smoke_perf[10]; /* CPU/DMA/missed VInts per jump, then initial/minimum camera Y. */
 
 /* Samus placed at pos stands in the open, inside the room. */
@@ -144,30 +147,43 @@ static void idle(Game *g, int frames)
 }
 
 /* Etapa 6.3, with the real doors: the Landing Site's east door leads to Crateria 2 and its west
-   door leads back; an unconnected door stays shut. */
+   door leads back; an unconnected door stays shut. Etapa 6.4: three round trips return every byte
+   of heap, and each room fits in VRAM. */
 static int room_transitions(Game *g)
 {
-    int failed = 0;
+    int failed = 0, trip, i;
     int px, py;
+    u16 free_start;
+    for (i = 0; i < ROOM_COUNT; ++i)
+        mm_smoke_memory[1 + i] = room_get(i)->tileset_fg->numTile + room_get(i)->tileset_bg->numTile;
+    mm_smoke_memory[0] = TILE_USER_LENGTH;
+    for (i = 0; i < ROOM_COUNT; ++i) if (!game_room_fits_vram(room_get(i))) failed |= 32;
     /* The west door of the Landing Site has no route: Samus reaches its strip and stays. */
     mm_samus_init(&g->player, 40, 624);
     idle(g, 40);
     if (walk_through(g, -1) != -1 || g->room != room_get(ROOM_CRATERIA_1) ||
         mm_pixel(g->player.x) + g->player.hitbox.left >= MM_DOOR_EDGE) failed |= 1;
-    /* East door: Samus emerges in Crateria 2, facing the way she was walking. */
     mm_samus_init(&g->player, 2210, 368);
     idle(g, 30);
-    if (walk_through(g, 1) < 0 || g->room != room_get(ROOM_CRATERIA_2)) return failed | 2;
-    idle(g, 40);
-    px = mm_pixel(g->player.x); py = mm_pixel(g->player.y);
-    if (!room_loaded(g) || g->player.facing_left || !g->player.grounded ||
-        px != 24 || py + g->player.hitbox.bottom != 160 || g->camera.x != 0) failed |= 4;
-    /* And back through Crateria 2's west door, now walking left. */
-    if (walk_through(g, -1) < 0 || g->room != room_get(ROOM_CRATERIA_1)) return failed | 8;
-    idle(g, 40);
-    px = mm_pixel(g->player.x); py = mm_pixel(g->player.y);
-    if (!room_loaded(g) || !g->player.facing_left || !g->player.grounded ||
-        px != 2240 || py + g->player.hitbox.bottom != 416) failed |= 16;
+    free_start = MEM_getFree();
+    mm_smoke_memory[3] = free_start;
+    for (trip = 0; trip < 3; ++trip) {
+        /* East door: Samus emerges in Crateria 2, facing the way she was walking. */
+        if (walk_through(g, 1) < 0 || g->room != room_get(ROOM_CRATERIA_2)) return failed | 2;
+        idle(g, 40);
+        px = mm_pixel(g->player.x); py = mm_pixel(g->player.y);
+        if (!room_loaded(g) || g->player.facing_left || !g->player.grounded ||
+            px != 24 || py + g->player.hitbox.bottom != 160 || g->camera.x != 0) failed |= 4;
+        /* And back through Crateria 2's west door, now walking left. */
+        if (walk_through(g, -1) < 0 || g->room != room_get(ROOM_CRATERIA_1)) return failed | 8;
+        idle(g, 40);
+        px = mm_pixel(g->player.x); py = mm_pixel(g->player.y);
+        if (!room_loaded(g) || !g->player.facing_left || !g->player.grounded ||
+            px != 2240 || py + g->player.hitbox.bottom != 416) failed |= 16;
+        mm_smoke_memory[4 + trip] = MEM_getFree();
+        if (MEM_getFree() != free_start) failed |= 64;
+    }
+    mm_smoke_memory[7] = MEM_getLargestFreeBlock();
     return failed;
 }
 

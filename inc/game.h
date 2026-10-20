@@ -20,6 +20,8 @@ typedef struct {
 } Game;
 
 bool game_init(Game *game, u16 room_index);
+/* The room's two tilesets fit in the user VRAM, below the sprite tiles and the font. */
+bool game_room_fits_vram(const room_def *room);
 /* Fades out, swaps the room's tiles, maps, palettes and collision, puts Samus at spawn (the
    room's pixel coordinates, as for room_def.player_initial_pos) and fades in. Samus keeps her
    facing. Returns FALSE, with the old room already released, only if the new maps do not fit. */

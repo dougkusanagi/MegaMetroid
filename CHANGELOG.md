@@ -10,6 +10,44 @@ O registro detalhado começa em 18/10/2026. A entrada anterior abaixo foi
 reconstituída do commit indicado; o histórico anterior completo permanece no Git
 (`git log`) e as entregas por etapa estão em [docs/PLANO.md](docs/PLANO.md).
 
+## 2026-10-20 20:45:00 −03:00 (America/Sao_Paulo) — Orçamentos de VRAM, heap e ROM (6.4)
+
+### Adicionado
+
+- `game_room_fits_vram`: uma sala cujos tilesets não cabem na VRAM de usuário é
+  recusada. `game_change_room` devolve FALSE antes de mexer na sala atual; `game_init`
+  falha com mensagem em vez de sobrescrever os tiles de sprites.
+- O smoke mede e imprime VRAM disponível e usada por sala e o heap livre antes e depois
+  de cada uma de três idas e voltas pelas portas; falha se faltar VRAM ou se sobrar vazamento.
+
+### Melhorado
+
+- Orçamentos medidos e registrados em `docs/PLANO.md` (6.4): 1.005 tiles de VRAM livres
+  (Landing Site usa 437, Crateria 2 usa 121), 26.972 bytes de heap sem perda pelas trocas,
+  ROM em 1,44 MB de 4 MB. Decisão: a colisão segue em 1 byte por tile 8×8 (≈5% da ROM).
+
+**Validação:** smoke completo no BlastEm via GDB com as métricas acima; as três idas e voltas
+devolvem exatamente os mesmos 26.972 bytes. Regressões do host inalteradas (sem mudança no núcleo).
+
+## 2026-10-20 20:45:00 −03:00 (America/Sao_Paulo) — Orçamentos de VRAM, heap e ROM (6.4)
+
+### Adicionado
+
+- `game_room_fits_vram`: uma sala cujos tilesets não cabem na VRAM de usuário é
+  recusada. `game_change_room` devolve FALSE antes de mexer na sala atual; `game_init`
+  falha com mensagem em vez de sobrescrever os tiles de sprites.
+- O smoke mede e imprime VRAM disponível e usada por sala e o heap livre antes e depois
+  de cada uma de três idas e voltas pelas portas; falha se faltar VRAM ou se sobrar vazamento.
+
+### Melhorado
+
+- Orçamentos medidos e registrados em `docs/PLANO.md` (6.4): 1.005 tiles de VRAM livres
+  (Landing Site usa 437, Crateria 2 usa 121), 26.972 bytes de heap sem perda pelas trocas,
+  ROM em 1,44 MB de 4 MB. Decisão: a colisão segue em 1 byte por tile 8×8 (≈5% da ROM).
+
+**Validação:** smoke completo no BlastEm via GDB com as métricas acima; as três idas e voltas
+devolvem exatamente os mesmos 26.972 bytes. Regressões do host inalteradas (sem mudança no núcleo).
+
 ## 2026-10-20 20:10:00 −03:00 (America/Sao_Paulo) — Transição entre salas (6.3)
 
 ### Adicionado

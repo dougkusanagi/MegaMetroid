@@ -199,9 +199,15 @@ static void enter_room(Game *g, const room_def *room, int x, int y)
 
 /* Foreground tiles, then background tiles, from the start of the user VRAM. CPU transfers keep
    setup from queuing data across buffer resizing; interrupts are off around the call. */
+bool game_room_fits_vram(const room_def *room)
+{
+    return room->tileset_fg->numTile + room->tileset_bg->numTile <= TILE_USER_LENGTH;
+}
+
 static bool load_room_maps(Game *g)
 {
     u16 tile = TILE_USER_INDEX;
+    if (!game_room_fits_vram(g->room)) return FALSE;
     VDP_loadTileSet(g->room->tileset_fg, tile, CPU);
     g->foreground = MAP_create(g->room->map_fg, BG_A, TILE_ATTR_FULL(PAL0, FALSE, FALSE, FALSE, tile));
     tile += g->room->tileset_fg->numTile;
@@ -268,7 +274,7 @@ bool game_change_room(Game *g, u16 room_index, Vect2D_s16 spawn)
     const room_def *room = room_get(room_index);
     bool facing_left = g->player.facing_left, loaded;
     u16 colors[64], i;
-    if (!room) return FALSE;
+    if (!room || !game_room_fits_vram(room)) return FALSE; /* Refused before touching the current room. */
     /* The picture goes black before anything in VRAM changes, so the swap is never seen. */
     PAL_fadeOutAll(ROOM_FADE_FRAMES, FALSE);
     for (i = 0; i < MM_BEAM_COUNT; ++i) SPR_setVisibility(g->beam_sprites[i], HIDDEN);

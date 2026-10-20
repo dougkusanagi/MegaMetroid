@@ -68,6 +68,8 @@ com `--blastem` e `--gdb`; `--timeout` limita a espera (padrão: 120 segundos; o
 smoke completo leva cerca de 50).
 O `out/symbol.txt` deve pertencer à mesma build `-SmokeTest`. Para uma ROM em
 outro diretório, passe os caminhos correspondentes com `--rom` e `--symbols`.
+Ao fim, o smoke imprime também as métricas de orçamento (`VRAM_TILES_*`, `HEAP_*`;
+ver 6.4 em `docs/PLANO.md`) e falha se uma sala não couber na VRAM ou a troca vazar heap.
 O log também imprime `MM_SMOKE_FAILURE`, uma máscara dos grupos que falharam
 (zero quando todos passaram). Os bits são definidos junto às verificações em
 `tests/rom_smoke.c`, para localizar falhas pela API sem abrir a interface.

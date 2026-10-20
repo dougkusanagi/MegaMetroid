@@ -252,7 +252,7 @@ Para a 3.2: o tamanho de quadro é 64×64 (8×8 tiles); com a Samus em pé, os p
 | 6.1 ✅ | Formato de sala | `room_def`: tilemaps, colisão, spawn, inimigos, portas, zonas de câmera e tamanho | Crateria 1 e 2 inicializadas pelo carregador comum |
 | 6.2 ✅ | Ferramenta de exportação | Script (Tiled → `.c`/`.res`) para colisão, spawn, câmera, portas e inimigos | Regenerar sala sem editar array à mão |
 | 6.3 ✅ | Transição de sala | Portas, fade, trocar tiles, mapas, paletas e colisão | Crateria 1 → 2 e volta |
-| 6.4 | Streaming do mapa | Verificar limites de ROM/RAM; compressão/tiles de colisão 16x16 | Sem estouro em salas grandes |
+| 6.4 ✅ | Limites de ROM/RAM/VRAM | Medir os orçamentos, recusar sala que não cabe na VRAM, provar que a troca não vaza heap; formato da colisão decidido | Sem estouro em salas grandes |
 | 6.5 | Mapa do mundo | Tabela de salas e conexões de Crateria | Percorrer a região inteira |
 | 6.6 | Portas e blocos | Portas azul/vermelha/verde, blocos destrutíveis | Abrir com o tiro correto |
 
@@ -322,6 +322,27 @@ Validação: `doors` no núcleo; no BlastEm, a ROM atravessa a porta leste de ve
 VRAM (tiles dos dois planos lidos pelo VDP), CRAM, colisão, posição, chão e lado;
 uma porta sem rota não transiciona. Depois da ida e volta, as seis vistas do
 Landing Site continuam idênticas pixel a pixel (`--capture-scenes`).
+
+**6.4 Orçamentos e limites** ✅ (2026-10-20). Medido na ROM (BlastEm, smoke):
+
+| Recurso | Medida | Folga |
+|---------|--------|-------|
+| VRAM de tiles do usuário | 1.005 tiles (depois do mecanismo de sprites e da fonte) | Landing Site usa 437 (fg+bg), Crateria 2 usa 121 |
+| Heap (SGDK) | 26.972 bytes livres com o Landing Site carregado; maior bloco 9.962 | Três idas e voltas pelas portas devolvem todos os bytes |
+| ROM | 1,44 MB de 4 MB | música 1,1 MB; colisão das duas salas 70,5 KB (44.928 + 25.600), cerca de 5% |
+
+`game_room_fits_vram` recusa uma sala cujos tilesets não cabem na VRAM de usuário:
+`game_change_room` devolve FALSE antes de tocar a sala atual e `game_init` falha com
+mensagem, em vez de sobrescrever o mecanismo de sprites. O smoke confere a folga, o
+vazamento e cada chegada. **Não há streaming de mapa**: a sala inteira entra de uma vez
+(os MAPs do SGDK já rolam pelo tilemap sem carregar tudo) e a colisão é lida direto
+da ROM. **Decisão:** manter a colisão em 1 byte por tile 8×8. Tiles de colisão 16×16
+tirariam a precisão das rampas de 45° e da hitbox da Samus, e 2 bits por tile
+(÷4, ~17 KB para as duas salas) só compensa se a ROM apertar; a conversão fica no
+exportador (6.2), então trocar o formato depois não exige editar salas. O que pesa na
+ROM são música e arte, não a colisão. Limite conhecido: o maior bloco livre do heap
+(9,9 KB) é menor que o livre total (27 KB) e as futuras salas grandes precisam de
+um par de MAPs que caiba nele; a medição por sala entra a cada sala nova no smoke.
 
 ### Fase 7 — Itens, progressão e HUD
 

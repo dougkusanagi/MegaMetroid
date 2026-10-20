@@ -141,6 +141,11 @@ def main():
             for index, label in enumerate(('NORMAL_CPU', 'NORMAL_DMA', 'NORMAL_MISSED', 'SPIN_CPU', 'SPIN_DMA', 'SPIN_MISSED',
                                            'NORMAL_Y0', 'NORMAL_YMIN', 'SPIN_Y0', 'SPIN_YMIN')):
                 commands += ['-ex', f'printf "{label}=%d\\n", *(unsigned short*)0x{perf+index*2:x}']
+        if 'mm_smoke_memory' in symbols:
+            memory = int(symbols['mm_smoke_memory'], 16) & 0xFFFFFF
+            for index, label in enumerate(('VRAM_TILES_AVAILABLE', 'VRAM_TILES_ROOM_0', 'VRAM_TILES_ROOM_1', 'HEAP_FREE_START',
+                                           'HEAP_FREE_TRIP_1', 'HEAP_FREE_TRIP_2', 'HEAP_FREE_TRIP_3', 'HEAP_LARGEST_BLOCK')):
+                commands += ['-ex', f'printf "{label}=%d\\n", *(unsigned short*)0x{memory+index*2:x}']
         if args.capture_scenes:
             # Install capture commands before continuing to the final breakpoint.
             video = int(symbols['mm_smoke_video'], 16) & 0xFFFFFF
@@ -170,7 +175,7 @@ end
         if completed.returncode or 'MM_SMOKE_RESULT=1' not in output:
             raise SystemExit('Smoke test failed; see tests/out/smoke-gdb.log\n' + output)
         print('SMOKE PASS (BlastEm GDB API, no desktop input)')
-        metrics = [line for line in output.splitlines() if line.startswith(('NORMAL_', 'SPIN_'))]
+        metrics = [line for line in output.splitlines() if line.startswith(('NORMAL_', 'SPIN_', 'VRAM_', 'HEAP_'))]
         if any(int(line.split('=', 1)[1]) for line in metrics):
             for line in metrics: print(line)
         if args.capture_scenes:
