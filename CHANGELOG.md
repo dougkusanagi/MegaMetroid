@@ -10,6 +10,18 @@ O registro detalhado começa em 18/10/2026. A entrada anterior abaixo foi
 reconstituída do commit indicado; o histórico anterior completo permanece no Git
 (`git log`) e as entregas por etapa estão em [docs/PLANO.md](docs/PLANO.md).
 
+## 2026-10-21 17:50:31 −03:00 (America/Sao_Paulo) — Mira diagonal de seis botões (3.3.1)
+
+### Adicionado
+
+- Y/Z miram na diagonal acima/abaixo sem andar, em pé ou agachada, com oito poses
+  originais e origem do feixe calculada por pose. Y+Z retornam à mira do direcional.
+- Testes das duas posturas e direções, soltura, poses na ROM e direção dos disparos.
+
+**Validação:** `scripts/test.ps1 -Compiler gcc`, build SGDK `-SmokeTest` e
+`python scripts/smoke_test.py`: `SMOKE PASS` via GDB no BlastEm, sem ativar a janela.
+Sem VInts perdidos nas medições; heap estável nas três viagens entre salas.
+
 ## 2026-10-20 20:40:00 −03:00 (America/Sao_Paulo) — Núcleo de portas com tampa e cores (6.6.1)
 
 ### Adicionado
