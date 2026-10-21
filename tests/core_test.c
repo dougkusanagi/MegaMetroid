@@ -362,6 +362,19 @@ static void door_locks(void) {
     mm_lock_init(&lock, 0);
     assert(!mm_lock_hit(&lock, MM_LOCK_GREEN, MM_SHOT_BEAM) && !mm_lock_hit(&lock, MM_LOCK_GREEN, MM_SHOT_MISSILE));
     assert(mm_lock_hit(&lock, MM_LOCK_GREEN, MM_SHOT_SUPER));
+    /* A beam that stopped on a cap finds its door by the impact point; an open door no longer catches it. */
+    {
+        MmDoorLock locks[2];
+        MmRect caps[2] = {{100, 100, 116, 164}, {200, 100, 216, 164}};
+        mm_lock_init(&locks[0], 0); mm_lock_init(&locks[1], 0);
+        assert(mm_lock_at(locks, caps, 2, 100, 100) == 0 && mm_lock_at(locks, caps, 2, 115, 163) == 0);
+        assert(mm_lock_at(locks, caps, 2, 210, 130) == 1);
+        assert(mm_lock_at(locks, caps, 2, 190, 130) == -1 && mm_lock_at(locks, caps, 2, 116, 130) == -1);
+        assert(mm_lock_at(locks, caps, 2, 110, 99) == -1 && mm_lock_at(locks, caps, 2, 110, 164) == -1);
+        mm_lock_init(&locks[0], 1);
+        assert(mm_lock_at(locks, caps, 2, 110, 130) == -1);
+        assert(mm_lock_at(locks, caps, 1, 210, 130) == -1);
+    }
     /* Samus walking right on a floor stops at a closed cap and goes on once it is not a solid. */
     reset(); floor_at(20);
     solids[0] = (MmRect){200, 100, 216, 164};
@@ -383,7 +396,7 @@ static void door_locks(void) {
         w.solid_count = 0;
         assert(!mm_rect_blocked(&w, probe));
     }
-    puts("PASS door locks: cap blocks until open; blue/red/green take the right shots");
+    puts("PASS door locks: cap blocks until open; blue/red/green take the right shots; shots find their cap");
 }
 
 static void camera_and_input(void) {

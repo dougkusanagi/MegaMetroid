@@ -1,6 +1,7 @@
 #ifndef MM_DOORLOCK_H
 #define MM_DOORLOCK_H
 /* Portable C: what it takes to open a door, and the door's state while it opens. */
+#include "world.h"
 
 /* Same order as RoomDoorColor. */
 enum { MM_LOCK_BLUE, MM_LOCK_RED, MM_LOCK_GREEN };
@@ -28,4 +29,7 @@ void mm_lock_tick(MmDoorLock *lock);
 int mm_lock_solid(const MmDoorLock *lock);
 /* Image to show: 0 shut, 1..MM_DOOR_STEPS the shapes, MM_DOOR_FRAMES fully open. */
 int mm_lock_frame(const MmDoorLock *lock);
+/* Index of the first door whose cap still blocks and contains the point, or -1. A beam that
+   stopped on its cap is the shot that can open it. */
+int mm_lock_at(const MmDoorLock *locks, const MmRect *caps, int count, int x, int y);
 #endif

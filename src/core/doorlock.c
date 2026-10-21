@@ -38,3 +38,14 @@ int mm_lock_frame(const MmDoorLock *lock)
     if (lock->state == MM_DOOR_OPEN) return MM_DOOR_FRAMES;
     return lock->state == MM_DOOR_CLOSED ? 0 : 1 + lock->ticks / MM_DOOR_STEP_TICKS;
 }
+
+int mm_lock_at(const MmDoorLock *locks, const MmRect *caps, int count, int x, int y)
+{
+    int i;
+    for (i = 0; i < count; ++i) {
+        const MmRect *cap = &caps[i];
+        if (mm_lock_solid(&locks[i]) && x >= cap->left && x < cap->right &&
+            y >= cap->top && y < cap->bottom) return i;
+    }
+    return -1;
+}
