@@ -246,8 +246,10 @@ def render_c(r):
         entries = []
         for d in r['doors']:
             target = f'ROOM_{d["target"].upper()}' if d['target'] else 'ROOM_NO_CONNECTION'
-            entries.append('    {{%d, %d}, %s, {%d, %d}, ROOM_DOOR_%s, ROOM_DOOR_FACING_%s}' %
-                           (d['x'], d['y'], target, d['tx'], d['ty'], d['color'].upper(), d['facing'].upper()))
+            link = d['link'] if d['link'] is not None else 'ROOM_NO_LINK'
+            entries.append('    {{%d, %d}, %s, {%d, %d}, ROOM_DOOR_%s, ROOM_DOOR_FACING_%s, %s}' %
+                           (d['x'], d['y'], target, d['tx'], d['ty'], d['color'].upper(),
+                            d['facing'].upper(), link))
         out += [',\n'.join(entries), '};', '']
     if r['enemies']:
         out.append(f'static const RoomEnemySpawn {rid}_enemies[] = {{')

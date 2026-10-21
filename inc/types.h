@@ -3,6 +3,7 @@
 #include "core/world.h"
 
 #define ROOM_NO_CONNECTION 0xFFFF
+#define ROOM_NO_LINK 0xFFFF
 
 typedef struct {
     u16 kind;
@@ -28,6 +29,7 @@ typedef struct {
     Vect2D_s16 target_spawn;
     RoomDoorColor color;
     RoomDoorFacing facing;
+    u16 link; /* Index of this door in the room's node of rooms/world.json. */
 } RoomDoorDef;
 
 typedef struct room_def {

@@ -170,7 +170,7 @@ const u8 map_collision_crateria_2[160][160] = {
 };
 
 static const RoomDoorDef crateria_2_doors[] = {
-    {{0, 96}, ROOM_CRATERIA_1, {2240, 368}, ROOM_DOOR_BLUE, ROOM_DOOR_FACING_RIGHT}
+    {{0, 96}, ROOM_CRATERIA_1, {2240, 368}, ROOM_DOOR_BLUE, ROOM_DOOR_FACING_RIGHT, 0}
 };
 
 const room_def room_crateria_2 = {

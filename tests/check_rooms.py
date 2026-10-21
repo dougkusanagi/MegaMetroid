@@ -79,9 +79,9 @@ try:
 
     # 3. The route of a door comes from the world graph: Landing Site east door <-> Crateria 2 west door.
     c1 = base['src/map_crateria_1.c']
-    assert '{{2272, 352}, ROOM_CRATERIA_2, {24, 112}, ROOM_DOOR_BLUE, ROOM_DOOR_FACING_LEFT}' in c1
+    assert '{{2272, 352}, ROOM_CRATERIA_2, {24, 112}, ROOM_DOOR_BLUE, ROOM_DOOR_FACING_LEFT, 3}' in c1
     assert c1.count('ROOM_NO_CONNECTION') == 3  # the three doors whose far rooms are not built
-    assert '{{0, 96}, ROOM_CRATERIA_1, {2240, 368}, ROOM_DOOR_BLUE, ROOM_DOOR_FACING_RIGHT}' in base['src/map_crateria_2.c']
+    assert '{{0, 96}, ROOM_CRATERIA_1, {2240, 368}, ROOM_DOOR_BLUE, ROOM_DOOR_FACING_RIGHT, 0}' in base['src/map_crateria_2.c']
 
     # 4. A door without a link, an enemy and a camera zone appear in the tables.
     doc = load(tmp, 'crateria_2')
@@ -99,7 +99,7 @@ try:
                                         for s, v in zip(('left', 'top', 'right', 'bottom'), (0, 0, 512, 256))]})
     save(tmp, 'crateria_2', doc)
     source = ex.generate(tmp)['src/map_crateria_2.c']
-    assert '{{64, 128}, ROOM_NO_CONNECTION, {0, 0}, ROOM_DOOR_RED, ROOM_DOOR_FACING_UP}' in source
+    assert '{{64, 128}, ROOM_NO_CONNECTION, {0, 0}, ROOM_DOOR_RED, ROOM_DOOR_FACING_UP, ROOM_NO_LINK}' in source
     assert '{2, {200, 300}}' in source
     assert '{{0, 0, 256, 128}, {0, 0, 512, 256}}' in source
     assert '.door_count = sizeof(crateria_2_doors)' in source and '.enemy_spawn_count = sizeof(crateria_2_enemies)' in source
