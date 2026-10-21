@@ -90,6 +90,7 @@ typedef struct {
     int axis, jump_pressed;
     int run_held, shoot_held, shoot_pressed, aim_y;
     int jump_held, down_pressed, up_pressed;
+    int aim_diagonal; /* Six-button Y/Z: -1 up-forward, +1 down-forward, 0 d-pad. */
 } MmInput;
 typedef struct { unsigned short previous; } MmInputState;
 typedef struct { MmRect trigger, bounds; } MmCameraZone;

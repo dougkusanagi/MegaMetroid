@@ -69,6 +69,14 @@ enum {
     PLAYER_ANIM_TURN_L, /* pose 26 */
     PLAYER_ANIM_TURN_AIR_R, /* pose 2F */
     PLAYER_ANIM_TURN_AIR_L, /* pose 30 */
+    PLAYER_ANIM_AIM_DIAG_UP_R, /* pose 05:0 */
+    PLAYER_ANIM_AIM_DIAG_UP_L, /* pose 06:0 */
+    PLAYER_ANIM_AIM_DIAG_DOWN_R, /* pose 07:0 */
+    PLAYER_ANIM_AIM_DIAG_DOWN_L, /* pose 08:0 */
+    PLAYER_ANIM_CROUCH_AIM_DIAG_UP_R, /* pose 71:0 */
+    PLAYER_ANIM_CROUCH_AIM_DIAG_UP_L, /* pose 72:0 */
+    PLAYER_ANIM_CROUCH_AIM_DIAG_DOWN_R, /* pose 73:0 */
+    PLAYER_ANIM_CROUCH_AIM_DIAG_DOWN_L, /* pose 74:0 */
     PLAYER_ANIM_COUNT
 };
 
@@ -138,6 +146,14 @@ static const signed char player_muzzle[PLAYER_ANIM_COUNT][2] = {
     {9, 17}, /* 26 */
     {27, 11}, /* 2F */
     {9, 17}, /* 30 */
+    {38, 1}, /* 05:0 */
+    {0, 1}, /* 06:0 */
+    {38, 29}, /* 07:0 */
+    {2, 29}, /* 08:0 */
+    {38, 13}, /* 71:0 */
+    {0, 11}, /* 72:0 */
+    {38, 39}, /* 73:0 */
+    {2, 39}, /* 74:0 */
 };
 
 #endif /* MM_PLAYER_ANIM_H */

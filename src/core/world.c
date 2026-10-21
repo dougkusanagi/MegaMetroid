@@ -239,6 +239,7 @@ static MmState body_state(const MmBody *b)
 static MmAim body_aim(const MmBody *b, MmInput input)
 {
     if (b->ball) return MM_AIM_FORWARD;
+    if (input.aim_diagonal) return input.aim_diagonal < 0 ? MM_AIM_DIAG_UP : MM_AIM_DIAG_DOWN;
     if (input.aim_y < 0) return input.axis ? MM_AIM_DIAG_UP : MM_AIM_UP;
     if (input.aim_y > 0) {
         if (input.axis) return MM_AIM_DIAG_DOWN;

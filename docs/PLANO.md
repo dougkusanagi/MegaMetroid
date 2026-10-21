@@ -200,9 +200,16 @@ Teste: `turn_animation()` no núcleo; a ROM confere as quatro tiras e seus três
 quadros, com `SMOKE PASS` via API GDB do BlastEm. Custo em `docs/SPRITES.md`.
 
 **Fora da 3.2.** Ficam para a 3.3:
-- Mira diagonal parado (`05`–`08`) e agachado (`71`–`74`): no SNES vem de L/R, e o controle de 3 botões não tem botões livres. **Decidido:** no controle de 6 botões, L = Z (mirar para baixo) e R = Y (mirar para cima); X fica livre para cancelar item. Ainda não implementado no código.
+- Mira diagonal parado (`05`–`08`) e agachado (`71`–`74`): no SNES vem de L/R, e o controle de 3 botões não tem botões livres. **Decidido:** no controle de 6 botões, L = Z (mirar para baixo) e R = Y (mirar para cima); X fica livre para cancelar item. Implementado na 3.3.1 abaixo.
 - Revisar saída e duração da pose do wall jump: a auditoria 6.0.1 confirmou o limite lateral, mas não equivalência dos tempos visuais.
 - Moonwalk, pouso atirando (`E6`/`E7`), pouco HP, space jump e screw attack.
+
+**3.3.1 Mira diagonal de seis botões** ✅ (2026-10-21). Y mira acima e Z abaixo,
+sem andar ou desfazer a agachada. Y+Z juntos retornam à mira do direcional.
+As poses 05–08 e 71–74 entram na folha, com pés alinhados e origem do tiro gerada
+por pose. Testes do núcleo cobrem ambos os lados e posturas e soltura;
+a ROM confere as oito linhas e direções dos tiros no BlastEm via GDB.
+A etapa 3.3 continua aberta para a revisão do wall jump e demais animações listadas.
 
 **Lacunas da prancha.**
 - A pose `16` (pulo parado, esquerda, mirando para cima) não tem faixa própria: são os quadros 2–3 da tira `15`.

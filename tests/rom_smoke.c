@@ -453,6 +453,33 @@ int main(bool hardReset)
             if ((seen & 60) != 60 || !g.player.grounded) failed |= 2048;
         }
     }
+    /* 3.3.1: stationary diagonal poses, muzzle and beam direction on the target. */
+    {
+        MmBody saved_player = g.player;
+        int side, down, crouch;
+        for (side = 0; side < 2; ++side) for (down = 0; down < 2; ++down)
+            for (crouch = 0; crouch < 2; ++crouch) {
+                u16 expected;
+                mm_samus_init(&g.player, mm_pixel(g.player.x),
+                              mm_pixel(g.player.y) + g.player.hitbox.bottom - 48);
+                game_update(&g, (MmInput){0});
+                g.player.facing_left = side;
+                if (crouch) game_update(&g, (MmInput){.aim_y = 1, .down_pressed = 1});
+                mm_weapon_init(&g.weapon);
+                game_update(&g, (MmInput){.aim_diagonal = down ? 1 : -1,
+                                         .shoot_held = 1, .shoot_pressed = 1});
+                expected = (crouch ? (down ? PLAYER_ANIM_CROUCH_AIM_DIAG_DOWN_R : PLAYER_ANIM_CROUCH_AIM_DIAG_UP_R) :
+                                    (down ? PLAYER_ANIM_AIM_DIAG_DOWN_R : PLAYER_ANIM_AIM_DIAG_UP_R)) + side;
+                if (g.animation != expected || g.player.crouching != crouch || g.player.vx ||
+                    !g.weapon.fired || (g.weapon.beams[0].vx < 0) != side ||
+                    (g.weapon.beams[0].vy > 0) != down) failed |= 1UL << 22;
+                SYS_doVBlankProcess();
+                game_update(&g, (MmInput){0});
+                if (g.player.aim != MM_AIM_FORWARD) failed |= 1UL << 22;
+            }
+        g.player = saved_player;
+        mm_weapon_init(&g.weapon);
+    }
     if (turns(&g)) failed |= 4096;
     if (beam_motion()) failed |= 32768;
     /* A downward beam just above the floor must render all five impact frames, then hide. */

@@ -32,7 +32,8 @@ para correr, **C** para pular (soltar C na subida para a subida na hora, como no
 giratório, encostado numa parede e com o direcional apontando para longe dela, faz pulo de parede, e **A** para o Power Beam básico. No teclado
 do Fusion configurado nesta máquina: A = tecla A, B = tecla S, C = tecla D.
 No controle de 6 botões, a mira de L/R do SNES fica em Z (baixo) e Y (cima); X fica livre para
-cancelar item. Ainda não implementado. Para jogar com um controle Xbox no layout do SNES, veja o
+cancelar item. Segure Y para mirar na diagonal acima ou Z para a diagonal abaixo, inclusive
+parado e agachado; soltar retorna à mira do direcional. Y+Z juntos deixam a mira no direcional. Para jogar com um controle Xbox no layout do SNES, veja o
 remap do RetroArch descrito em `docs/BUILD.md`.
 Segure cima para mirar acima; cima + esquerda/direita mira na diagonal, parado ou andando, e a pose
 de mira aparece mesmo sem atirar. Baixo + esquerda/direita anda mirando na diagonal abaixo. No ar,

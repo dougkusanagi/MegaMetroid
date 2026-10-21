@@ -93,13 +93,17 @@ static u16 player_row(const MmBody *p)
         p->pose == MM_POSE_SPIN || p->pose == MM_POSE_WALL_KICK)
         row = plain_row(p);
     else if (p->grounded && p->crouching)
-        row = up ? PLAYER_ANIM_CROUCH_AIM_UP_R : PLAYER_ANIM_CROUCH_R;
+        row = p->aim == MM_AIM_DIAG_UP ? PLAYER_ANIM_CROUCH_AIM_DIAG_UP_R :
+              p->aim == MM_AIM_DIAG_DOWN ? PLAYER_ANIM_CROUCH_AIM_DIAG_DOWN_R :
+              up ? PLAYER_ANIM_CROUCH_AIM_UP_R : PLAYER_ANIM_CROUCH_R;
     else if (p->grounded && p->vx)
         row = p->aim == MM_AIM_DIAG_UP ? PLAYER_ANIM_WALK_AIM_UP_R :
               p->aim == MM_AIM_DIAG_DOWN ? PLAYER_ANIM_WALK_AIM_DOWN_R :
               p->aim == MM_AIM_UP ? PLAYER_ANIM_AIM_UP_R : PLAYER_ANIM_WALK_SHOOT_R;
     else if (p->grounded)
-        row = up ? PLAYER_ANIM_AIM_UP_R : PLAYER_ANIM_STAND_R;
+        row = p->aim == MM_AIM_DIAG_UP ? PLAYER_ANIM_AIM_DIAG_UP_R :
+              p->aim == MM_AIM_DIAG_DOWN ? PLAYER_ANIM_AIM_DIAG_DOWN_R :
+              up ? PLAYER_ANIM_AIM_UP_R : PLAYER_ANIM_STAND_R;
     else
         row = air[p->aim][p->vy < 0 ? 0 : 1];
     return row + side;
@@ -381,6 +385,7 @@ void game_frame(Game *g)
     input.shoot_held = (buttons & BUTTON_A) != 0;
     input.shoot_pressed = (pressed & BUTTON_A) != 0;
     input.aim_y = ((buttons & BUTTON_DOWN) != 0) - ((buttons & BUTTON_UP) != 0);
+    input.aim_diagonal = ((buttons & BUTTON_Z) != 0) - ((buttons & BUTTON_Y) != 0);
     input.jump_held = (buttons & BUTTON_C) != 0;
     input.down_pressed = (pressed & BUTTON_DOWN) != 0;
     input.up_pressed = (pressed & BUTTON_UP) != 0;

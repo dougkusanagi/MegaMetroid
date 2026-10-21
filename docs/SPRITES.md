@@ -268,3 +268,12 @@ também aparecem no original; a repetição visual não foi removida. As posiç�
 high/upper foram fixadas artificialmente apenas para estabilizar a câmera, sem
 alterar os registradores de render. O original aplica scroll horizontal por
 faixas/HDMA e chuva que ainda não existem no port; o céu não é visualmente idêntico.
+
+### Mira diagonal parada e agachada (3.3.1)
+
+Y/Z selecionam diagonal acima/abaixo sem movimento. As poses de quadro único
+05–08 (em pé) e 71–74 (agachada) usam o quadro 0; as oito linhas são alinhadas ao
+chão pelo gerador, que calcula a boca do canhão para os tiros diagonais.
+A folha passa de 64 para 72 linhas, mantendo streaming de um quadro por vez,
+sem novos sprites simultâneos. O input acrescenta um inteiro a `MmInput`
+(4 bytes no alvo), sem alocação dinâmica. Y+Z cancelam o modificador.

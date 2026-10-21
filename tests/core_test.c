@@ -1413,7 +1413,28 @@ static void samus_tunnels(void) {
     puts("PASS production Samus: 14px ball tunnels, 32px crouch clearance, no clipping on blocked air expansion");
 }
 
+static void diagonal_controls(void)
+{
+    MmBody b;
+    int side, down, crouch;
+    reset(); floor_at(20);
+    for (side = 0; side < 2; ++side) for (down = 0; down < 2; ++down)
+        for (crouch = 0; crouch < 2; ++crouch) {
+            mm_samus_init(&b, 100, 112);
+            mm_tick(&world, &b, idle);
+            b.facing_left = side;
+            if (crouch) mm_tick(&world, &b, (MmInput){.aim_y = 1, .down_pressed = 1});
+            mm_tick(&world, &b, (MmInput){.aim_diagonal = down ? 1 : -1});
+            assert(b.aim == (down ? MM_AIM_DIAG_DOWN : MM_AIM_DIAG_UP));
+            assert(b.crouching == crouch && !b.ball && !b.vx && b.facing_left == side);
+            mm_tick(&world, &b, idle);
+            assert(b.aim == MM_AIM_FORWARD && b.crouching == crouch);
+        }
+    puts("PASS six-button diagonal aim: both facings, stand/crouch, release without movement");
+}
+
 int main(void) {
+    diagonal_controls();
     samus_jump_measure();
     samus_slope_sweep();
     samus_hitboxes(); samus_tunnels();
