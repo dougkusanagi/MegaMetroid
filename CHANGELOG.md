@@ -10,6 +10,28 @@ O registro detalhado começa em 18/10/2026. A entrada anterior abaixo foi
 reconstituída do commit indicado; o histórico anterior completo permanece no Git
 (`git log`) e as entregas por etapa estão em [docs/PLANO.md](docs/PLANO.md).
 
+## 2026-10-21 20:53:08 −03:00 (America/Sao_Paulo) — Portas abrem com tiro e só então deixam passar (6.6.2)
+
+### Adicionado
+
+- A tampa de cada porta fechada entra na colisão da sala a cada tick: bloqueia a Samus e os
+  feixes como uma parede. Um feixe que para sobre a tampa vale como tiro daquela porta, usando
+  a caixa de 5×5 do projétil para alcançar a borda; a porta azul começa a abrir no impacto.
+- A travessia de sala exige a porta já aberta, após os 18 ticks medidos. Ao entrar numa sala, a
+  porta par da sala de origem fica aberta atrás da Samus.
+- `RoomDoorDef.link` liga cada porta desenhada à porta correspondente no grafo do mundo; o
+  exportador emite o índice e o jogo resolve a porta de chegada pelo `peer` da porta de origem.
+
+### Melhorado
+
+- O smoke no BlastEm passa a cobrir o ciclo das portas: porta sem rota bloqueia, abre com um
+  tiro e deixa a Samus na faixa sem trocar de sala; a rota leste faz três idas e voltas, com a
+  porta par aberta em cada chegada e heap estável.
+
+**Validação:** `./scripts/test.ps1 -Compiler gcc` (novo caso da caixa do tiro em `door_locks`),
+build SGDK `-SmokeTest` e `python scripts/smoke_test.py`: `SMOKE PASS` via GDB no BlastEm, sem
+ativar a janela. Heap livre igual em três viagens: 26.600 bytes.
+
 ## 2026-10-21 17:50:31 −03:00 (America/Sao_Paulo) — Mira diagonal de seis botões (3.3.1)
 
 ### Adicionado

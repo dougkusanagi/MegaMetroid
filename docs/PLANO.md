@@ -18,8 +18,10 @@ Cada etapa é pequena, testável no emulador e termina em **commit + push** (ver
 - Duas salas têm `room_def`; Crateria 1 é a inicial e ambas carregam pelo mesmo caminho de `game_init`.
 
 **Limitações / dívida técnica atual**
-- A ROM normal começa em Crateria 1. Crateria 2 já carrega como sala independente, mas não há transição entre as salas (6.3).
-- As quatro portas visuais da sala 1 têm posições e cores, mas seus destinos e interação ainda não foram definidos (6.3/6.6).
+- A ROM normal começa em Crateria 1. A porta leste leva à Crateria 2 e a oeste da Crateria 2
+  volta; as demais portas do Landing Site ainda não têm sala de destino (6.5/6.6).
+- As portas azuis do Landing Site abrem com um tiro e a travessia só acontece depois que a
+  porta termina de abrir; a arte/animação da abertura entra na 6.6.3.
 - Listas de inimigos estão vazias; comportamento e instâncias entram nas fases 5 e 6.2.
 - A exportação de mapa e colisão ainda não é automática (6.2); mapas maiores pedem avaliação de RAM, ROM e streaming (6.4).
 - A nave segue decorativa, sem plataforma, save/recarga ou escotilha interativa (fases 6/7).
@@ -261,7 +263,7 @@ Para a 3.2: o tamanho de quadro é 64×64 (8×8 tiles); com a Samus em pé, os p
 | 6.3 ✅ | Transição de sala | Portas, fade, trocar tiles, mapas, paletas e colisão | Crateria 1 → 2 e volta |
 | 6.4 ✅ | Limites de ROM/RAM/VRAM | Medir os orçamentos, recusar sala que não cabe na VRAM, provar que a troca não vaza heap; formato da colisão decidido | Sem estouro em salas grandes |
 | 6.5 ✅ | Mapa do mundo | Tabela de salas e conexões de Crateria, extraída do original e embutida na ROM | Percorrer a região inteira (no grafo; salas jogáveis conforme forem construídas) |
-| 6.6 | Portas e blocos (6.6.1 núcleo ✅, tempos medidos) | Portas azul/vermelha/verde, blocos destrutíveis | Abrir com o tiro correto |
+| 6.6 | Portas e blocos (6.6.1 núcleo ✅, 6.6.2 jogo ✅, tempos medidos) | Portas azul/vermelha/verde, blocos destrutíveis | Abrir com o tiro correto |
 
 **6.0 Integração visual antecipada, incluindo a nave** ✅ (2026-10-18).
 Antecipada a pedido do mantenedor. `scripts/build_landing_site.py` usa a sala
@@ -320,7 +322,8 @@ tiles, mapas, colisão e paletas da sala de destino, posiciona a Samus em
 mecanismo de sprites seguem sem reinício; o tiro em voo é descartado.
 A rota **Landing Site (porta leste) ↔ Crateria 2 (porta oeste) é provisória**:
 serve para exercitar a mecânica; a topologia real do original ainda não foi
-levantada (6.5). As demais portas continuam sem destino e não fazem nada.
+levantada (6.5). Naquele passo as demais portas ainda não faziam nada; desde a 6.6.2 elas
+bloqueiam e abrem com tiro, mas as sem destino continuam sem levar a outra sala.
 A Samus perde agachada/bola ao atravessar (reinicia em pé). Sem rolagem entre salas;
 a abertura da porta por tiro e sua animação ficam na 6.6.
 
@@ -402,10 +405,25 @@ com 5 mísseis ou 1 super, verde só com super, e o que não serve é recusado. 
 bate, a tampa passa por três formas de 6 quadros e some; a Samus anda no quadro em que ela some
 (18 quadros após o impacto). As imagens são os quadros 0 a 4 de `doors_door_r00`: o metal (24 px)
 fica e só o bojo azul (8 px) muda, logo o fundo pode ter só o metal e a tampa ser um sprite de 8 px.
-Limite: um só porta, tiro sem carga, captura a cada 2 quadros. Ainda não ligado
+Limite: uma só porta, tiro sem carga, captura a cada 2 quadros. Naquele passo ainda não estava ligado
 ao jogo (6.6.2: tiro abre a porta, travessia só com a porta aberta; 6.6.3: animação e arte;
 depois blocos destrutíveis). Mísseis e supers só existem na etapa 4.3: até lá, só a porta azul
 é aberta no jogo. Validação: `door_locks` em `tests/core_test.c`.
+
+*6.6.2 Portas no jogo* ✅ (2026-10-21). A tampa de toda porta fechada entra em `MmWorld.solids` a
+cada tick, então bloqueia Samus e feixes como uma parede. Um feixe que para sobre a tampa é o tiro
+daquela porta (`mm_lock_shot` usa a caixa de 5×5 do projétil, porque o centro do impacto pode ficar
+até 2 px fora da tampa): azul começa a abrir na hora, vermelha/verde esperam mísseis. A travessia
+só é permitida com `MM_DOOR_OPEN`, depois dos 18 ticks medidos; durante a abertura a tampa continua
+sólida. Ao entrar numa sala, a porta par da sala de origem fica aberta atrás da Samus: a ligação vem
+do grafo do mundo (`RoomDoorDef.link` → `world_nodes[node].doors[link].peer`, exportado de
+`rooms/world.json`), e a chegada posiciona a Samus com a porta de volta já livre. As portas sem
+destino do Landing Site abrem com tiro mas não levam a sala alguma, como no original quando não há
+sala construída do outro lado. Animação e arte da porta continuam na 6.6.3; até lá a tampa some
+quando o estado vira aberto. Validação: `door_locks` no host cobre a caixa do tiro; no BlastEm, o
+smoke comprova que a porta oeste sem rota bloqueia, abre com um tiro e deixa Samus na faixa sem
+trocar de sala, e que a rota leste faz três idas e voltas: primeiro tiro abre a porta, chegada na
+Crateria 2 com a porta par aberta, volta ao Landing Site com a porta leste aberta e heap estável.
 
 ### Fase 7 — Itens, progressão e HUD
 

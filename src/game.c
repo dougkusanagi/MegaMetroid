@@ -1,6 +1,7 @@
 #include "game.h"
 #include "resources.h"
 #include "player_anim.h"
+#include "world_map.h"
 
 #define ROOM_FADE_FRAMES 20
 #define VIEW_WIDTH 256
@@ -189,15 +190,32 @@ static void render(Game *g)
 #endif
 }
 
-/* Everything that belongs to the room itself: collision, Samus and her shots. */
-static void enter_room(Game *g, const room_def *room, int x, int y)
+/* Everything that belongs to the room itself: collision, Samus, her shots and the doors. */
+static void sync_door_solids(Game *g)
 {
+    u16 i, count = 0;
+    for (i = 0; i < g->door_lock_count; ++i) {
+        const RoomDoorDef *door = &g->room->doors[i];
+        g->door_caps[i] = mm_door_cap(door->position.x, door->position.y, door->facing);
+        if (mm_lock_solid(&g->door_locks[i])) g->door_solids[count++] = g->door_caps[i];
+    }
+    g->world.solids = g->door_solids;
+    g->world.solid_count = count;
+}
+
+static void enter_room(Game *g, const room_def *room, u16 room_index, int x, int y, int open_door)
+{
+    u16 i;
     g->room = room;
+    g->room_index = room_index;
     g->animation = 0xFFFF;
     mm_weapon_init(&g->weapon);
     g->world.tiles = room->map_collision;
     g->world.columns = room->map_width / MM_TILE;
     g->world.rows = room->map_height / MM_TILE;
+    g->door_lock_count = room->door_count < MM_ROOM_MAX_DOORS ? room->door_count : MM_ROOM_MAX_DOORS;
+    for (i = 0; i < g->door_lock_count; ++i) mm_lock_init(&g->door_locks[i], i == open_door);
+    sync_door_solids(g);
     mm_samus_init(&g->player, x, y);
 }
 
@@ -224,10 +242,10 @@ bool game_init(Game *g, u16 room_index)
 {
     int i;
     const room_def *room = room_get(room_index);
-    if (!room) return FALSE;
+    if (!room || room->door_count > MM_ROOM_MAX_DOORS) return FALSE;
     g->input.previous = 0; g->pal_phase = 0; g->frame = 0;
     g->music_looping = FALSE;
-    enter_room(g, room, room->player_initial_pos.x, room->player_initial_pos.y);
+    enter_room(g, room, room_index, room->player_initial_pos.x, room->player_initial_pos.y, -1);
     SYS_disableInts();
     VDP_setScreenWidth256();
     VDP_setScreenHeight224();
@@ -273,12 +291,34 @@ bool game_init(Game *g, u16 room_index)
     return TRUE;
 }
 
-bool game_change_room(Game *g, u16 room_index, Vect2D_s16 spawn)
+/* The door of the destination room paired with from_door of the room being left: the original
+   leaves the door behind Samus open, so she can walk straight back. */
+static int arrival_door(u16 from_room, int from_door, u16 to_room)
+{
+    const room_def *from = room_get(from_room), *to = room_get(to_room);
+    int from_node = mm_world_node_of_room(world_nodes, WORLD_NODE_COUNT, from_room);
+    int to_node = mm_world_node_of_room(world_nodes, WORLD_NODE_COUNT, to_room);
+    int link, peer, i;
+    if (!from || !to || from_door < 0 || from_door >= from->door_count ||
+        from->doors[from_door].link == ROOM_NO_LINK || from_node < 0 || to_node < 0 ||
+        from_node >= WORLD_NODE_COUNT || to_node >= WORLD_NODE_COUNT) return -1;
+    link = from->doors[from_door].link;
+    if (link >= world_nodes[from_node].door_count) return -1;
+    peer = world_nodes[from_node].doors[link].peer;
+    if (peer < 0 || peer >= world_nodes[to_node].door_count) return -1;
+    for (i = 0; i < to->door_count; ++i) if (to->doors[i].link == (u16)peer) return i;
+    return -1;
+}
+
+bool game_change_room(Game *g, u16 room_index, Vect2D_s16 spawn, int from_door)
 {
     const room_def *room = room_get(room_index);
     bool facing_left = g->player.facing_left, loaded;
     u16 colors[64], i;
-    if (!room || !game_room_fits_vram(room)) return FALSE; /* Refused before touching the current room. */
+    int open_door;
+    if (!room || room->door_count > MM_ROOM_MAX_DOORS || !game_room_fits_vram(room))
+        return FALSE; /* Refused before touching the current room. */
+    open_door = arrival_door(g->room_index, from_door, room_index);
     /* The picture goes black before anything in VRAM changes, so the swap is never seen. */
     PAL_fadeOutAll(ROOM_FADE_FRAMES, FALSE);
     for (i = 0; i < MM_BEAM_COUNT; ++i) SPR_setVisibility(g->beam_sprites[i], HIDDEN);
@@ -286,7 +326,7 @@ bool game_change_room(Game *g, u16 room_index, Vect2D_s16 spawn)
     MAP_release(g->background);
     g->foreground = g->background = NULL;
     SYS_disableInts();
-    enter_room(g, room, spawn.x, spawn.y);
+    enter_room(g, room, room_index, spawn.x, spawn.y, open_door);
     g->player.facing_left = facing_left;
     loaded = load_room_maps(g);
     SYS_enableInts();
@@ -301,8 +341,8 @@ bool game_change_room(Game *g, u16 room_index, Vect2D_s16 spawn)
     return TRUE;
 }
 
-/* The connected door Samus is pushing into, if any. */
-static const RoomDoorDef *door_touched(const Game *g)
+/* The connected, open door Samus is pushing into, if any; -1 otherwise. */
+static int door_touched(const Game *g)
 {
     int x = mm_pixel(g->player.x), y = mm_pixel(g->player.y);
     MmRect body = {x + g->player.hitbox.left, y + g->player.hitbox.top,
@@ -310,10 +350,27 @@ static const RoomDoorDef *door_touched(const Game *g)
     u16 i;
     for (i = 0; i < g->room->door_count; ++i) {
         const RoomDoorDef *door = &g->room->doors[i];
-        if (door->target_room != ROOM_NO_CONNECTION &&
-            mm_door_touched(body, door->position.x, door->position.y, door->facing)) return door;
+        if (door->target_room != ROOM_NO_CONNECTION && g->door_locks[i].state == MM_DOOR_OPEN &&
+            mm_door_touched(body, door->position.x, door->position.y, door->facing)) return i;
     }
-    return NULL;
+    return -1;
+}
+
+/* A beam that stopped on a door cap is its shot: blue opens with any beam, red and green take
+   the shots they need (missiles arrive with 4.3). The impact is fresh only on the tick it lands. */
+static void door_shots(Game *g)
+{
+    int i;
+    for (i = 0; i < MM_BEAM_COUNT; ++i) {
+        const MmBeam *beam = &g->weapon.beams[i];
+        MmRect shot;
+        int door;
+        if (beam->impact_ticks != MM_IMPACT_TICKS) continue;
+        shot = (MmRect){beam->impact_x - MM_BEAM_RADIUS, beam->impact_y - MM_BEAM_RADIUS,
+                        beam->impact_x + MM_BEAM_RADIUS, beam->impact_y + MM_BEAM_RADIUS};
+        door = mm_lock_shot(g->door_locks, g->door_caps, g->door_lock_count, shot);
+        if (door >= 0) mm_lock_hit(&g->door_locks[door], g->room->doors[door].color, MM_SHOT_BEAM);
+    }
 }
 
 /* PCM sound effects from res/sound/Sound-Effects. Channel 1 stays free for the music; the spin loop
@@ -344,17 +401,21 @@ static void update_music(Game *g)
 
 void game_update(Game *g, MmInput input)
 {
-    u16 steps = 1, row;
+    u16 steps = 1, row, i;
     /* A 60 Hz simulation also runs at the same speed on a 50 Hz console. */
     if (SYS_isPAL() && ++g->pal_phase == 5) { steps = 2; g->pal_phase = 0; }
     while (steps--) {
         MmPose pose_before = g->player.pose;
         ++g->frame;
+        for (i = 0; i < g->door_lock_count; ++i) mm_lock_tick(&g->door_locks[i]);
+        sync_door_solids(g);
         mm_tick(&g->world, &g->player, input);
         /* The shot leaves from the cannon of the pose that will be on screen. */
         row = player_row(&g->player);
         mm_weapon_tick(&g->weapon, &g->world, &g->player, input, g->camera,
                        player_muzzle[row][0], player_muzzle[row][1]);
+        /* A beam that stopped on a door cap is that door's shot. */
+        door_shots(g);
         play_sounds(g, pose_before);
         /* Presses count once, even when a PAL frame runs two ticks. */
         input.jump_pressed = 0;
@@ -364,9 +425,10 @@ void game_update(Game *g, MmInput input)
     }
     update_music(g);
     {
-        const RoomDoorDef *door = door_touched(g);
-        if (door) {
-            if (!game_change_room(g, door->target_room, door->target_spawn)) {
+        int door = door_touched(g);
+        if (door >= 0) {
+            const RoomDoorDef *def = &g->room->doors[door];
+            if (!game_change_room(g, def->target_room, def->target_spawn, door)) {
                 VDP_drawText("Unable to load room", 1, 1);
                 while (1) SYS_doVBlankProcess();
             }

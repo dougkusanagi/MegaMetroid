@@ -15,7 +15,9 @@ Histórico de correções, melhorias e adições: [`CHANGELOG.md`](CHANGELOG.md)
 O Landing Site usa a arte nova de Crateria: paredes e vegetação restauradas,
 céu baseado no original, quatro portas azuis fechadas, base de blocos e a nave.
 O scroll do fundo foi corrigido para evitar redraw completo e travadas nas emendas.
-Esta integração é visual: portas não abrem, blocos não quebram e a nave ainda
+As portas azuis abrem com um tiro e só deixam passar depois de terminar a abertura; a porta
+do outro lado já fica aberta quando Samus chega. A arte/animação da abertura ainda usa a
+tampa atual. Blocos não quebram e a nave ainda
 não tem colisão, save ou recarga. O ponto inicial da Samus foi mantido; caminhe
 para a direita até o centro da sala para ver a nave. Há adaptação de cores às
 quatro paletas do Mega Drive. Regeneração e capturas da ROM em `docs/BUILD.md`.
@@ -68,8 +70,8 @@ Há colisão com paredes e rampas, descarte ao sair da tela e o som de tiro orig
 Os efeitos sonoros do Super Metroid ficam em `res/sound/Sound-Effects/`; o tiro, o giro (em loop
 enquanto a Samus gira) e o pouso já tocam. A música do Landing Site ("Arrival on Crateria") toca como
 PCM, convertida dos MP3 de `res/sound/musics/` por `scripts/convert_music.py` (ver a 8.1 em `docs/PLANO.md`).
-As fases atuais ainda não têm entidades de inimigos ou portas destrutíveis;
-o valor de dano está preparado no projétil para essa integração futura.
+As fases atuais ainda não têm entidades de inimigos nem blocos destrutíveis; as portas azuis
+já abrem com o tiro. O valor de dano está preparado no projétil para a integração futura.
 O sprite da Samus usa as poses originais do jogo (parada, andando, pulando, girando, agachando, em bola, mirando e atirando, cada uma com desenho próprio para a esquerda). Ver a etapa 3.2 em `docs/PLANO.md`.
 
 O salto giratório só começa quando C é pressionado enquanto Samus já estava em

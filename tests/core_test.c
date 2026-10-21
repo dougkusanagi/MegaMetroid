@@ -374,6 +374,15 @@ static void door_locks(void) {
         mm_lock_init(&locks[0], 1);
         assert(mm_lock_at(locks, caps, 2, 110, 130) == -1);
         assert(mm_lock_at(locks, caps, 1, 210, 130) == -1);
+        /* A beam stops with its box on the cap's near edge, so the impact centre is outside it. */
+        mm_lock_init(&locks[0], 0);
+        assert(mm_lock_shot(locks, caps, 2, (MmRect){114, 130, 118, 134}) == 0);
+        assert(mm_lock_shot(locks, caps, 2, (MmRect){197, 130, 201, 134}) == 1);
+        assert(mm_lock_shot(locks, caps, 2, (MmRect){116, 130, 120, 134}) == -1);
+        assert(mm_lock_shot(locks, caps, 2, (MmRect){190, 130, 194, 134}) == -1);
+        assert(mm_lock_shot(locks, caps, 2, (MmRect){110, 96, 114, 100}) == -1);
+        mm_lock_init(&locks[0], 1);
+        assert(mm_lock_shot(locks, caps, 2, (MmRect){114, 130, 118, 134}) == -1);
     }
     /* Samus walking right on a floor stops at a closed cap and goes on once it is not a solid. */
     reset(); floor_at(20);

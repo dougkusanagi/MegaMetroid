@@ -2,7 +2,8 @@
 
 static int beam_blocked(const MmWorld *w, int x, int y)
 {
-    MmRect bounds = {x - 2, y - 2, x + 2, y + 2};
+    MmRect bounds = {x - MM_BEAM_RADIUS, y - MM_BEAM_RADIUS,
+                     x + MM_BEAM_RADIUS, y + MM_BEAM_RADIUS};
     return mm_rect_blocked(w, bounds);
 }
 

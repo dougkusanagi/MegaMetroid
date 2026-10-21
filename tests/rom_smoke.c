@@ -167,40 +167,75 @@ static void idle(Game *g, int frames)
     }
 }
 
-/* Etapa 6.3, with the real doors: the Landing Site's east door leads to Crateria 2 and its west
-   door leads back; an unconnected door stays shut. Etapa 6.4: three round trips return every byte
-   of heap, and each room fits in VRAM. */
+/* Walks into the room's shut door at lock_index and shoots it; returns the tick that started
+   the opening, or -1 if it stayed shut. */
+static int shoot_door(Game *g, int lock_index)
+{
+    int frame;
+    for (frame = 0; frame < 30 && g->door_locks[lock_index].state == MM_DOOR_CLOSED; ++frame) {
+        game_update(g, (MmInput){.shoot_pressed = frame == 0, .shoot_held = 1});
+        SYS_doVBlankProcess();
+    }
+    return g->door_locks[lock_index].state == MM_DOOR_OPENING ? frame : -1;
+}
+
+/* Etapa 6.6.2, with the real doors: a shut cap stops Samus and her beams; a beam opens a blue
+   door after its animation, and only then can she cross. Arriving in a room leaves the paired
+   door open behind her. Etapa 6.4: three round trips return every byte of heap, and each room
+   fits in VRAM. */
 static int room_transitions(Game *g)
 {
     int failed = 0, trip, i;
     int px, py;
     u16 free_start;
+    MmRect cap;
     for (i = 0; i < ROOM_COUNT; ++i)
         mm_smoke_memory[1 + i] = room_get(i)->tileset_fg->numTile + room_get(i)->tileset_bg->numTile;
     mm_smoke_memory[0] = TILE_USER_LENGTH;
     for (i = 0; i < ROOM_COUNT; ++i) if (!game_room_fits_vram(room_get(i))) failed |= 32;
-    /* The west door of the Landing Site has no route: Samus reaches its strip and stays. */
+    /* The west door of the Landing Site has no route: shut, its cap stops Samus before the
+       strip; one beam opens it, but the open door still leads nowhere and she stays. */
     mm_samus_init(&g->player, 40, 624);
     idle(g, 40);
+    cap = mm_door_cap(0, 608, ROOM_DOOR_FACING_RIGHT);
+    for (i = 0; i < 90; ++i) { game_update(g, (MmInput){.axis = -1}); SYS_doVBlankProcess(); }
+    if (g->door_locks[0].state != MM_DOOR_CLOSED || g->world.solid_count != 4 ||
+        mm_pixel(g->player.x) + g->player.hitbox.left != cap.right) failed |= 1;
+    if (shoot_door(g, 0) < 0) failed |= 1;
+    idle(g, MM_DOOR_OPEN_TICKS);
+    if (g->door_locks[0].state != MM_DOOR_OPEN || g->world.solid_count != 3) failed |= 1;
     if (walk_through(g, -1) != -1 || g->room != room_get(ROOM_CRATERIA_1) ||
-        mm_pixel(g->player.x) + g->player.hitbox.left >= MM_DOOR_EDGE) failed |= 1;
+        mm_pixel(g->player.x) + g->player.hitbox.left >= MM_DOOR_EDGE) failed |= 2;
     mm_samus_init(&g->player, 2210, 368);
     idle(g, 30);
     free_start = MEM_getFree();
     mm_smoke_memory[3] = free_start;
     for (trip = 0; trip < 3; ++trip) {
-        /* East door: Samus emerges in Crateria 2, facing the way she was walking. */
-        if (walk_through(g, 1) < 0 || g->room != room_get(ROOM_CRATERIA_2)) return failed | 2;
+        if (trip == 0) {
+            /* East door: shut, its cap stops Samus; a beam opens it after the 18-tick animation. */
+            cap = mm_door_cap(2272, 352, ROOM_DOOR_FACING_LEFT);
+            for (i = 0; i < 90; ++i) { game_update(g, (MmInput){.axis = 1}); SYS_doVBlankProcess(); }
+            if (g->door_locks[2].state != MM_DOOR_CLOSED ||
+                mm_pixel(g->player.x) + g->player.hitbox.right != cap.left) failed |= 512;
+            if (shoot_door(g, 2) < 0) failed |= 512;
+            idle(g, MM_DOOR_OPEN_TICKS);
+            if (g->door_locks[2].state != MM_DOOR_OPEN) failed |= 512;
+        } else if (g->door_locks[2].state != MM_DOOR_OPEN) failed |= 512;
+        /* East door: Samus emerges in Crateria 2 facing the way she was walking, and the
+           paired door there is already open. */
+        if (walk_through(g, 1) < 0 || g->room != room_get(ROOM_CRATERIA_2)) return failed | 4;
         idle(g, 40);
         px = mm_pixel(g->player.x); py = mm_pixel(g->player.y);
         if (!room_loaded(g) || g->player.facing_left || !g->player.grounded ||
             px != 24 || py + g->player.hitbox.bottom != 160 || g->camera.x != 0) failed |= 4;
+        if (g->door_locks[0].state != MM_DOOR_OPEN || g->world.solid_count != 0) failed |= 128;
         /* And back through Crateria 2's west door, now walking left. */
         if (walk_through(g, -1) < 0 || g->room != room_get(ROOM_CRATERIA_1)) return failed | 8;
         idle(g, 40);
         px = mm_pixel(g->player.x); py = mm_pixel(g->player.y);
         if (!room_loaded(g) || !g->player.facing_left || !g->player.grounded ||
             px != 2240 || py + g->player.hitbox.bottom != 416) failed |= 16;
+        if (g->door_locks[2].state != MM_DOOR_OPEN || g->world.solid_count != 3) failed |= 256;
         mm_smoke_memory[4 + trip] = MEM_getFree();
         if (MEM_getFree() != free_start) failed |= 64;
     }
@@ -501,7 +536,7 @@ int main(bool hardReset)
         if (impact_frames != 31 || g.weapon.beams[0].impact_ticks) failed |= 8192;
     }
     if (jump_performance(&g)) failed |= 65536;
-    failed |= room_transitions(&g) << 17; /* Bits 17-21: which door check failed. */
+    failed |= room_transitions(&g) << 17; /* Bits 17-26: which room/door check failed. */
     room_video(&g);
     /* Window plane keeps the result on screen; plane A scrolls with the camera. */
     VDP_setWindowVPos(FALSE, 2);

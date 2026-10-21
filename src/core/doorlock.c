@@ -49,3 +49,14 @@ int mm_lock_at(const MmDoorLock *locks, const MmRect *caps, int count, int x, in
     }
     return -1;
 }
+
+int mm_lock_shot(const MmDoorLock *locks, const MmRect *caps, int count, MmRect shot)
+{
+    int i;
+    for (i = 0; i < count; ++i) {
+        const MmRect *cap = &caps[i];
+        if (mm_lock_solid(&locks[i]) && shot.left < cap->right && shot.right > cap->left &&
+            shot.top < cap->bottom && shot.bottom > cap->top) return i;
+    }
+    return -1;
+}

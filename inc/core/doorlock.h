@@ -29,7 +29,8 @@ void mm_lock_tick(MmDoorLock *lock);
 int mm_lock_solid(const MmDoorLock *lock);
 /* Image to show: 0 shut, 1..MM_DOOR_STEPS the shapes, MM_DOOR_FRAMES fully open. */
 int mm_lock_frame(const MmDoorLock *lock);
-/* Index of the first door whose cap still blocks and contains the point, or -1. A beam that
-   stopped on its cap is the shot that can open it. */
+/* Index of the first door whose cap still blocks and contains the point, or -1. */
 int mm_lock_at(const MmDoorLock *locks, const MmRect *caps, int count, int x, int y);
+/* Same, for the box a shot occupies where it stopped: its centre can end up just outside the cap. */
+int mm_lock_shot(const MmDoorLock *locks, const MmRect *caps, int count, MmRect shot);
 #endif

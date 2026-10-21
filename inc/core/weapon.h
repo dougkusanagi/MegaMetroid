@@ -11,6 +11,8 @@
 #define MM_BEAM_COOLDOWN 15
 #define MM_BEAM_REPEAT 25
 #define MM_IMPACT_TICKS 10
+/* Half-size of the box a beam checks against the world, and of the one it leaves on a cap. */
+#define MM_BEAM_RADIUS 2
 
 typedef struct {
     int active, x, y, vx, vy, life, damage;
