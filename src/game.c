@@ -228,7 +228,7 @@ static void enter_room(Game *g, const room_def *room, u16 room_index, int x, int
     g->room = room;
     g->room_index = room_index;
     g->animation = 0xFFFF;
-    mm_weapon_init(&g->weapon);
+    mm_weapon_clear_shots(&g->weapon);
     g->world.tiles = room->map_collision;
     g->world.columns = room->map_width / MM_TILE;
     g->world.rows = room->map_height / MM_TILE;
@@ -264,6 +264,7 @@ bool game_init(Game *g, u16 room_index)
     if (!room || room->door_count > MM_ROOM_MAX_DOORS) return FALSE;
     g->input.previous = 0; g->pal_phase = 0; g->frame = 0;
     g->music_looping = FALSE;
+    mm_weapon_init(&g->weapon);
     enter_room(g, room, room_index, room->player_initial_pos.x, room->player_initial_pos.y, -1);
     SYS_disableInts();
     VDP_setScreenWidth256();
@@ -395,8 +396,9 @@ static int door_touched(const Game *g)
     return -1;
 }
 
-/* A beam that stopped on a door cap is its shot: blue opens with any beam, red and green take
-   the shots they need (missiles arrive with 4.3). The impact is fresh only on the tick it lands. */
+/* A shot that stopped on a door cap is its hit: blue opens with anything, red takes missiles
+   (MM_RED_DOOR_HITS of them) or a super, green supers only; other shots are turned away. The
+   impact is fresh only on the tick it lands. */
 static void door_shots(Game *g)
 {
     int i;
@@ -408,7 +410,7 @@ static void door_shots(Game *g)
         shot = (MmRect){beam->impact_x - MM_BEAM_RADIUS, beam->impact_y - MM_BEAM_RADIUS,
                         beam->impact_x + MM_BEAM_RADIUS, beam->impact_y + MM_BEAM_RADIUS};
         door = mm_lock_shot(g->door_locks, g->door_caps, g->door_lock_count, shot);
-        if (door >= 0) mm_lock_hit(&g->door_locks[door], g->room->doors[door].color, MM_SHOT_BEAM);
+        if (door >= 0) mm_lock_hit(&g->door_locks[door], g->room->doors[door].color, beam->kind);
     }
 }
 

@@ -179,17 +179,29 @@ def check():
     total = 0
     radii_by_pose = defaultdict(Counter)
     beam_vectors = {}
+    missile_vectors = {}
     for name, item in manifest['scenarios'].items():
         data = gzip.decompress((DEST / item['file']).read_bytes())
         assert digest(data) == item['csv_sha256'], name + ': checksum mismatch'
         rows = list(csv.DictReader(io.StringIO(data.decode())))
         if name in ('beam_up', 'beam_up_right'):
-            vectors = [r['shot_vectors'].split(':') for r in rows if r.get('shot_vectors')]
+            vectors = [r['shot_vectors'].split()[0].split(':') for r in rows if r.get('shot_vectors')]
             # First 16 live samples; later records may be wall impacts or off screen.
             direction = '0' if name == 'beam_up' else '1'
             assert len(vectors) >= 16 and all(len(v) == 5 and v[:2] == ['0', direction]
                 and v[4] == '8000' for v in vectors[:16]), name
             beam_vectors[name] = [(abs(int(v[2])), abs(int(v[3]))) for v in vectors[:16]]
+        if name in ('missile_right', 'missile_up_right', 'super_right'):
+            vectors = [r['shot_vectors'].split()[0].split(':') for r in rows if r.get('shot_vectors')]
+            direction, shot_type = ('1', '8100') if name == 'missile_up_right' else \
+                ('2', '8200') if name == 'super_right' else ('2', '8100')
+            # First 16 live samples: the shot has not reached the wall yet.
+            assert len(vectors) >= 16 and all(len(v) == 5 and v[:2] == ['0', direction]
+                and v[4] == shot_type for v in vectors[:16]), name
+            missile_vectors[name] = [(int(v[2]), int(v[3])) for v in vectors[:16]]
+            cooldowns = [int(r['cooldown']) for r in rows if r.get('shot_vectors')]
+            start = 20 if name == 'super_right' else 10
+            assert cooldowns[0] == start and cooldowns[:start + 1] == list(range(start, -1, -1)), name
         assert len(rows) == item['rows'] and all(r['scenario'] == name for r in rows), name
         assert [int(r['frame']) for r in rows] == list(range(1, len(rows) + 1)), name + ': missing frames'
         sizes = Counter((int(r['pose']), int(r['xradius']), int(r['yradius'])) for r in rows)
@@ -213,6 +225,13 @@ def check():
         beam_header += f'static const int reference_{name}[][2] = {{\n'
         beam_header += ''.join(f'    {{{x}, {y}}},\n' for x, y in vectors) + '};\n'
     (out / 'sm_beams.h').write_text(beam_header)
+    missile_header = '/* Exact Q8.8 missile velocities sampled from original RAM, first 16 live frames. */\n'
+    for name, vectors in sorted(missile_vectors.items()):
+        missile_header += f'static const int reference_{name}[][2] = {{\n'
+        missile_header += ''.join(f'    {{{x}, {y}}},\n' for x, y in vectors) + '};\n'
+    missile_header += ('\n/* Cooldown timer at spawn: missiles 10, supers 20; counted down every tick. */\n'
+                       '#define REFERENCE_MISSILE_COOLDOWN 10\n#define REFERENCE_SUPER_COOLDOWN 20\n')
+    (out / 'sm_missiles.h').write_text(missile_header)
     # Independent confirmation of the wall-kick's sustained horizontal speed.
     if 'wall_open' in manifest['scenarios']:
         wall = list(csv.DictReader(io.StringIO(gzip.decompress((DEST/'wall_open.csv.gz').read_bytes()).decode())))

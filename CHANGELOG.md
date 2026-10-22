@@ -10,6 +10,31 @@ O registro detalhado começa em 18/10/2026. A entrada anterior abaixo foi
 reconstituída do commit indicado; o histórico anterior completo permanece no Git
 (`git log`) e as entregas por etapa estão em [docs/PLANO.md](docs/PLANO.md).
 
+## 2026-10-21 22:19:00 −03:00 (America/Sao_Paulo) — Núcleo de mísseis e super mísseis (4.3.1)
+
+### Adicionado
+
+- `src/core/weapon.c` ganhou seleção de arma (`MM_WEAPON_BEAM/MISSILE/SUPER`), munição
+  (`missiles`/`supers`) e o tipo do tiro em `MmBeam.kind` (`MM_SHOT_*`, agora em
+  `inc/core/projectile.h`), compartilhado com as portas.
+- Física medida no original: mísseis saem a 1,0 px/tick por eixo e aceleram 80 Q8.8 no
+  cardinal e 70 na diagonal; supers aceleram 256 no cardinal e 182 na diagonal (tabela
+  `SuperMissileAccelerations`, sem o `$0010` genérico). Dano 100/300 e cadência 10/20 ticks.
+- Mísseis e supers só disparam em um toque novo (sem repetição), consomem munição, voltam para
+  o beam quando a munição zera e não têm tempo de vida: somem na parede ou fora da tela. A troca
+  de arma pedida por `mm_weapon_cycle` fica pendente enquanto há tiro na tela, porque a paleta
+  do projétil muda com o tipo.
+- O tiro que para na tampa de uma porta agora informa seu tipo (`beam->kind`) ao `mm_lock_hit`:
+  vermelha aceita mísseis e supers, verde só supers.
+- Munição e seleção sobrevivem à troca de sala (`mm_weapon_clear_shots`); o carregamento inicial
+  de 5 mísseis e 0 supers é provisório até os itens coletáveis (7.2).
+
+**Validação:** `./scripts/test.ps1 -Compiler gcc` (novos `measured_missiles` e
+`missile_loadout`, incluindo as 48 amostras de velocidade medidas no Mesen, arquivadas em
+`tests/reference/super_metroid/{missile_right,missile_up_right,super_right}.csv.gz` e
+`tests/out/sm_missiles.h`) e build SGDK da ROM normal. Ainda não há controle nem arte de
+míssil na ROM: entram na 4.3.2.
+
 ## 2026-10-21 21:41:33 −03:00 (America/Sao_Paulo) — Tampa de porta animada com a arte original (6.6.3)
 
 ### Adicionado

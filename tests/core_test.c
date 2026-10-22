@@ -9,6 +9,7 @@
 #include "out/maps.h"
 #include "out/sm_hitboxes.h"
 #include "out/sm_beams.h"
+#include "out/sm_missiles.h"
 #include "out/sm_wall.h"
 
 static unsigned char tiles[64 * 32];
@@ -1325,6 +1326,77 @@ static void beam_impacts(void) {
     assert(!w.beams[0].active && w.beams[0].impact_ticks == MM_IMPACT_TICKS && w.beams[0].impact_x == 127);
     puts("PASS beam impact at swept wall contact, expires after 10 ticks; no impact off screen");
 }
+/* Reference: Mesen missile_right, missile_up_right and super_right, in the Landing Site.
+   Every trajectory is compared against the archived original velocities, Q8.8. */
+static void measured_missiles(void) {
+    const int (*traces[3])[2] = {reference_missile_right, reference_missile_up_right, reference_super_right};
+    const int weapons[3] = {MM_WEAPON_MISSILE, MM_WEAPON_MISSILE, MM_WEAPON_SUPER};
+    MmBody b;
+    MmWeapon w;
+    MmCamera camera = {0, 0};
+    int s, t;
+    for (s = 0; s < 3; ++s) {
+        reset();
+        mm_body_init(&b, 60, 88, (MmRect){8, 8, 32, 48});
+        b.aim = s == 1 ? MM_AIM_DIAG_UP : MM_AIM_FORWARD;
+        mm_weapon_init(&w);
+        w.missiles = w.supers = 1;
+        w.selected = weapons[s];
+        for (t = 0; t < 16; ++t) {
+            mm_weapon_tick(&w, &world, &b, t ? idle : (MmInput){.shoot_held = 1, .shoot_pressed = 1},
+                           camera, 20, 24);
+            assert(w.beams[0].active && w.beams[0].vx == traces[s][t][0] && w.beams[0].vy == traces[s][t][1]);
+        }
+        assert(w.beams[0].kind == (s == 2 ? MM_SHOT_SUPER : MM_SHOT_MISSILE));
+        assert(w.beams[0].damage == (s == 2 ? MM_SUPER_DAMAGE : MM_MISSILE_DAMAGE));
+    }
+    puts("PASS missiles: 16 exact original velocity samples each for missile, diagonal missile and super");
+}
+
+static void missile_loadout(void) {
+    MmRect real = {8, 8, 32, 48};
+    MmBody b;
+    MmWeapon w;
+    MmCamera camera = {0, 0};
+    MmInput press = {.shoot_held = 1, .shoot_pressed = 1};
+    MmInput hold = {.shoot_held = 1};
+    int t, fired;
+    reset();
+    mm_body_init(&b, 60, 88, real);
+    mm_weapon_init(&w);
+    assert(w.selected == MM_WEAPON_BEAM && w.missiles == MM_START_MISSILES && w.supers == MM_START_SUPERS);
+    /* The selector skips the empty super bin and waits for the shot to leave the screen. */
+    mm_weapon_cycle(&w); mm_weapon_tick(&w, &world, &b, idle, camera, 20, 24);
+    assert(w.selected == MM_WEAPON_MISSILE);
+    mm_weapon_cycle(&w); mm_weapon_tick(&w, &world, &b, idle, camera, 20, 24);
+    assert(w.selected == MM_WEAPON_BEAM);
+    w.missiles = 2; w.selected = MM_WEAPON_MISSILE;
+    mm_weapon_tick(&w, &world, &b, press, camera, 20, 24);
+    assert(w.fired && w.fired_kind == MM_SHOT_MISSILE && w.missiles == 1 && w.cooldown == MM_MISSILE_COOLDOWN);
+    mm_weapon_cycle(&w);
+    for (t = 0; t < MM_MISSILE_COOLDOWN - 1; ++t) {
+        mm_weapon_tick(&w, &world, &b, hold, camera, 20, 24);
+        assert(!w.fired && w.selected == MM_WEAPON_MISSILE && w.cycle_pending); /* Held A does not repeat. */
+    }
+    mm_weapon_tick(&w, &world, &b, press, camera, 20, 24);
+    assert(w.fired && w.missiles == 0 && w.selected == MM_WEAPON_BEAM);
+    /* Nothing left: the trigger is dead until ammo comes back. */
+    fired = w.fired;
+    for (t = 0; t < 30; ++t) mm_weapon_tick(&w, &world, &b, press, camera, 20, 24);
+    assert(w.selected == MM_WEAPON_BEAM && !w.missiles && fired);
+    /* A super has its own cooldown, and the pool never takes a fourth shot. */
+    mm_weapon_init(&w); w.supers = 4; w.selected = MM_WEAPON_SUPER;
+    mm_weapon_tick(&w, &world, &b, press, camera, 20, 24);
+    assert(w.fired && w.supers == 3 && w.cooldown == MM_SUPER_COOLDOWN);
+    for (t = 0; t < MM_SUPER_COOLDOWN - 1; ++t) {
+        mm_weapon_tick(&w, &world, &b, hold, camera, 20, 24);
+        assert(!w.fired);
+    }
+    mm_weapon_tick(&w, &world, &b, press, camera, 20, 24);
+    assert(w.fired && w.supers == 2);
+    puts("PASS missile loadout: SELECT cycles past empty bins, press-only fire, 10/20 cooldowns, auto-deselect at zero");
+}
+
 static void expect_samus_box(const MmBody *b, MmHitboxKind kind) {
     assert(b->hitbox.right - b->hitbox.left == reference_hitboxes[kind][0]);
     assert(b->hitbox.bottom - b->hitbox.top == reference_hitboxes[kind][1]);
@@ -1466,6 +1538,8 @@ int main(void) {
     slope_spin_takeoff();
     beam_impacts();
     measured_beams();
+    measured_missiles();
+    missile_loadout();
     movement(); air_steering(); collisions(); jump_and_ledge(); states(); physics(); variable_jump(); ledge_jump();
     slopes(); slope_sweep(); tunnels(); wall_climb(); wall_jump_rules(); poses(); crouch_poses(); crouch_tap(); double_tap(); ball_poses(); aiming(); beam_from_muzzle(); morph_rules(); ball_stands_on_slope();
     ball_stand_real(); camera_and_input(); doors(); world_map(); door_locks(); real_levels();

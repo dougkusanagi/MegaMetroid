@@ -5491,6 +5491,189 @@
         "This avoids the ceiling that immediately blocks the older wall_jump capture.",
         "Right wall kick with no running bonus; not every equipment/input or mirrored scenario."
       ]
+    },
+    "missile_right": {
+      "file": "missile_right.csv.gz",
+      "saved_at": "2026-10-21T22:10:32-03:00",
+      "rows": 276,
+      "csv_sha256": "421258c678cbf2cbaaa7d3f3a2c43e7b6af9280b2f667a8e88547cc7860b058d",
+      "last_committed_script_before_saved_at": "41288ff3e96e14d3d55cc4a4ef9f0a5ece2f11d5",
+      "source_file": "missile_right.csv",
+      "observed_radii": [
+        {
+          "pose": "01",
+          "x": 5,
+          "y": 21,
+          "samples": 95
+        },
+        {
+          "pose": "09",
+          "x": 5,
+          "y": 21,
+          "samples": 140
+        },
+        {
+          "pose": "26",
+          "x": 5,
+          "y": 21,
+          "samples": 5
+        },
+        {
+          "pose": "26",
+          "x": 5,
+          "y": 24,
+          "samples": 1
+        },
+        {
+          "pose": "29",
+          "x": 5,
+          "y": 19,
+          "samples": 33
+        },
+        {
+          "pose": "29",
+          "x": 5,
+          "y": 21,
+          "samples": 1
+        },
+        {
+          "pose": "A4",
+          "x": 5,
+          "y": 19,
+          "samples": 1
+        }
+      ],
+      "capture_reference": {
+        "script_sha256": "c36877a70a65766028dcf3586b817764a301559e0c0629af8632e09cda5acc82",
+        "state_sha256": "19fc0e06e192cf66662e18b9853de096065b950092ee02fed3b005329bd1366c",
+        "rom_sha256": "12b77c4bc9c1832cee8881244659065ee1d84c70c3d29e6eaf92e6798cc2ca72"
+      }
+    },
+    "missile_up_right": {
+      "file": "missile_up_right.csv.gz",
+      "saved_at": "2026-10-21T22:10:34-03:00",
+      "rows": 279,
+      "csv_sha256": "7106c385f037be8c79bb2855453db7f6d43c9f27628bd97e9053df56c28fef18",
+      "last_committed_script_before_saved_at": "41288ff3e96e14d3d55cc4a4ef9f0a5ece2f11d5",
+      "source_file": "missile_up_right.csv",
+      "observed_radii": [
+        {
+          "pose": "01",
+          "x": 5,
+          "y": 21,
+          "samples": 34
+        },
+        {
+          "pose": "03",
+          "x": 5,
+          "y": 21,
+          "samples": 60
+        },
+        {
+          "pose": "09",
+          "x": 5,
+          "y": 21,
+          "samples": 140
+        },
+        {
+          "pose": "0F",
+          "x": 5,
+          "y": 21,
+          "samples": 4
+        },
+        {
+          "pose": "26",
+          "x": 5,
+          "y": 21,
+          "samples": 5
+        },
+        {
+          "pose": "26",
+          "x": 5,
+          "y": 24,
+          "samples": 1
+        },
+        {
+          "pose": "29",
+          "x": 5,
+          "y": 19,
+          "samples": 33
+        },
+        {
+          "pose": "29",
+          "x": 5,
+          "y": 21,
+          "samples": 1
+        },
+        {
+          "pose": "A4",
+          "x": 5,
+          "y": 19,
+          "samples": 1
+        }
+      ],
+      "capture_reference": {
+        "script_sha256": "c36877a70a65766028dcf3586b817764a301559e0c0629af8632e09cda5acc82",
+        "state_sha256": "19fc0e06e192cf66662e18b9853de096065b950092ee02fed3b005329bd1366c",
+        "rom_sha256": "12b77c4bc9c1832cee8881244659065ee1d84c70c3d29e6eaf92e6798cc2ca72"
+      }
+    },
+    "super_right": {
+      "file": "super_right.csv.gz",
+      "saved_at": "2026-10-21T22:10:37-03:00",
+      "rows": 276,
+      "csv_sha256": "6bd487ffc798effa40bc3435cd889ac18397578cd44f210305d506b977eac26e",
+      "last_committed_script_before_saved_at": "41288ff3e96e14d3d55cc4a4ef9f0a5ece2f11d5",
+      "source_file": "super_right.csv",
+      "observed_radii": [
+        {
+          "pose": "01",
+          "x": 5,
+          "y": 21,
+          "samples": 95
+        },
+        {
+          "pose": "09",
+          "x": 5,
+          "y": 21,
+          "samples": 140
+        },
+        {
+          "pose": "26",
+          "x": 5,
+          "y": 21,
+          "samples": 5
+        },
+        {
+          "pose": "26",
+          "x": 5,
+          "y": 24,
+          "samples": 1
+        },
+        {
+          "pose": "29",
+          "x": 5,
+          "y": 19,
+          "samples": 33
+        },
+        {
+          "pose": "29",
+          "x": 5,
+          "y": 21,
+          "samples": 1
+        },
+        {
+          "pose": "A4",
+          "x": 5,
+          "y": 19,
+          "samples": 1
+        }
+      ],
+      "capture_reference": {
+        "script_sha256": "c36877a70a65766028dcf3586b817764a301559e0c0629af8632e09cda5acc82",
+        "state_sha256": "19fc0e06e192cf66662e18b9853de096065b950092ee02fed3b005329bd1366c",
+        "rom_sha256": "12b77c4bc9c1832cee8881244659065ee1d84c70c3d29e6eaf92e6798cc2ca72"
+      }
     }
   },
   "reference": {

@@ -2,11 +2,10 @@
 #define MM_DOORLOCK_H
 /* Portable C: what it takes to open a door, and the door's state while it opens. */
 #include "world.h"
+#include "projectile.h"
 
 /* Same order as RoomDoorColor. */
 enum { MM_LOCK_BLUE, MM_LOCK_RED, MM_LOCK_GREEN };
-/* What hit the door. A beam shot is any beam. */
-enum { MM_SHOT_BEAM, MM_SHOT_MISSILE, MM_SHOT_SUPER };
 enum { MM_DOOR_CLOSED, MM_DOOR_OPENING, MM_DOOR_OPEN };
 
 /* Measured in the original (tests/reference/super_metroid/door_open): after the shot lands the cap
