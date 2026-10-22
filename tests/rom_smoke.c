@@ -244,10 +244,12 @@ static int room_transitions(Game *g)
             for (i = 0; i < 90; ++i) { game_update(g, (MmInput){.axis = 1}); SYS_doVBlankProcess(); }
             if (g->door_locks[2].state != MM_DOOR_CLOSED ||
                 mm_pixel(g->player.x) + g->player.hitbox.right != cap.left) failed |= 512;
+            if (!g->door_prompt) failed |= 2048;
             if (shoot_door(g, 2) < 0) failed |= 512;
             if (!door_art(g, 2)) failed |= 1024;
             idle(g, MM_DOOR_OPEN_TICKS);
             if (g->door_locks[2].state != MM_DOOR_OPEN || !door_art(g, 2)) failed |= 512;
+            if (g->door_prompt) failed |= 2048;
         } else if (g->door_locks[2].state != MM_DOOR_OPEN) failed |= 512;
         /* East door: Samus emerges in Crateria 2 facing the way she was walking, and the
            paired door there is already open. */
@@ -272,6 +274,23 @@ static int room_transitions(Game *g)
         mm_smoke_memory[4 + trip] = MEM_getFree();
         if (MEM_getFree() != free_start) failed |= 64;
     }
+    /* The walk the player makes from the spawn: along the floor to the lower east door (3), which
+       links to a room that is not built. Shot open, it lets Samus to the far edge, and nothing
+       changes except the prompt. */
+    mm_samus_init(&g->player, 256, 1176);
+    idle(g, 30);
+    for (i = 0; i < 800; ++i) { game_update(g, (MmInput){.axis = 1}); SYS_doVBlankProcess(); }
+    cap = mm_door_cap(2272, 1120, ROOM_DOOR_FACING_LEFT);
+    if (g->door_locks[3].state != MM_DOOR_CLOSED || g->door_prompt ||
+        mm_pixel(g->player.x) + g->player.hitbox.right != cap.left) failed |= 4096;
+    if (shoot_door(g, 3) < 0) failed |= 4096;
+    idle(g, MM_DOOR_OPEN_TICKS);
+    if (g->door_locks[3].state != MM_DOOR_OPEN) failed |= 4096;
+    for (i = 0; i < 90; ++i) { game_update(g, (MmInput){.axis = 1}); SYS_doVBlankProcess(); }
+    if (g->room != room_get(ROOM_CRATERIA_1) || !g->door_prompt ||
+        mm_pixel(g->player.x) + g->player.hitbox.right != 2304) failed |= 8192;
+    mm_samus_init(&g->player, 256, 1176);
+    idle(g, 60);
     mm_smoke_memory[7] = MEM_getLargestFreeBlock();
     return failed;
 }
@@ -639,7 +658,7 @@ int main(bool hardReset)
         if (impact_frames != 31 || g.weapon.beams[0].impact_ticks) failed |= 8192;
     }
     if (jump_performance(&g)) failed |= 65536;
-    failed |= room_transitions(&g) << 17; /* Bits 17-26: which room/door check failed. */
+    failed |= room_transitions(&g) << 17; /* Bits 17-30: which room/door check failed. */
     room_video(&g);
     if (missile_weapon(&g)) failed |= 1UL << 27;
     /* Window plane keeps the result on screen; plane A scrolls with the camera. */

@@ -546,3 +546,8 @@ build SGDK da ROM de teste e `SMOKE PASS` pela API GDB do BlastEm.
 
 **Validação registrada na entrega:** testes do núcleo, build SGDK e `SMOKE PASS`
 no BlastEm. ROM padrão reconstruída após o commit.
+# 2026-10-22 18:24:40 -03:00
+
+## Corrigido
+- Ao se aproximar da porta conectada do Landing Site, a tela agora mostra “A: SHOOT TO OPEN”. Isso explica por que caminhar até a porta fechada não troca de sala; depois de abrir, a travessia continua automática. Verificado no smoke do BlastEm pela API GDB.
+

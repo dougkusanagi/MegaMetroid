@@ -35,7 +35,8 @@ giratório, encostado numa parede e com o direcional apontando para longe dela, 
 míssil e super míssil (os compartimentos vazios são pulados). No teclado
 do Fusion configurado nesta máquina: A = tecla A, B = tecla S, C = tecla D.
 No controle de 6 botões, a mira de L/R do SNES fica em Z (baixo) e Y (cima); X fica livre para
-cancelar item. Segure Y para mirar na diagonal acima ou Z para a diagonal abaixo, inclusive
+cancelar item. Nas portas conectadas, aproxime-se e use **A** para atirar na porta; atravesse
+quando a animação terminar. O jogo mostra esse comando ao chegar perto. Segure Y para mirar na diagonal acima ou Z para a diagonal abaixo, inclusive
 parado e agachado; soltar retorna à mira do direcional. Y+Z juntos deixam a mira no direcional. Para jogar com um controle Xbox no layout do SNES, veja o
 remap do RetroArch descrito em `docs/BUILD.md`.
 Segure cima para mirar acima; cima + esquerda/direita mira na diagonal, parado ou andando, e a pose

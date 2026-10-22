@@ -20,6 +20,11 @@ static SpriteDefinition beam_definition;
 #endif
 #define OVERLAY_ROWS 4
 
+/* Window text while Samus is at a door: a shut door that leads somewhere, and an open door whose
+   room is not built yet (the original's room behind it is not in the port). */
+#define DOOR_SHOOT_TEXT "A: SHOOT TO OPEN"
+#define DOOR_NOT_BUILT_TEXT NULL
+
 #if MM_DEBUG_OVERLAY
 /* Q24.8 as fixed-width signed text with two decimals, e.g. "+ 2.75". */
 static void fix_text(char *out, int value)
@@ -215,6 +220,34 @@ static void render(Game *g)
         cap_x = door->position.x + (door->facing == ROOM_DOOR_FACING_RIGHT ? MM_DOOR_DEPTH / 2 : 0);
         SPR_setPosition(sprite, cap_x - g->camera.x, door->position.y - g->camera.y);
     }
+    {
+        MmRect body = {x + g->player.hitbox.left, y + g->player.hitbox.top,
+                       x + g->player.hitbox.right, y + g->player.hitbox.bottom};
+        const char *prompt = NULL;
+        for (i = 0; i < g->door_lock_count && !prompt; ++i) {
+            const RoomDoorDef *door = &g->room->doors[i];
+            MmRect opening;
+            if (g->door_locks[i].state == MM_DOOR_OPEN) {
+                /* Open but with no room built behind it: Samus can walk to the far edge and stop. */
+                if (door->target_room == ROOM_NO_CONNECTION &&
+                    mm_door_touched(body, door->position.x, door->position.y, door->facing))
+                    prompt = DOOR_NOT_BUILT_TEXT;
+                continue;
+            }
+            if (door->target_room == ROOM_NO_CONNECTION) continue;
+            opening = mm_door_rect(door->position.x, door->position.y, door->facing);
+            opening.left -= 40; opening.right += 40;
+            opening.top -= 12; opening.bottom += 12;
+            if (body.left < opening.right && body.right > opening.left &&
+                body.top < opening.bottom && body.bottom > opening.top) prompt = DOOR_SHOOT_TEXT;
+        }
+        if (prompt != g->door_prompt) {
+            VDP_setTextPlane(WINDOW);
+            VDP_clearTextLine(0);
+            if (prompt) VDP_drawText(prompt, 1, 0);
+            g->door_prompt = prompt;
+        }
+    }
     for (i = 0; i < MM_BEAM_COUNT; ++i) {
         const MmBeam *beam = &g->weapon.beams[i];
         Sprite *sprite = g->beam_sprites[i];
@@ -295,12 +328,16 @@ bool game_init(Game *g, u16 room_index)
     const room_def *room = room_get(room_index);
     if (!room || room->door_count > MM_ROOM_MAX_DOORS) return FALSE;
     g->input.previous = 0; g->pal_phase = 0; g->frame = 0;
+    g->door_prompt = NULL;
     g->music_looping = FALSE;
     mm_weapon_init(&g->weapon);
     enter_room(g, room, room_index, room->player_initial_pos.x, room->player_initial_pos.y, -1);
     SYS_disableInts();
     VDP_setScreenWidth256();
     VDP_setScreenHeight224();
+    VDP_setWindowVPos(FALSE, 2);
+    VDP_setTextPlane(WINDOW);
+    VDP_clearTextLine(0);
     JOY_init();
     SPR_init();
     PAL_setPalette(PAL0, g->room->palette_fg->data, CPU);
