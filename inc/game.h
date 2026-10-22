@@ -18,6 +18,7 @@ typedef struct {
     Sprite *sprite;
     MmWeapon weapon;
     Sprite *beam_sprites[MM_BEAM_COUNT];
+    Sprite *door_sprites[MM_ROOM_MAX_DOORS]; /* Cap art; hidden for doors the room does not have. */
     MmDoorLock door_locks[MM_ROOM_MAX_DOORS];
     MmRect door_caps[MM_ROOM_MAX_DOORS]; /* Cap of every door, open or not; for beam hits. */
     MmRect door_solids[MM_ROOM_MAX_DOORS]; /* Caps that still block; world.solids points here. */

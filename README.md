@@ -16,8 +16,8 @@ O Landing Site usa a arte nova de Crateria: paredes e vegetação restauradas,
 céu baseado no original, quatro portas azuis fechadas, base de blocos e a nave.
 O scroll do fundo foi corrigido para evitar redraw completo e travadas nas emendas.
 As portas azuis abrem com um tiro e só deixam passar depois de terminar a abertura; a porta
-do outro lado já fica aberta quando Samus chega. A arte/animação da abertura ainda usa a
-tampa atual. Blocos não quebram e a nave ainda
+do outro lado já fica aberta quando Samus chega. A tampa usa os cinco quadros originais da
+abertura. Blocos não quebram e a nave ainda
 não tem colisão, save ou recarga. O ponto inicial da Samus foi mantido; caminhe
 para a direita até o centro da sala para ver a nave. Há adaptação de cores às
 quatro paletas do Mega Drive. Regeneração e capturas da ROM em `docs/BUILD.md`.

@@ -167,6 +167,23 @@ static void idle(Game *g, int frames)
     }
 }
 
+/* Etapa 6.6.3: the cap sprite is visible, shows the lock's frame and covers the room's
+   16x64 cap strip, mirrored for a door in the right wall. */
+static int door_art(const Game *g, int door)
+{
+    const Sprite *sprite = g->door_sprites[door];
+    const RoomDoorDef *def = &g->room->doors[door];
+    int left = def->position.x + (def->facing == ROOM_DOOR_FACING_RIGHT ? MM_DOOR_DEPTH / 2 : 0);
+    /* Sprite coordinates carry the engine's +0x80 offset for negative screen positions. */
+    if (!sprite || SPR_getVisibility((Sprite *)sprite) != AUTO_FAST ||
+        sprite->frameInd != mm_lock_frame(&g->door_locks[door]) ||
+        sprite->x != left - g->camera.x + 0x80 ||
+        sprite->y != def->position.y - g->camera.y + 0x80)
+        return 0;
+    return ((sprite->attribut & TILE_ATTR_HFLIP_MASK) != 0) ==
+        (def->facing == ROOM_DOOR_FACING_LEFT);
+}
+
 /* Walks into the room's shut door at lock_index and shoots it; returns the tick that started
    the opening, or -1 if it stayed shut. */
 static int shoot_door(Game *g, int lock_index)
@@ -202,8 +219,18 @@ static int room_transitions(Game *g)
     if (g->door_locks[0].state != MM_DOOR_CLOSED || g->world.solid_count != 4 ||
         mm_pixel(g->player.x) + g->player.hitbox.left != cap.right) failed |= 1;
     if (shoot_door(g, 0) < 0) failed |= 1;
-    idle(g, MM_DOOR_OPEN_TICKS);
+    /* Frame 1 as soon as the shot lands, then one shape every six ticks, then the open jamb.
+       Depth grows towards the back, so Samus draws over the cap. */
+    if (!door_art(g, 0) || g->door_sprites[0]->depth <= g->sprite->depth) failed |= 1024;
+    idle(g, MM_DOOR_STEP_TICKS);
+    if (g->door_locks[0].state != MM_DOOR_OPENING || !door_art(g, 0)) failed |= 1024;
+    idle(g, MM_DOOR_STEP_TICKS);
+    if (g->door_locks[0].state != MM_DOOR_OPENING || !door_art(g, 0)) failed |= 1024;
+    idle(g, MM_DOOR_STEP_TICKS);
+    if (!door_art(g, 0)) failed |= 1024;
     if (g->door_locks[0].state != MM_DOOR_OPEN || g->world.solid_count != 3) failed |= 1;
+    for (i = g->door_lock_count; i < MM_ROOM_MAX_DOORS; ++i)
+        if (SPR_getVisibility(g->door_sprites[i]) != HIDDEN) failed |= 1024;
     if (walk_through(g, -1) != -1 || g->room != room_get(ROOM_CRATERIA_1) ||
         mm_pixel(g->player.x) + g->player.hitbox.left >= MM_DOOR_EDGE) failed |= 2;
     mm_samus_init(&g->player, 2210, 368);
@@ -218,8 +245,9 @@ static int room_transitions(Game *g)
             if (g->door_locks[2].state != MM_DOOR_CLOSED ||
                 mm_pixel(g->player.x) + g->player.hitbox.right != cap.left) failed |= 512;
             if (shoot_door(g, 2) < 0) failed |= 512;
+            if (!door_art(g, 2)) failed |= 1024;
             idle(g, MM_DOOR_OPEN_TICKS);
-            if (g->door_locks[2].state != MM_DOOR_OPEN) failed |= 512;
+            if (g->door_locks[2].state != MM_DOOR_OPEN || !door_art(g, 2)) failed |= 512;
         } else if (g->door_locks[2].state != MM_DOOR_OPEN) failed |= 512;
         /* East door: Samus emerges in Crateria 2 facing the way she was walking, and the
            paired door there is already open. */
@@ -228,14 +256,19 @@ static int room_transitions(Game *g)
         px = mm_pixel(g->player.x); py = mm_pixel(g->player.y);
         if (!room_loaded(g) || g->player.facing_left || !g->player.grounded ||
             px != 24 || py + g->player.hitbox.bottom != 160 || g->camera.x != 0) failed |= 4;
-        if (g->door_locks[0].state != MM_DOOR_OPEN || g->world.solid_count != 0) failed |= 128;
+        if (g->door_locks[0].state != MM_DOOR_OPEN || g->world.solid_count != 0 ||
+            !door_art(g, 0)) failed |= 128;
+        /* Crateria 2 has a single door, so the other cap sprites must stay hidden. */
+        for (i = g->door_lock_count; i < MM_ROOM_MAX_DOORS; ++i)
+            if (SPR_getVisibility(g->door_sprites[i]) != HIDDEN) failed |= 1024;
         /* And back through Crateria 2's west door, now walking left. */
         if (walk_through(g, -1) < 0 || g->room != room_get(ROOM_CRATERIA_1)) return failed | 8;
         idle(g, 40);
         px = mm_pixel(g->player.x); py = mm_pixel(g->player.y);
         if (!room_loaded(g) || !g->player.facing_left || !g->player.grounded ||
             px != 2240 || py + g->player.hitbox.bottom != 416) failed |= 16;
-        if (g->door_locks[2].state != MM_DOOR_OPEN || g->world.solid_count != 3) failed |= 256;
+        if (g->door_locks[2].state != MM_DOOR_OPEN || g->world.solid_count != 3 ||
+            !door_art(g, 2) || !door_art(g, 3)) failed |= 256;
         mm_smoke_memory[4 + trip] = MEM_getFree();
         if (MEM_getFree() != free_start) failed |= 64;
     }

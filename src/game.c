@@ -166,6 +166,25 @@ static void render(Game *g)
     /* Shorten the walk cycle as dash momentum builds. */
     if (walk_row(animation) && g->player.run_extra && g->sprite->timer > 3)
         g->sprite->timer = 3;
+    /* The cap is a sprite so only the 16 px strip that changes has to be drawn; the room
+       art keeps the closed door underneath. Vertical doors are not in any built room yet. */
+    for (i = 0; i < MM_ROOM_MAX_DOORS; ++i) {
+        Sprite *sprite = g->door_sprites[i];
+        const RoomDoorDef *door;
+        int cap_x;
+        if (i >= g->door_lock_count) { SPR_setVisibility(sprite, HIDDEN); continue; }
+        door = &g->room->doors[i];
+        if (door->facing != ROOM_DOOR_FACING_LEFT && door->facing != ROOM_DOOR_FACING_RIGHT) {
+            SPR_setVisibility(sprite, HIDDEN);
+            continue;
+        }
+        SPR_setVisibility(sprite, AUTO_FAST);
+        SPR_setAutoAnimation(sprite, FALSE);
+        SPR_setFrame(sprite, mm_lock_frame(&g->door_locks[i]));
+        SPR_setHFlip(sprite, door->facing == ROOM_DOOR_FACING_LEFT);
+        cap_x = door->position.x + (door->facing == ROOM_DOOR_FACING_RIGHT ? MM_DOOR_DEPTH / 2 : 0);
+        SPR_setPosition(sprite, cap_x - g->camera.x, door->position.y - g->camera.y);
+    }
     for (i = 0; i < MM_BEAM_COUNT; ++i) {
         const MmBeam *beam = &g->weapon.beams[i];
         Sprite *sprite = g->beam_sprites[i];
@@ -255,8 +274,26 @@ bool game_init(Game *g, u16 room_index)
     PAL_setPalette(PAL1, g->room->palette_bg->data, CPU);
     load_room_maps(g);
     PAL_setPalette(PAL2, pal_samus_power_suit.data, CPU);
+    /* Adding the doors before Samus and the beams puts them behind both in the sprite list. */
+    g->sprite = NULL;
+    for (i = 0; i < MM_ROOM_MAX_DOORS; ++i) {
+        g->door_sprites[i] = SPR_addSprite(&door_cap, 0, 0, TILE_ATTR(PAL1, TRUE, FALSE, FALSE));
+        if (!g->door_sprites[i]) break;
+        /* Caps stay behind Samus even when she stands in the doorway. */
+        SPR_setAlwaysAtBottom(g->door_sprites[i]);
+        SPR_setVisibility(g->door_sprites[i], HIDDEN);
+    }
+    if (i < MM_ROOM_MAX_DOORS) {
+        while (i > 0) SPR_releaseSprite(g->door_sprites[--i]);
+        if (g->foreground) MEM_free(g->foreground);
+        if (g->background) MEM_free(g->background);
+        SYS_enableInts();
+        return FALSE;
+    }
     g->sprite = SPR_addSprite(&player_sprite, 0, 0, TILE_ATTR(PAL2, TRUE, FALSE, FALSE));
+    if (g->sprite) SPR_setDepth(g->sprite, SPR_MAX_DEPTH - 1);
     if (!g->foreground || !g->background || !g->sprite) {
+        for (i = 0; i < MM_ROOM_MAX_DOORS; ++i) SPR_releaseSprite(g->door_sprites[i]);
         if (g->foreground) MEM_free(g->foreground);
         if (g->background) MEM_free(g->background);
         if (g->sprite) SPR_releaseSprite(g->sprite);
@@ -272,10 +309,12 @@ bool game_init(Game *g, u16 room_index)
         if (!g->beam_sprites[i]) {
             while (i > 0) SPR_releaseSprite(g->beam_sprites[--i]);
             SPR_releaseSprite(g->sprite);
+            for (i = 0; i < MM_ROOM_MAX_DOORS; ++i) SPR_releaseSprite(g->door_sprites[i]);
             MEM_free(g->foreground); MEM_free(g->background);
             SYS_enableInts();
             return FALSE;
         }
+        SPR_setDepth(g->beam_sprites[i], SPR_MAX_DEPTH - 2);
         SPR_setVisibility(g->beam_sprites[i], HIDDEN);
     }
     SYS_enableInts();

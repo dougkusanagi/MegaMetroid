@@ -10,6 +10,37 @@ O registro detalhado começa em 18/10/2026. A entrada anterior abaixo foi
 reconstituída do commit indicado; o histórico anterior completo permanece no Git
 (`git log`) e as entregas por etapa estão em [docs/PLANO.md](docs/PLANO.md).
 
+## 2026-10-21 21:41:33 −03:00 (America/Sao_Paulo) — Tampa de porta animada com a arte original (6.6.3)
+
+### Adicionado
+
+- A tampa da porta virou um sprite de 16×64 px com os cinco quadros originais de
+  `doors_door_r00`: fechada, três formas de abertura de 6 ticks e batente aberto. O cenário
+  continua com a porta fechada e o sprite opaco cobre a faixa durante a abertura.
+- `scripts/build_door_cap.py` gera `res/images/doors/door_cap.png` na PAL1 do Landing Site;
+  pixels transparentes viram preto opaco para o azul do fundo não vazar.
+- Portas criadas antes de Samus e feixes, com profundidade explícita: a Samus e os tiros passam
+  na frente da tampa.
+
+### Melhorado
+
+- O smoke no BlastEm confere quadro, espelhamento, posição, visibilidade e profundidade da
+  tampa nos quadros 1–4, além de manter ocultos os sprites de portas inexistentes.
+
+### Corrigido
+
+- A nota da 6.6.1 dizia que só o bojo azul de 8 px mudava. A faixa que muda tem 16 px: os
+  quadros 3 e 4 também trocam o metal em x=16..23, e o quadro 4 deixa o batente aberto.
+
+**Limites:** portas verticais ficam ocultas (nenhuma sala construída tem uma); a PAL1 da
+Crateria 2 não tem cores de porta e sua área de porta é preta, então a tampa reaproveita a
+paleta do Landing Site sem regressão visível.
+
+**Validação:** `./scripts/test.ps1 -Compiler gcc`, build SGDK `-SmokeTest` e
+`python scripts/smoke_test.py`: `SMOKE PASS` via GDB no BlastEm, sem ativar a janela. Custo:
+2 sprites de hardware e 16 tiles por porta; oito portas reservam 16 sprites e 128 tiles, dentro
+da região de 420 tiles do `SPR_init()`.
+
 ## 2026-10-21 20:53:08 −03:00 (America/Sao_Paulo) — Portas abrem com tiro e só então deixam passar (6.6.2)
 
 ### Adicionado

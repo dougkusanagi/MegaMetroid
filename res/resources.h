@@ -12,5 +12,6 @@ extern const Palette pal_samus_power_suit;
 extern const SpriteDefinition player_sprite;
 extern const SpriteDefinition beam_sprite;
 extern const SpriteDefinition beam_impact_sprite;
+extern const SpriteDefinition door_cap;
 
 #endif // _RES_RESOURCES_H_

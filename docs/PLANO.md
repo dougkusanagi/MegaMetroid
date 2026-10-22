@@ -21,7 +21,8 @@ Cada etapa é pequena, testável no emulador e termina em **commit + push** (ver
 - A ROM normal começa em Crateria 1. A porta leste leva à Crateria 2 e a oeste da Crateria 2
   volta; as demais portas do Landing Site ainda não têm sala de destino (6.5/6.6).
 - As portas azuis do Landing Site abrem com um tiro e a travessia só acontece depois que a
-  porta termina de abrir; a arte/animação da abertura entra na 6.6.3.
+  porta termina de abrir, com a tampa animada nos cinco quadros originais (6.6.3). Só a porta
+  azul abre até existirem mísseis/supers (4.3).
 - Listas de inimigos estão vazias; comportamento e instâncias entram nas fases 5 e 6.2.
 - A exportação de mapa e colisão ainda não é automática (6.2); mapas maiores pedem avaliação de RAM, ROM e streaming (6.4).
 - A nave segue decorativa, sem plataforma, save/recarga ou escotilha interativa (fases 6/7).
@@ -263,7 +264,7 @@ Para a 3.2: o tamanho de quadro é 64×64 (8×8 tiles); com a Samus em pé, os p
 | 6.3 ✅ | Transição de sala | Portas, fade, trocar tiles, mapas, paletas e colisão | Crateria 1 → 2 e volta |
 | 6.4 ✅ | Limites de ROM/RAM/VRAM | Medir os orçamentos, recusar sala que não cabe na VRAM, provar que a troca não vaza heap; formato da colisão decidido | Sem estouro em salas grandes |
 | 6.5 ✅ | Mapa do mundo | Tabela de salas e conexões de Crateria, extraída do original e embutida na ROM | Percorrer a região inteira (no grafo; salas jogáveis conforme forem construídas) |
-| 6.6 | Portas e blocos (6.6.1 núcleo ✅, 6.6.2 jogo ✅, tempos medidos) | Portas azul/vermelha/verde, blocos destrutíveis | Abrir com o tiro correto |
+| 6.6 | Portas e blocos (6.6.1 núcleo ✅, 6.6.2 jogo ✅, 6.6.3 arte ✅, tempos medidos) | Portas azul/vermelha/verde, blocos destrutíveis | Abrir com o tiro correto |
 
 **6.0 Integração visual antecipada, incluindo a nave** ✅ (2026-10-18).
 Antecipada a pedido do mantenedor. `scripts/build_landing_site.py` usa a sala
@@ -403,8 +404,11 @@ máquina de estados: fechada, abrindo (11 quadros) e aberta; azul abre com qualq
 com 5 mísseis ou 1 super, verde só com super, e o que não serve é recusado. Tempos **medidos no original**
 (Mesen, `scripts/sm_door_reference.lua`, arquivado em `tests/reference/super_metroid/door_open`): depois que o tiro
 bate, a tampa passa por três formas de 6 quadros e some; a Samus anda no quadro em que ela some
-(18 quadros após o impacto). As imagens são os quadros 0 a 4 de `doors_door_r00`: o metal (24 px)
-fica e só o bojo azul (8 px) muda, logo o fundo pode ter só o metal e a tampa ser um sprite de 8 px.
+(18 quadros após o impacto). As imagens são os quadros 0 a 4 de `doors_door_r00`. A medição
+inicial dizia que só o bojo azul de 8 px mudava; a conferência da 6.6.3 mostrou que a faixa
+que muda tem **16 px** (x=16..31): os quadros 3 e 4 também trocam o metal em x=16..23 e o
+quadro 4 deixa o batente aberto. O cenário pode manter a porta fechada, mas a tampa precisa
+cobrir os 16 px; a arte/animação entra na 6.6.3.
 Limite: uma só porta, tiro sem carga, captura a cada 2 quadros. Naquele passo ainda não estava ligado
 ao jogo (6.6.2: tiro abre a porta, travessia só com a porta aberta; 6.6.3: animação e arte;
 depois blocos destrutíveis). Mísseis e supers só existem na etapa 4.3: até lá, só a porta azul
@@ -424,6 +428,24 @@ quando o estado vira aberto. Validação: `door_locks` no host cobre a caixa do 
 smoke comprova que a porta oeste sem rota bloqueia, abre com um tiro e deixa Samus na faixa sem
 trocar de sala, e que a rota leste faz três idas e voltas: primeiro tiro abre a porta, chegada na
 Crateria 2 com a porta par aberta, volta ao Landing Site com a porta leste aberta e heap estável.
+
+*6.6.3 Arte e animação da abertura* ✅ (2026-10-21). A tampa virou sprite de **16×64 px** com os
+cinco quadros 0–4 de `doors_door_r00` — fechada, três formas de abertura de 6 quadros e o
+batente aberto —, desenhado por cima da porta fechada que continua no cenário. O sprite é
+opaco: `scripts/build_door_cap.py` recorta a faixa x=16..31, converte os índices da folha para
+a PAL1 do Landing Site (azuis 9/10/11, cinzas 3/6/8/12/13, rosa/realce 14) e preenche com o
+índice 1 (preto opaco) os pixels transparentes, para o azul do fundo não vazar durante a
+abertura. `mm_lock_frame` escolhe o quadro: 1 no impacto, 2 e 3 a cada 6 ticks, 4 aos 18 ticks,
+quando a travessia libera. Porta da parede direita usa `SPR_setHFlip`. As tampas são criadas
+antes de Samus e dos feixes, com `SPR_setAlwaysAtBottom` e profundidade explícita (portas
+`SPR_MAX_DEPTH`, Samus `SPR_MAX_DEPTH - 1`, feixes `SPR_MAX_DEPTH - 2`), então Samus e tiros
+passam na frente da tampa. Custo: 2 sprites de hardware e 16 tiles por porta; as oito portas
+reservam 16 sprites e 128 tiles de VRAM, dentro da região de 420 tiles do `SPR_init()`.
+**Limites:** portas verticais ficam ocultas (nenhuma sala construída tem uma); a PAL1 da
+Crateria 2 não traz as cores de porta e sua área de porta é preta, então a tampa usa as cores do
+Landing Site sem regressão visível ali. Validação: `door_locks` no host e, no BlastEm, o smoke
+`door_art` confere visibilidade, quadro, espelhamento, posição e profundidade da tampa nos
+quadros 1–4, além de manter ocultos os sprites de portas inexistentes. `SMOKE PASS`.
 
 ### Fase 7 — Itens, progressão e HUD
 

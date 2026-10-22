@@ -9,6 +9,9 @@ SPRITE		player_sprite		"images/player/samus_sheet.png"		8			8			FAST		5		NONE
 # Sound effects from Super Metroid (res/sound/Sound-Effects); rescomp converts them to 13.3 kHz PCM.
 SPRITE beam_sprite "images/player/beam.png" 1 1 FAST 0 NONE
 SPRITE beam_impact_sprite "images/player/beam_impact.png" 2 2 FAST 0 NONE
+# Door caps: frames 0 shut, 1-3 opening, 4 open jamb. Built by scripts/build_door_cap.py
+# from doors_door_r00 frames 0-4, columns 16..31, in the Landing Site PAL1 door colors.
+SPRITE door_cap "images/doors/door_cap.png" 2 8 FAST 0 NONE
 WAV				beam_sfx				"sound/Sound-Effects/beam_shot.wav"							XGM2
 WAV				spin_sfx				"sound/Sound-Effects/samus_flip.wav"						XGM2
 WAV				land_sfx				"sound/Sound-Effects/samus_land.wav"						XGM2
