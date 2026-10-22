@@ -118,6 +118,35 @@ static bool walk_row(u16 row)
            row == PLAYER_ANIM_WALK_AIM_UP_R || row == PLAYER_ANIM_WALK_AIM_DOWN_R;
 }
 
+/* Source order of every shot strip: up-left, up, up-right, left, right, down-left, down, down-right. */
+static int shot_direction(const MmBeam *beam)
+{
+    return beam->vy < 0 ? (beam->vx < 0 ? 0 : beam->vx > 0 ? 2 : 1) :
+           beam->vy > 0 ? (beam->vx < 0 ? 5 : beam->vx > 0 ? 7 : 6) :
+           beam->vx < 0 ? 3 : 4;
+}
+
+/* PAL3 is shared by all shots. Beams use the beam sheet; missiles and supers use the missile
+   sheet, whose palette replaces the beam's until the last shot and impact are gone. The
+   selector only changes weapon when no shot is on screen, so the two never overlap. */
+static bool missile_palette(const Game *g)
+{
+    int i;
+    for (i = 0; i < MM_BEAM_COUNT; ++i) {
+        const MmBeam *beam = &g->weapon.beams[i];
+        if ((beam->active || beam->impact_ticks) && beam->kind != MM_SHOT_BEAM) return TRUE;
+    }
+    return g->weapon.selected != MM_WEAPON_BEAM;
+}
+
+static void sync_shot_palette(Game *g)
+{
+    bool missiles = missile_palette(g);
+    if (missiles == g->missile_palette) return;
+    g->missile_palette = missiles;
+    PAL_setPalette(PAL3, missiles ? missile_sprite.palette->data : beam_sprite.palette->data, DMA);
+}
+
 static void render(Game *g)
 {
     int i;
@@ -130,6 +159,7 @@ static void render(Game *g)
     u16 animation = player_row(&g->player);
     bool rolling = animation == PLAYER_ANIM_BALL_R + side;
     g->camera = mm_camera(x + 20, y + 28, VIEW_WIDTH, VIEW_HEIGHT, bounds);
+    sync_shot_palette(g);
     MAP_scrollTo(g->foreground, g->camera.x, g->camera.y);
     /* MAP wraps source blocks itself. Modulo here makes a one-pixel crossing
        look like a 511-pixel teleport and queues a full plane redraw. */
@@ -188,19 +218,21 @@ static void render(Game *g)
     for (i = 0; i < MM_BEAM_COUNT; ++i) {
         const MmBeam *beam = &g->weapon.beams[i];
         Sprite *sprite = g->beam_sprites[i];
-        bool hit = beam->impact_ticks != 0;
-        const SpriteDefinition *definition = hit ? &beam_impact_sprite : &beam_definition;
-        SPR_setVisibility(sprite, beam->active || hit ? AUTO_FAST : HIDDEN);
-        if (beam->active || hit) {
+        bool beam_shot = beam->kind == MM_SHOT_BEAM;
+        bool hit = beam_shot && beam->impact_ticks != 0;
+        bool shown = beam_shot ? (beam->active || hit) : beam->active;
+        const SpriteDefinition *definition = hit ? &beam_impact_sprite :
+                                             beam_shot ? &beam_definition : &missile_sprite;
+        SPR_setVisibility(sprite, shown ? AUTO_FAST : HIDDEN);
+        if (shown) {
+            int offset = beam_shot && !hit ? 4 : 8;
             if (sprite->definition != definition) SPR_setDefinition(sprite, definition);
             SPR_setAutoAnimation(sprite, FALSE);
-            /* Source order: up-left, up, up-right, left, right, down-left, down, down-right. */
+            /* Missiles leave no explosion art yet, so an impact simply hides them. */
             SPR_setFrame(sprite, hit ? (MM_IMPACT_TICKS - beam->impact_ticks) / 2 :
-                beam->vy < 0 ? (beam->vx < 0 ? 0 : beam->vx > 0 ? 2 : 1) :
-                beam->vy > 0 ? (beam->vx < 0 ? 5 : beam->vx > 0 ? 7 : 6) :
-                beam->vx < 0 ? 3 : 4);
-            SPR_setPosition(sprite, (hit ? beam->impact_x : mm_pixel(beam->x)) - g->camera.x - (hit ? 8 : 4),
-                            (hit ? beam->impact_y : mm_pixel(beam->y)) - g->camera.y - (hit ? 8 : 4));
+                shot_direction(beam) + (beam->kind == MM_SHOT_SUPER ? 8 : 0));
+            SPR_setPosition(sprite, (hit ? beam->impact_x : mm_pixel(beam->x)) - g->camera.x - offset,
+                            (hit ? beam->impact_y : mm_pixel(beam->y)) - g->camera.y - offset);
         }
     }
     SPR_update();
@@ -302,6 +334,7 @@ bool game_init(Game *g, u16 room_index)
         return FALSE;
     }
     PAL_setPalette(PAL3, beam_sprite.palette->data, CPU);
+    g->missile_palette = FALSE;
     beam_definition = beam_sprite;
     beam_definition.maxNumTile = beam_impact_sprite.maxNumTile;
     for (i = 0; i < MM_BEAM_COUNT; ++i) {
@@ -368,6 +401,8 @@ bool game_change_room(Game *g, u16 room_index, Vect2D_s16 spawn, int from_door)
     SYS_disableInts();
     enter_room(g, room, room_index, spawn.x, spawn.y, open_door);
     g->player.facing_left = facing_left;
+    /* Ammo and the selected weapon cross the door: PAL3 must fade in with the same sheet. */
+    g->missile_palette = g->weapon.selected != MM_WEAPON_BEAM;
     loaded = load_room_maps(g);
     SYS_enableInts();
     if (!loaded) return FALSE;
@@ -376,7 +411,8 @@ bool game_change_room(Game *g, u16 room_index, Vect2D_s16 spawn, int from_door)
     memcpy(&colors[0], room->palette_fg->data, 16 * sizeof(u16));
     memcpy(&colors[16], room->palette_bg->data, 16 * sizeof(u16));
     memcpy(&colors[32], pal_samus_power_suit.data, 16 * sizeof(u16));
-    memcpy(&colors[48], beam_sprite.palette->data, 16 * sizeof(u16));
+    memcpy(&colors[48], g->missile_palette ? missile_sprite.palette->data :
+                                           beam_sprite.palette->data, 16 * sizeof(u16));
     PAL_fadeInAll(colors, ROOM_FADE_FRAMES, FALSE);
     return TRUE;
 }
@@ -414,13 +450,20 @@ static void door_shots(Game *g)
     }
 }
 
-/* PCM sound effects from res/sound/Sound-Effects. Channel 1 stays free for the music; the spin loop
-   and the landing share channel 2, since a landing ends the spin. */
+/* PCM sound effects from res/sound/Sound-Effects. Channel 1 stays free for the music, channel 3
+   carries every shot, and channel 4 the weapon click. The spin loop and the landing share
+   channel 2, since a landing ends the spin. */
 static void play_sounds(const Game *g, MmPose pose_before)
 {
     MmPose pose = g->player.pose;
-    if (g->weapon.fired)
-        XGM2_playPCMEx(beam_sfx, sizeof(beam_sfx), SOUND_PCM_CH3, 15, FALSE, FALSE);
+    if (g->weapon.fired) {
+        if (g->weapon.fired_kind == MM_WEAPON_MISSILE)
+            XGM2_playPCMEx(missile_sfx, sizeof(missile_sfx), SOUND_PCM_CH3, 15, FALSE, FALSE);
+        else if (g->weapon.fired_kind == MM_WEAPON_SUPER)
+            XGM2_playPCMEx(super_sfx, sizeof(super_sfx), SOUND_PCM_CH3, 15, FALSE, FALSE);
+        else
+            XGM2_playPCMEx(beam_sfx, sizeof(beam_sfx), SOUND_PCM_CH3, 15, FALSE, FALSE);
+    }
     /* Only the spin and the wall kick make the spin sound, looped while spinning; a standing jump is silent. */
     if (g->player.jumped && g->player.spin_jumping)
         XGM2_playPCMEx(spin_sfx, sizeof(spin_sfx), SOUND_PCM_CH2, 14, FALSE, TRUE);
@@ -447,14 +490,18 @@ void game_update(Game *g, MmInput input)
     if (SYS_isPAL() && ++g->pal_phase == 5) { steps = 2; g->pal_phase = 0; }
     while (steps--) {
         MmPose pose_before = g->player.pose;
+        int selected_before = g->weapon.selected;
         ++g->frame;
         for (i = 0; i < g->door_lock_count; ++i) mm_lock_tick(&g->door_locks[i]);
         sync_door_solids(g);
         mm_tick(&g->world, &g->player, input);
+        if (input.weapon_pressed) mm_weapon_cycle(&g->weapon);
         /* The shot leaves from the cannon of the pose that will be on screen. */
         row = player_row(&g->player);
         mm_weapon_tick(&g->weapon, &g->world, &g->player, input, g->camera,
                        player_muzzle[row][0], player_muzzle[row][1]);
+        if (g->weapon.selected != selected_before)
+            XGM2_playPCMEx(select_sfx, sizeof(select_sfx), SOUND_PCM_CH4, 15, FALSE, FALSE);
         /* A beam that stopped on a door cap is that door's shot. */
         door_shots(g);
         play_sounds(g, pose_before);
@@ -463,6 +510,7 @@ void game_update(Game *g, MmInput input)
         input.shoot_pressed = 0;
         input.down_pressed = 0;
         input.up_pressed = 0;
+        input.weapon_pressed = 0;
     }
     update_music(g);
     {
@@ -492,5 +540,6 @@ void game_frame(Game *g)
     input.jump_held = (buttons & BUTTON_C) != 0;
     input.down_pressed = (pressed & BUTTON_DOWN) != 0;
     input.up_pressed = (pressed & BUTTON_UP) != 0;
+    input.weapon_pressed = (pressed & BUTTON_START) != 0;
     game_update(g, input);
 }

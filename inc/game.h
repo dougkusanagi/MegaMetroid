@@ -18,6 +18,7 @@ typedef struct {
     Sprite *sprite;
     MmWeapon weapon;
     Sprite *beam_sprites[MM_BEAM_COUNT];
+    bool missile_palette; /* PAL3 holds missile_sprite's palette instead of the beam's. */
     Sprite *door_sprites[MM_ROOM_MAX_DOORS]; /* Cap art; hidden for doors the room does not have. */
     MmDoorLock door_locks[MM_ROOM_MAX_DOORS];
     MmRect door_caps[MM_ROOM_MAX_DOORS]; /* Cap of every door, open or not; for beam hits. */

@@ -385,6 +385,76 @@ static int turns(Game *g)
     return failed;
 }
 
+/* Etapa 4.3.2: the ROM wiring of missiles and supers. START cycles the weapon (skipping the
+   empty super bin), the missile sheet replaces the beam PAL3 while it is selected or in flight,
+   the 16x16 frame follows the direction, ammo drops on a press, a missile opens a blue door,
+   and ammo plus selection survive the room change. */
+static int missile_weapon(Game *g)
+{
+    int failed = 0, i;
+    MmBeam *shot;
+    Sprite *sprite;
+    /* The southwest door is still shut after the transitions test, so it has a live lock to hit.
+       Stand clear of the cap: firing flush against it would spawn the missile inside the door. */
+    mm_weapon_init(&g->weapon);
+    mm_samus_init(&g->player, 80, 1136);
+    idle(g, 30);
+    g->player.facing_left = TRUE;
+    g->player.turn_pose_ticks = 0;
+    /* START: beam -> missile, skipping the empty super bin. */
+    game_update(g, (MmInput){.weapon_pressed = 1});
+    SYS_doVBlankProcess();
+    if (g->weapon.selected != MM_WEAPON_MISSILE || g->weapon.missiles != MM_START_MISSILES ||
+        PAL_getColor(49) != missile_sprite.palette->data[1]) failed = 1;
+    /* One press fires one missile, without advancing on its spawn tick. */
+    game_update(g, (MmInput){.shoot_pressed = 1, .shoot_held = 1});
+    SYS_doVBlankProcess();
+    shot = &g->weapon.beams[0];
+    sprite = g->beam_sprites[0];
+    if (!g->weapon.fired || g->weapon.fired_kind != MM_WEAPON_MISSILE ||
+        g->weapon.missiles != MM_START_MISSILES - 1 || !shot->active ||
+        shot->kind != MM_SHOT_MISSILE || shot->vx != -MM_SHOT_START_SPEED || shot->vy ||
+        !sprite || SPR_getVisibility(sprite) != AUTO_FAST || sprite->definition != &missile_sprite ||
+        sprite->frameInd != 3) failed = 1;
+    game_update(g, (MmInput){0});
+    SYS_doVBlankProcess();
+    if (shot->vx != -(MM_SHOT_START_SPEED + MM_MISSILE_ACCEL)) failed = 1;
+    /* Let it reach the cap: the blue lock opens on the missile hit. */
+    for (i = 0; i < 60 && g->door_locks[1].state == MM_DOOR_CLOSED; ++i) {
+        game_update(g, (MmInput){0});
+        SYS_doVBlankProcess();
+    }
+    if (g->door_locks[1].state != MM_DOOR_OPENING || shot->active || !shot->impact_ticks) failed = 1;
+    idle(g, MM_DOOR_OPEN_TICKS);
+    if (g->door_locks[1].state != MM_DOOR_OPEN) failed = 1;
+    /* Granting a super lets the next START select it; frame 11 is the left-facing super. */
+    g->weapon.supers = 1;
+    game_update(g, (MmInput){.weapon_pressed = 1});
+    SYS_doVBlankProcess();
+    if (g->weapon.selected != MM_WEAPON_SUPER) failed = 1;
+    game_update(g, (MmInput){.shoot_pressed = 1, .shoot_held = 1});
+    SYS_doVBlankProcess();
+    shot = &g->weapon.beams[0];
+    if (!g->weapon.fired || g->weapon.fired_kind != MM_WEAPON_SUPER || g->weapon.supers ||
+        !shot->active || shot->kind != MM_SHOT_SUPER || shot->vx != -MM_SHOT_START_SPEED ||
+        g->beam_sprites[0]->definition != &missile_sprite || g->beam_sprites[0]->frameInd != 11 ||
+        /* The empty bin auto-deselects, but the shot on screen keeps the missile palette. */
+        g->weapon.selected != MM_WEAPON_BEAM ||
+        PAL_getColor(49) != missile_sprite.palette->data[1]) failed = 1;
+    idle(g, 60);
+    if (shot->active || PAL_getColor(49) != beam_sprite.palette->data[1]) failed = 1;
+    /* Select missiles again and carry the remaining four through a room change. */
+    game_update(g, (MmInput){.weapon_pressed = 1});
+    SYS_doVBlankProcess();
+    if (g->weapon.selected != MM_WEAPON_MISSILE) failed = 1;
+    if (!game_change_room(g, ROOM_CRATERIA_2, room_crateria_2.player_initial_pos, -1)) failed = 1;
+    SYS_doVBlankProcess();
+    if (g->weapon.missiles != MM_START_MISSILES - 1 || g->weapon.selected != MM_WEAPON_MISSILE ||
+        g->weapon.beams[0].active || g->weapon.beams[0].impact_ticks ||
+        PAL_getColor(49) != missile_sprite.palette->data[1]) failed = 1;
+    return failed;
+}
+
 int main(bool hardReset)
 {
     static Game g;
@@ -571,6 +641,7 @@ int main(bool hardReset)
     if (jump_performance(&g)) failed |= 65536;
     failed |= room_transitions(&g) << 17; /* Bits 17-26: which room/door check failed. */
     room_video(&g);
+    if (missile_weapon(&g)) failed |= 1UL << 27;
     /* Window plane keeps the result on screen; plane A scrolls with the camera. */
     VDP_setWindowVPos(FALSE, 2);
     VDP_setTextPlane(WINDOW);

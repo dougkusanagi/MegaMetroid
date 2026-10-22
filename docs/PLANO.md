@@ -20,9 +20,9 @@ Cada etapa é pequena, testável no emulador e termina em **commit + push** (ver
 **Limitações / dívida técnica atual**
 - A ROM normal começa em Crateria 1. A porta leste leva à Crateria 2 e a oeste da Crateria 2
   volta; as demais portas do Landing Site ainda não têm sala de destino (6.5/6.6).
-- As portas azuis do Landing Site abrem com um tiro e a travessia só acontece depois que a
-  porta termina de abrir, com a tampa animada nos cinco quadros originais (6.6.3). Só a porta
-  azul abre até existirem mísseis/supers (4.3).
+- As portas azuis abrem com um tiro, vermelhas com cinco mísseis (ou um super) e verdes só com
+  super, com a tampa animada nos cinco quadros originais (6.6.3). Mísseis e supers já são
+  selecionáveis por START desde a 4.3; o contador na HUD entra na 7.1.
 - Listas de inimigos estão vazias; comportamento e instâncias entram nas fases 5 e 6.2.
 - A exportação de mapa e colisão ainda não é automática (6.2); mapas maiores pedem avaliação de RAM, ROM e streaming (6.4).
 - A nave segue decorativa, sem plataforma, save/recarga ou escotilha interativa (fases 6/7).
@@ -240,8 +240,26 @@ Para a 3.2: o tamanho de quadro é 64×64 (8×8 tiles); com a Samus em pé, os p
 |---|-------|---------|-------|
 | 4.1 ✅ | Pool de projéteis | Array estático (sem `malloc`) com posição, direção, vida | 5+ tiros sem queda de fps |
 | 4.2 ✅ | Tiro do canhão | Botão A (B ficou para a corrida), 8 direções, cadência, colisão com tiles | Tiro some na parede |
-| 4.3 | Mísseis e super mísseis | Munição, seleção, contador | Sem munição não atira |
+| 4.3 ✅ | Mísseis e super mísseis | Munição, seleção por START, arte 16×16 e paleta própria | Sem munição não atira |
 | 4.4 | Beams | Charge, ice, wave como flags de equipamento | Cada beam altera sprite/dano |
+
+*4.3.1 Núcleo* ✅ (2026-10-21). `mm_weapon_cycle` percorre beam → míssil → super, pulando o
+compartimento vazio; o tiro carrega o tipo (`MM_SHOT_*`) até a tampa da porta. A física segue as
+medições do original (`docs/FISICA.md`): míssil acelera 80 Q8.8 no cardinal e 70 na diagonal,
+super 256 e 182, com dano 100/300 e cadência 10/20 ticks. Mísseis e supers não repetem ao segurar,
+não têm tempo de vida e voltam para o beam quando a munição zera.
+
+*4.3.2 Jogo* ✅ (2026-10-21). **START** troca a arma (X continua reservado para cancelar item no
+controle de 6 botões); a folha `res/images/player/missile.png` traz os oito quadros do míssil e os
+oito do super, em 16×16, e substitui a PAL3 do beam enquanto a arma está selecionada ou há tiro na
+tela — por isso a troca de seleção espera o projétil e o impacto saírem da tela. Cada tipo toca seu
+som (canal 3) e a troca toca um clique (canal 4). Munição e seleção atravessam a troca de sala.
+Limites: o impacto do míssil usa o quadro do beam (sem arte própria nesta etapa; entra junto com
+os efeitos de explosão), o super é um projétil único (três mísseis simultâneos no original ficam para
+quando o pool for revisto), e o contador de munição na HUD entra com o HUD na 7.1. O carregamento
+inicial de 5 mísseis e 0 supers é provisório até os itens coletáveis (7.2). Validação: `missile_weapon`
+em `tests/rom_smoke.c` (START, paleta, quadro por direção, munição, porta azul abrindo com o míssil,
+super e persistência na troca de sala) e `measured_missiles`/`missile_loadout` em `tests/core_test.c`.
 
 ### Fase 5 — Inimigos e combate
 
@@ -411,8 +429,8 @@ quadro 4 deixa o batente aberto. O cenário pode manter a porta fechada, mas a t
 cobrir os 16 px; a arte/animação entra na 6.6.3.
 Limite: uma só porta, tiro sem carga, captura a cada 2 quadros. Naquele passo ainda não estava ligado
 ao jogo (6.6.2: tiro abre a porta, travessia só com a porta aberta; 6.6.3: animação e arte;
-depois blocos destrutíveis). Mísseis e supers só existem na etapa 4.3: até lá, só a porta azul
-é aberta no jogo. Validação: `door_locks` em `tests/core_test.c`.
+depois blocos destrutíveis). Naquela etapa só a porta azul abria; desde a 4.3 os mísseis e supers
+também abrem as portas vermelha e verde. Validação: `door_locks` em `tests/core_test.c`.
 
 *6.6.2 Portas no jogo* ✅ (2026-10-21). A tampa de toda porta fechada entra em `MmWorld.solids` a
 cada tick, então bloqueia Samus e feixes como uma parede. Um feixe que para sobre a tampa é o tiro

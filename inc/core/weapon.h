@@ -42,7 +42,7 @@ typedef struct {
     MmBeam beams[MM_BEAM_COUNT];
     int selected; /* MM_WEAPON_* */
     int missiles, supers;
-    int cooldown, repeating, fired, fired_kind;
+    int cooldown, repeating, fired, fired_kind; /* fired_kind: MM_WEAPON_* */
     int cycle_pending; /* A weapon change waits until no shot is on screen. */
 } MmWeapon;
 

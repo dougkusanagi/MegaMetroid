@@ -108,6 +108,11 @@ então px/quadro e px/tick são comparáveis. `python scripts/sm_reference_repor
 | Feixe (Power Beam), base sem movimento herdado | cardinal 4 px/quadro; diagonal 683/256 por eixo; aceleração 1/16 por eixo ativo | mesmos valores, primeiro avanço já acelerado | sim (2.8.5; limites abaixo) |
 | Intervalo de tiro | 15 quadros apertando; segurado dispara de novo a cada 25 | 15 / 25 | sim |
 | Feixes ao mesmo tempo | ao menos 3 (o limite não apareceu nos cenários) | 3 | — |
+| Míssil, saída | 1 px/quadro por eixo em movimento (256 Q8.8), sem avançar no quadro de criação | igual | sim (4.3.1) |
+| Míssil, aceleração | 80 Q8.8 no cardinal, 70 na diagonal | igual | sim (4.3.1) |
+| Super míssil, aceleração | 256 Q8.8 no cardinal, 182 na diagonal | igual | sim (4.3.1) |
+| Cadência de míssil/super | 10 / 20 quadros | igual | sim (4.3.1) |
+| Dano de míssil/super | 100 / 300 | igual | — (sem inimigos) |
 
 Os quadros de pose (`4B`, `A4`, …) são os números de pose do Super Metroid (`$0A1C`), os mesmos da
 folha de sprites. As velocidades batem com `SamusXSpeedTable_Normal` em `bank_90.asm`: aceleração
@@ -143,6 +148,23 @@ e 3,25 na bola; desaceleração 0,5.
   vida de 60 ticks e seu recorte de tela; os dados finitos não confirmam esses
   limites como idênticos ao SNES. A observação antiga de “até ~6” era um trecho
   antes da colisão, não uma velocidade máxima comprovada.
+
+## Mísseis e super mísseis (4.3)
+
+Medido em 2026-10-21 no Landing Site, com os cenários `missile_right`,
+`missile_up_right` e `super_right` de `scripts/sm_reference.ps1`, gravados a cada quadro e
+arquivados em `tests/reference/super_metroid/*.csv.gz` (48 amostras válidas no total).
+`python scripts/sm_reference_cache.py` valida os cenários e gera `tests/out/sm_missiles.h`.
+
+- Saída: 1 px/quadro por eixo em movimento (`$0100` Q8.8). Diferente do feixe, o projétil
+  **não avança no quadro em que nasce**: a primeira posição só muda no quadro seguinte.
+- Aceleração do míssil: 80 Q8.8 (`$0040` + o `$0010` genérico) no cardinal e 70 (`$0036` +
+  `$0010`) na diagonal. Super míssil: 256 no cardinal e 182 na diagonal, da tabela
+  `SuperMissileAccelerations`, sem somar o `$0010` genérico.
+- Cadência: 10 quadros para o míssil e 20 para o super, sem repetição por segurar o botão.
+- Tipo na RAM: `$8100`/`$8200` identificam míssil/super vivos; o dano é 100/300.
+- Limites: os cenários cobrem três direções e poucos quadros de voo; a simetria das tabelas
+  cobre as demais. Não foram medidos ricochete, limite simultâneo de projéteis nem a explosão.
 
 ## Agachar, bola e pousos (2.8.3)
 

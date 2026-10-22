@@ -10,6 +10,33 @@ O registro detalhado começa em 18/10/2026. A entrada anterior abaixo foi
 reconstituída do commit indicado; o histórico anterior completo permanece no Git
 (`git log`) e as entregas por etapa estão em [docs/PLANO.md](docs/PLANO.md).
 
+## 2026-10-21 22:34:00 −03:00 (America/Sao_Paulo) — Mísseis e supers na ROM (4.3.2)
+
+### Adicionado
+
+- **START** troca a arma em jogo (Power Beam → míssil → super, pulando compartimentos vazios);
+  X continua reservado para cancelar item no controle de 6 botões.
+- `res/images/player/missile.png` (gerada por `scripts/build_missile_sheet.py`): uma folha de
+  16 quadros 16×16 com os oito quadros do míssil e os oito do super, na ordem de direção do beam,
+  em 11 cores opacas mais transparência.
+- Enquanto a arma está selecionada ou há projétil na tela, a PAL3 usa a paleta da folha de mísseis;
+  ao voltar para o beam (inclusive automaticamente quando a munição zera) a PAL3 do beam é
+  restaurada. A seleção pedida durante um tiro fica pendente até o projétil e o impacto saírem.
+- Sons de míssil, super e clique de troca (`missile_sfx`, `super_sfx`, `select_sfx`), nos canais 3
+  e 4, e impacto do míssil desenhado com o quadro do beam (a arte própria entra com as explosões).
+
+### Corrigido
+
+- O míssil e o super não avançam no tick em que nascem, como medido no original (o beam mantém o
+  avanço imediato). Mísseis abrem portas azuis; vermelhas e verdes já estavam no núcleo desde 4.3.1.
+
+**Validação:** `./scripts/test.ps1 -Compiler gcc` (todos os testes de núcleo, incluindo
+`measured_missiles` e `missile_loadout`) e `./scripts/build.ps1 -SmokeTest` seguido de
+`python scripts/smoke_test.py` no BlastEm via API GDB: `SMOKE PASS`, com o novo check
+`missile_weapon` (START, paleta, quadro por direção, munição, porta azul abrindo com o míssil,
+super e persistência de munição/seleção na troca de sala). Limites: sem arte de explosão, um
+projétil por disparo de super e contador de munição apenas na 7.1.
+
 ## 2026-10-21 22:19:00 −03:00 (America/Sao_Paulo) — Núcleo de mísseis e super mísseis (4.3.1)
 
 ### Adicionado
