@@ -18,6 +18,9 @@ local function w16(a, v) emu.write16(a, v, WR) end
 local SETUP = {
   -- Dá a Morph Ball (bit 4 em equipados e coletados) para medir agachar e bola.
   morph = function() w16(0x09A2, r16(0x09A2) | 0x0004); w16(0x09A4, r16(0x09A4) | 0x0004) end,
+  -- Dá munição e escolhe o item no HUD (1 = mísseis, 2 = super mísseis).
+  missiles = function() w16(0x09C6, 10); w16(0x09CA, 10); w16(0x09D2, 1) end,
+  supers = function() w16(0x09C6, 10); w16(0x09CA, 10); w16(0x09D2, 2) end,
 }
 
 -- {quadros, "botões"}: os botões ficam segurados por esse número de quadros.
@@ -78,6 +81,10 @@ local SCENARIOS = {
   {name = "beam_down_right", steps = after_prep({20, "jump"}, {3, "right down jump"}, {1, "right down shot jump"}, {60, "jump"})},
   {name = "beam_up_left", steps = after_prep({7, "left"}, {20, ""}, {3, "left up"}, {1, "left up shot"}, {60, "up"})},
   {name = "beam_down_left", steps = after_prep({7, "left"}, {20, ""}, {20, "jump"}, {3, "left down jump"}, {1, "left down shot jump"}, {60, "jump"})},
+  -- (Super) missile probes: ammo and the HUD selection are injected in RAM. One new press of X fires.
+  {name = "missile_right", setup = "missiles", steps = after_prep({1, "shot"}, {60, ""})},
+  {name = "missile_up_right", setup = "missiles", steps = after_prep({3, "right up"}, {1, "right up shot"}, {60, "up"})},
+  {name = "super_right", setup = "supers", steps = after_prep({1, "shot"}, {60, ""})},
 }
 for n = 1, 30 do
   SCENARIOS[#SCENARIOS + 1] = {name = "jump_hold_" .. n, steps = after_prep({n, "jump"}, {90 - n, ""})}
