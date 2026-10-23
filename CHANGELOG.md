@@ -10,6 +10,21 @@ O registro detalhado começa em 18/10/2026. A entrada anterior abaixo foi
 reconstituída do commit indicado; o histórico anterior completo permanece no Git
 (`git log`) e as entregas por etapa estão em [docs/PLANO.md](docs/PLANO.md).
 
+## 2026-10-22 21:37:00 −03:00 (America/Sao_Paulo) — Saída do wall jump (3.3.3)
+
+### Corrigido
+
+- O chute de parede preserva a posição no primeiro tick e começa a acelerar no
+  seguinte, com caixa transitória de 24 px antes dos 38 px. Reutiliza o cache
+  original, sem nova execução do Mesen, novos tiles ou campos de RAM.
+- Testes host e ROM comparam 80 velocidades laterais por lado, posição inicial,
+  caixas e animação. O teste de subida libera o botão entre chutes sucessivos.
+
+**Validação:** `scripts/test.ps1 -Compiler gcc`, build SGDK `-SmokeTest` e
+`python scripts/smoke_test.py`: `SMOKE PASS` via GDB no monitor secundário,
+sem ativação. Heap estável em três viagens; zero VInts perdidos nos saltos.
+A aplicação à esquerda é simétrica; trajetória vertical completa não comprovada.
+
 ## 2026-10-22 21:33:03 −03:00 (America/Sao_Paulo) — Animação do wall jump (3.3.2)
 
 ### Melhorado

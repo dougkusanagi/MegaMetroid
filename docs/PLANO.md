@@ -204,7 +204,7 @@ quadros, com `SMOKE PASS` via API GDB do BlastEm. Custo em `docs/SPRITES.md`.
 
 **Fora da 3.2.** Ficam para a 3.3:
 - Mira diagonal parado (`05`–`08`) e agachado (`71`–`74`): no SNES vem de L/R, e o controle de 3 botões não tem botões livres. **Decidido:** no controle de 6 botões, L = Z (mirar para baixo) e R = Y (mirar para cima); X fica livre para cancelar item. Implementado na 3.3.1 abaixo.
-- Saída e duração da pose do wall jump: duração visual corrigida na 3.3.2; resta o deslocamento um tick antecipado na saída.
+- Saída e duração da pose do wall jump: duração visual corrigida na 3.3.2 e saída física na 3.3.3.
 - Moonwalk, pouso atirando (`E6`/`E7`), pouco HP, space jump e screw attack.
 
 **3.3.1 Mira diagonal de seis botões** ✅ (2026-10-21). Y mira acima e Z abaixo,
@@ -225,6 +225,14 @@ Limites: o original medido chuta para a direita; aplicar o mesmo tempo à
 esquerda é uma decisão simétrica do port. O primeiro tick original tem caixa
 transitória de 24 px e saída sem deslocamento; esses detalhes físicos ainda
 não foram reproduzidos. A 3.3 segue aberta para as demais animações.
+
+**3.3.3 Saída do wall jump** ✅ (2026-10-22). O primeiro tick arma o impulso
+sem mover nem aplicar gravidade; a aceleração lateral começa no seguinte,
+com 0 / 0,75 / 1,375 px por tick conforme o cache `wall_open`. A caixa inicial
+é 24 px, expandindo para 38 px no tick seguinte quando há espaço. Host e ROM
+conferem velocidades nos 80 quadros dos dois sentidos, posição inicial e caixas.
+Sem novos recursos ou campos de RAM. A simetria à esquerda continua sendo uma
+decisão do port; não se declara equivalência completa da trajetória.
 
 **Lacunas da prancha.**
 - A pose `16` (pulo parado, esquerda, mirando para cima) não tem faixa própria: são os quadros 2–3 da tira `15`.

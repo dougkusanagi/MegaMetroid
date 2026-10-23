@@ -241,6 +241,7 @@ def check():
         assert speeds[:4] == [0,192,352,352] and max(speeds) == 352
         (out/'sm_wall.h').write_text('/* Original wall_open, kick away from an unobstructed wall. */\n'
             f'#define REFERENCE_WALL_SPEED {max(speeds)}\n'
+            'static const int reference_wall_speeds[] = {' + ', '.join(map(str, speeds)) + '};\n'
             '/* Frames 342..421: right kick, held right+jump; mirrored timing is a port assumption. */\n'
             'static const int reference_wall_frames[] = {' +
             ', '.join(r['anim_frame'] for r in kick) + '};\n')

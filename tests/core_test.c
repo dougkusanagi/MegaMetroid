@@ -708,8 +708,8 @@ static void wall_climb(void) {
         int right = mm_blocked(&world, &b, mm_pixel(b.x) + 1, mm_pixel(b.y));
         in.jump_held = 1;
         if (b.grounded) { in.axis = side; in.jump_pressed = b.vx != 0; }
-        else if (left) { in.axis = 1; in.jump_pressed = 1; side = 1; }
-        else if (right) { in.axis = -1; in.jump_pressed = 1; side = -1; }
+        else if (left && !b.jumped) { in.axis = 1; in.jump_pressed = 1; side = 1; }
+        else if (right && !b.jumped) { in.axis = -1; in.jump_pressed = 1; side = -1; }
         else in.axis = side;
         mm_tick(&world, &b, in);
         if (in.jump_pressed && b.jumped && b.pose == MM_POSE_WALL_KICK) ++wall_jumps;
@@ -781,7 +781,7 @@ static void poses(void) {
     run_poses(&b, log, right_held, 12);
     assert(!b.grounded && mm_pixel(b.x) == 88);
     run_poses(&b, log, (MmInput){.axis = -1, .jump_pressed = 1, .jump_held = 1}, 1);
-    assert(b.jumped && b.spin_jumping && b.pose == MM_POSE_WALL_KICK && b.vx < 0);
+    assert(b.jumped && b.spin_jumping && b.pose == MM_POSE_WALL_KICK && b.vx == 0);
     run_poses(&b, log, idle, 200);
     assert(strcmp(log, "GROUND SPIN WALL_KICK SPIN_LAND GROUND") == 0);
 
@@ -1063,7 +1063,9 @@ static void wall_jump_animation(void) {
                     .jump_pressed = frame == 0, .jump_held = 1});
             assert(!b.grounded && b.pose == MM_POSE_WALL_KICK);
             assert(b.jump_frame == reference_wall_frames[frame]);
-            assert(b.hitbox.bottom - b.hitbox.top == 38);
+            assert(b.hitbox.bottom - b.hitbox.top == (frame ? 38 : 24));
+            assert(b.vx == (side ? -1 : 1) * reference_wall_speeds[frame]);
+            if (!frame) assert(b.x == (side ? 359 : 121) * MM_UNIT && b.y == 144 * MM_UNIT);
         }
         mm_tick(&world, &b, (MmInput){.shoot_pressed = 1, .jump_held = 1});
         assert(!b.spin_jumping && b.pose != MM_POSE_WALL_KICK);
@@ -1071,7 +1073,7 @@ static void wall_jump_animation(void) {
         for (frame = 0; frame < 200; ++frame) mm_tick(&world, &b, idle);
         assert(b.grounded && b.pose == MM_POSE_GROUND);
     }
-    puts("PASS wall kick: 80 archived animation frames, both facings, 38px box, shooting exits");
+    puts("PASS wall kick: 80 archived animation frames, both facings, transient box, delayed takeoff, shooting exits");
 }
 
 /* A wall jump needs all three: a spin jump, a wall touched (up to MM_WALL_REACH px behind) and the
@@ -1089,9 +1091,9 @@ static void wall_jump_rules(void) {
 #define AIRBORNE(x, spin) (mm_body_init(&b, (x), 40, real), b.spin_jumping = (spin), b.vy = -MM_UNIT)
     AIRBORNE(64, 1); mm_tick(&world, &b, away);
     /* The kick faces away from the wall and accelerates from rest, as a spin does. */
-    assert(b.jumped && b.facing_left && b.vx == -MM_AIR_ACCEL && b.pose == MM_POSE_WALL_KICK);
+    assert(b.jumped && b.facing_left && b.vx == 0 && b.pose == MM_POSE_WALL_KICK);
     mm_tick(&world, &b, (MmInput){.axis = -1, .jump_held = 1});
-    assert(b.vx == -REFERENCE_WALL_SPEED);
+    assert(b.vx == -MM_AIR_ACCEL);
     mm_tick(&world, &b, (MmInput){.jump_held = 1});
     assert(b.vx == -REFERENCE_WALL_SPEED); /* Releasing the d-pad preserves spin momentum. */
     AIRBORNE(64, 0); mm_tick(&world, &b, away);

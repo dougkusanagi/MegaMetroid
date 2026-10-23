@@ -155,7 +155,8 @@ static MmRect samus_box(const MmBody *b)
     if (b->pose == MM_POSE_UNMORPH && b->pose_timer) return mm_samus_boxes[MM_BOX_CROUCH];
     if (b->grounded) return mm_samus_boxes[b->crouching ? MM_BOX_CROUCH : MM_BOX_STAND];
     if (b->pose == MM_POSE_GROUND && !b->vy && !b->falling) return mm_samus_boxes[MM_BOX_STAND];
-    if (b->pose == MM_POSE_WALL_KICK) return mm_samus_boxes[MM_BOX_JUMP];
+    if (b->pose == MM_POSE_WALL_KICK)
+        return mm_samus_boxes[b->jumped ? MM_BOX_SPIN : MM_BOX_JUMP];
     if (b->spin_jumping) return mm_samus_boxes[MM_BOX_SPIN];
     return mm_samus_boxes[b->aim == MM_AIM_DOWN ? MM_BOX_AIR_DOWN : MM_BOX_JUMP];
 }
@@ -462,10 +463,11 @@ void mm_tick(const MmWorld *w, MmBody *b, MmInput input)
     if (!b->samus_hitboxes)
         b->hitbox = b->ball ? ball_box(b) : b->crouching ? crouch_box(b) : b->stand_box;
     if (b->jumped && !wall_jump) b->takeoff = b->spin_jumping ? 1 : MM_JUMP_STILL;
-    steer(b, direction, input.run_held);
+    if (wall_jump) b->vx = 0;
+    else steer(b, direction, input.run_held);
     if (b->jumped) {
         b->falling = 0;
-        /* A wall jump rises at once; a jump from the ground first stands still, as in Super Metroid. */
+        /* The kick arms its impulse now; movement starts on the following tick. */
         if (wall_jump) b->vy = -MM_WALL_JUMP;
         else b->vy = 0;
         b->grounded = 0;
@@ -484,11 +486,11 @@ void mm_tick(const MmWorld *w, MmBody *b, MmInput input)
         b->aim = body_aim(b, input);
         resize_samus(w, b, samus_box(b), b->ball && !was_ball);
     }
-    mm_move(w, b);
+    if (!wall_jump) mm_move(w, b);
     if (b->takeoff) {
         b->grounded = 0;
         if (!--b->takeoff) b->vy = -MM_JUMP;
-    } else if (!b->grounded) fall(b);
+    } else if (!b->grounded && !wall_jump) fall(b);
     if (b->samus_hitboxes && b->grounded && !resize_samus(w, b, samus_box(b), 0) && !b->ball) {
         b->crouching = b->crouch_latch = 1;
         resize_samus(w, b, crouch_box(b), 0);

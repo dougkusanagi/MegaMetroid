@@ -401,7 +401,10 @@ static int wall_jump_animation(Game *g)
             game_update(g, (MmInput){.axis = side ? -1 : 1,
                         .jump_pressed = frame == 0, .jump_held = 1});
             SYS_doVBlankProcess();
-            if (g->player.grounded || g->player.pose != MM_POSE_WALL_KICK ||
+            if (g->player.vx != (side ? -1 : 1) * reference_wall_speeds[frame] ||
+                (!frame && (g->player.x != (side ? 359 : 121) * MM_UNIT || g->player.y != 144 * MM_UNIT)) ||
+                g->player.hitbox.bottom - g->player.hitbox.top != (frame ? 38 : 24) ||
+                g->player.grounded || g->player.pose != MM_POSE_WALL_KICK ||
                 g->animation != row || g->sprite->animInd != row ||
                 g->sprite->frameInd != (original < 2 ? original : original - 2)) failed = 1;
         }

@@ -300,3 +300,10 @@ da pose pelas transições normais. A antecipação do deslocamento na saída e 
 caixa transitória de 24 px no primeiro tick original continuam como limites;
 não há alegação de equivalência de toda a trajetória. O tempo espelhado para
 a esquerda não possui medição independente.
+
+**Saída 3.3.3 (22/10/2026).** A saída agora preserva a posição no primeiro tick,
+sem gravidade nesse tick, e arma o impulso para o seguinte. A caixa transitória
+é 24 px antes de expandir para 38 px (respeitando obstáculos). As velocidades
+laterais dos 80 quadros são comparadas com o cache, nos dois sentidos;
+o lado esquerdo é uma aplicação simétrica. Isso resolve os limites de saída
+listados na revisão 3.3.2, sem afirmar igualdade de toda a trajetória vertical.
