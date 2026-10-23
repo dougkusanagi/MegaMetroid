@@ -49,6 +49,9 @@ Segure cima para mirar acima; cima + esquerda/direita mira na diagonal, parado o
 de mira aparece mesmo sem atirar. Baixo + esquerda/direita anda mirando na diagonal abaixo. No ar,
 baixo mira para baixo. Tocar A dispara; segurar repete, como o Power Beam sem Charge medido no original. O tiro sai da boca do canhão da pose,
 usa o sprite original nas oito direções e mostra um impacto animado ao atingir paredes.
+Moonwalk frontal está ligado: no chão, segure A e aperte para trás para andar de costas
+a 0,5 px por tick, mantendo o canhão para a frente. Solte A para virar. Variantes
+diagonais e a transição própria de salto do moonwalk ainda estão pendentes.
 ↓ no chão agacha, com hitbox e pose menores; a Samus continua agachada ao soltar,
 independentemente do tempo segurado. Para levantar, dê um novo toque de ↑, ande ou pule,
 desde que haja espaço.

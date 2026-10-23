@@ -85,3 +85,14 @@ hashes da ROM, state e script efetivamente usados; o script tinha alterações
 locais na captura. Posições e tempos são leituras de RAM por quadro. Não cobrem
 mira não frontal, outros equipamentos ou todas as formas de chegada ao chão.
 `check` gera `tests/out/sm_land_shoot.h` diretamente dessas duas amostras.
+
+`moonwalk_right/left`: PREP, opção de moonwalk ativada por escrita em WRAM
+$09E4 (endereço identificado em [sm_disassembly/src/memory.asm](https://github.com/InsaneFirebat/sm_disassembly/blob/master/src/memory.asm)),
+tiro frontal e direção para trás por 110 quadros, parada com tiro, nova entrada
+e soltura de tiro. O nome indica o lado para o qual o canhão aponta. Há uma
+virada e espera adicionais na captura à esquerda. Cada CSV guarda a sequência
+real; o manifesto registra hashes da ROM/state/script. O script tinha alterações
+locais na captura. São leituras por quadro em chão plano, com o equipamento
+do save; não cobrem salto, diagonais, rampas ou entrada com velocidade prévia.
+`check` gera `sm_moonwalk.h`: posições relativas Q8.8 e índices de animação
+nos 110 quadros, comparando as duas direções antes de compartilhar os valores.

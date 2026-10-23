@@ -66,6 +66,7 @@ void mm_body_init(MmBody *b, int x, int y, MmRect hitbox)
     b->grounded = b->facing_left = b->jumped = 0;
     b->speed = b->run_extra = b->turn = b->slide = b->walking = b->falling = 0;
     b->turn_pose_ticks = b->turn_pose_left = 0;
+    b->moonwalk_enabled = b->moonwalk_ticks = 0;
     b->spin_jumping = b->shoot_pose_timer = 0;
     b->aim = MM_AIM_FORWARD;
     b->jump_frame = 0; b->jump_frame_ticks = 3;
@@ -82,6 +83,7 @@ void mm_samus_init(MmBody *b, int x, int y)
 {
     mm_body_init(b, x, y, mm_samus_boxes[MM_BOX_STAND]);
     b->samus_hitboxes = 1;
+    b->moonwalk_enabled = 1;
 }
 
 /* Crouch keeps the feet and drops the top by 2/5 of the standing height (40 -> 24 px). */
@@ -401,6 +403,27 @@ static void steer(MmBody *b, int direction, int run_held)
     b->vx = b->facing_left ? -moved : moved;
 }
 
+/* The original option is enabled for production Samus. This first slice covers frontal
+   grounded moonwalk; diagonal and jumping transitions still use the ordinary controls. */
+static void steer_moonwalk(MmBody *b, int direction, MmInput input)
+{
+    int previous = b->moonwalk_ticks, vx = b->vx;
+    int facing = b->facing_left ? -1 : 1;
+    int active = b->moonwalk_enabled && b->grounded && !b->jumped && !b->ball &&
+        !b->crouching && !b->turn && input.shoot_held && !input.aim_y &&
+        !input.aim_diagonal && direction == -facing;
+    if (active) {
+        b->moonwalk_ticks = previous % (6 * MM_MOONWALK_FRAME_TICKS) + 1;
+        b->vx = previous ? -facing * MM_MOONWALK_SPEED : 0;
+        b->speed = b->run_extra = b->turn_pose_ticks = b->slide = b->walking = 0;
+        return;
+    }
+    b->moonwalk_ticks = 0;
+    steer(b, direction, input.run_held);
+    /* Releasing the direction or fire consumes one last half-pixel before stopping/turning. */
+    if (previous && b->grounded && !b->jumped && !b->ball && !b->crouching) b->vx = vx;
+}
+
 /* Gravity after the move, as in Super Metroid. The apex keeps one tick at speed 0, since the original
    keeps the speed and its direction apart, and a fall stops accelerating once it reaches MM_MAX_FALL. */
 static void fall(MmBody *b)
@@ -464,7 +487,7 @@ void mm_tick(const MmWorld *w, MmBody *b, MmInput input)
         b->hitbox = b->ball ? ball_box(b) : b->crouching ? crouch_box(b) : b->stand_box;
     if (b->jumped && !wall_jump) b->takeoff = b->spin_jumping ? 1 : MM_JUMP_STILL;
     if (wall_jump) b->vx = 0;
-    else steer(b, direction, input.run_held);
+    else steer_moonwalk(b, direction, input);
     if (b->jumped) {
         b->falling = 0;
         /* The kick arms its impulse now; movement starts on the following tick. */
@@ -509,6 +532,7 @@ void mm_tick(const MmWorld *w, MmBody *b, MmInput input)
     update_jump_animation(b);
     if (b->grounded) b->spin_jumping = 0;
     if (b->ball || b->spin_jumping || b->pose == MM_POSE_WALL_KICK) b->turn_pose_ticks = 0;
+    if (!b->grounded || b->ball || b->crouching) b->moonwalk_ticks = 0;
     b->state = body_state(b);
     b->aim = body_aim(b, input);
 }

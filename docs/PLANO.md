@@ -205,7 +205,7 @@ quadros, com `SMOKE PASS` via API GDB do BlastEm. Custo em `docs/SPRITES.md`.
 **Fora da 3.2.** Ficam para a 3.3:
 - Mira diagonal parado (`05`–`08`) e agachado (`71`–`74`): no SNES vem de L/R, e o controle de 3 botões não tem botões livres. **Decidido:** no controle de 6 botões, L = Z (mirar para baixo) e R = Y (mirar para cima); X fica livre para cancelar item. Implementado na 3.3.1 abaixo.
 - Saída e duração da pose do wall jump: duração visual corrigida na 3.3.2 e saída física na 3.3.3.
-- Moonwalk, pouco HP, space jump e screw attack. Pouso atirando (`E6`/`E7`) entregue na 3.3.4.
+- Moonwalk (frontal no chão na 3.3.5; diagonais e salto pendentes), pouco HP, space jump e screw attack. Pouso atirando (`E6`/`E7`) entregue na 3.3.4.
 
 **3.3.1 Mira diagonal de seis botões** ✅ (2026-10-21). Y mira acima e Z abaixo,
 sem andar ou desfazer a agachada. Y+Z juntos retornam à mira do direcional.
@@ -242,6 +242,19 @@ andar cancela o pouso. O smoke compara os sete quadros do sprite com os dados
 arquivados, nos dois sentidos, e confere essas saídas. Sem novos campos de RAM
 ou reserva adicional de VRAM; quatro desenhos acrescentados à ROM. Moonwalk e
 animações dependentes de energia/upgrades continuam pendentes.
+
+**3.3.5 Moonwalk frontal no chão** ✅ (2026-10-22). Segurar tiro e a direção
+oposta inicia as poses 4A/49, mantendo o canhão: um tick parado, depois 0,5 px
+por tick; seis quadros com 16 ticks cada. Opção ligada por padrão para Samus
+(`moonwalk_enabled`); corpos genéricos mantêm o comportamento anterior.
+Duas capturas originais com a opção $09E4 ligada cobrem os dois lados, parada
+e soltura do tiro. Host e ROM comparam 110 posições/quadros por lado; host
+cobre também colisão, saída e opção desligada. O teste de andar atirando agora
+vira antes de segurar o tiro. Custo: dois inteiros (4 bytes no 68000), doze
+desenhos na ROM, sem aumentar a reserva de VRAM. Piso do smoke: 2 KB adicionais
+só na ROM de teste. **Limites:** diagonais e transições BF/C0 de salto/virada
+continuam pendentes; entrada com velocidade prévia, rampas e outras combinações
+não foram comprovadas pela amostra de chão plano.
 
 **Lacunas da prancha.**
 - A pose `16` (pulo parado, esquerda, mirando para cima) não tem faixa própria: são os quadros 2–3 da tira `15`.

@@ -16,6 +16,8 @@ local function w16(a, v) emu.write16(a, v, WR) end
 -- Controles da Samus no save (padrão: X tiro, A pulo, B corrida). Nomes de botão do Mesen.
 -- Os cenários usam: left right up down jump run shot.
 local SETUP = {
+  -- Moonwalk option: WRAM $09E4 (sm_disassembly/src/memory.asm).
+  moonwalk = function() w16(0x09E4, 1) end,
   -- Dá a Morph Ball (bit 4 em equipados e coletados) para medir agachar e bola.
   morph = function() w16(0x09A2, r16(0x09A2) | 0x0004); w16(0x09A4, r16(0x09A4) | 0x0004) end,
   -- Dá munição e escolhe o item no HUD (1 = mísseis, 2 = super mísseis).
@@ -34,6 +36,8 @@ local function after_prep(...)
 end
 
 local SCENARIOS = {
+  {name = "moonwalk_right", setup = "moonwalk", steps = after_prep({3, "shot"}, {110, "left shot"}, {15, "shot"}, {25, "left shot"}, {25, "left"})},
+  {name = "moonwalk_left", setup = "moonwalk", steps = after_prep({1, "left"}, {40, ""}, {3, "shot"}, {110, "right shot"}, {15, "shot"}, {25, "right shot"}, {25, "right"})},
   {name = "land_shoot_right", steps = after_prep({10, "jump"}, {100, "jump shot"})},
   {name = "land_shoot_left", steps = after_prep({1, "left"}, {40, ""}, {10, "jump"}, {100, "jump shot"})},
   {name = "wall_open", steps = {{300, "left run"}, {15, "right"}, {10, "left"}, {14, "left jump"}, {2, "right"}, {80, "right jump"}}},

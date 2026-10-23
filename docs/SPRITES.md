@@ -339,3 +339,21 @@ sendo o máximo da folha, sem novo sprite ou campo na struct do jogo.
 
 O piso controlado desta verificação reserva 2 KB estáticos apenas na ROM
 de smoke, sem afetar a RAM da ROM padrão.
+
+### Moonwalk frontal (3.3.5)
+
+As tiras 4A (direita) e 49 (esquerda), seis desenhos cada, entram em MOONWALK,
+com pés na linha 58. O núcleo mantém `moonwalk_ticks` em 1..96 e o render
+seleciona `(ticks - 1) / 16`, sem depender do relógio automático do SGDK.
+O canhão mantém a orientação e a origem de tiro da tira. A opção do núcleo
+`moonwalk_enabled` começa ligada na Samus e desligada nos corpos genéricos.
+Dois inteiros novos custam 4 bytes por corpo no 68000; a reserva de tiles do
+sprite continua determinada pelo máximo da folha. O fixture do smoke usa
+2 KB estáticos adicionais apenas na ROM de teste.
+
+`moonwalk_right/left` medem a opção original ligada em $09E4, posição por
+quadro, entrada, ciclo completo, parada e soltura de tiro em chão plano.
+O cabeçalho gerado inclui 110 posições relativas e quadros que coincidem nos
+dois sentidos. Sem nova medição para os testes rotineiros. Diagonais 75–78 e
+transições BF/C0/C1–C4 ainda não são usadas; salto e mira diagonal seguem os
+controles comuns. A entrada em movimento e as rampas precisam de cobertura.

@@ -10,6 +10,26 @@ O registro detalhado começa em 18/10/2026. A entrada anterior abaixo foi
 reconstituída do commit indicado; o histórico anterior completo permanece no Git
 (`git log`) e as entregas por etapa estão em [docs/PLANO.md](docs/PLANO.md).
 
+## 2026-10-22 21:56:11 −03:00 (America/Sao_Paulo) — Moonwalk frontal (3.3.5)
+
+### Adicionado
+
+- Moonwalk frontal no chão, ligado por padrão: tiro segurado e direção para
+  trás mantêm o canhão, com entrada parada, 0,5 px/tick e seis quadros de
+  16 ticks. Soltar tiro permite virar; perder o chão encerra a animação.
+- Duas capturas headless do original com a opção ligada, preservadas com
+  origem e limites. Host e ROM comparam 110 posições e quadros por lado;
+  host cobre também saída, paredes, bordas e opção desativada.
+- Doze desenhos na ROM e 4 bytes por corpo no 68000; reserva de VRAM mantida.
+  Piso controlado: mais 2 KB estáticos apenas no smoke.
+
+**Validação:** `scripts/test.ps1 -Compiler gcc`, build SGDK `-SmokeTest`,
+`python scripts/smoke_test.py --realtime --timeout 180`: `SMOKE PASS` via GDB
+no monitor secundário sem ativação. Heap estável nas três viagens; zero VInts
+perdidos; CPU máxima média 40/45%, DMA 912/1.032 bytes nos saltos medidos.
+Limites: diagonais e transições BF/C0 ainda pendentes; entrada com velocidade
+prévia, rampas e demais combinações não comprovadas pela referência plana.
+
 ## 2026-10-22 21:43:44 −03:00 (America/Sao_Paulo) — Pouso atirando (3.3.4)
 
 ### Adicionado

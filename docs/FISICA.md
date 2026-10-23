@@ -307,3 +307,10 @@ sem gravidade nesse tick, e arma o impulso para o seguinte. A caixa transitória
 laterais dos 80 quadros são comparadas com o cache, nos dois sentidos;
 o lado esquerdo é uma aplicação simétrica. Isso resolve os limites de saída
 listados na revisão 3.3.2, sem afirmar igualdade de toda a trajetória vertical.
+
+**Moonwalk frontal 3.3.5 (22/10/2026).** Com a opção original ligada, as duas
+capturas em chão plano mostram a entrada sem deslocamento, depois 0,5 px por
+tick. Soltar direção ou tiro consome o último deslocamento antes de parar ou
+virar. O port aplica essa regra e compara 110 posições Q8.8 nos dois lados.
+A opção começa ligada na Samus; BF/C0 no salto e diagonais ficam pendentes.
+Não há comprovação de todas as entradas com velocidade anterior ou rampas.

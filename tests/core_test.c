@@ -11,6 +11,7 @@
 #include "out/sm_beams.h"
 #include "out/sm_missiles.h"
 #include "out/sm_wall.h"
+#include "out/sm_moonwalk.h"
 
 static unsigned char tiles[64 * 32];
 static MmWorld world = {tiles, 64, 32, 0, 0};
@@ -1048,6 +1049,65 @@ static void ball_poses(void) {
     assert(strcmp(log, "GROUND CROUCH_DOWN CROUCH MORPH BALL UNMORPH CROUCH STAND_UP GROUND") == 0);
     puts("PASS ball poses: morph and unmorph take six ticks; jump unmorphs to crouch without lifting");
 }
+/* Both measured moonwalk directions, then controlled collision and exit cases. */
+static void moonwalk(void) {
+    MmBody b;
+    int side, frame;
+    for (side = 0; side < 2; ++side) {
+        int direction = side ? 1 : -1;
+        reset(); floor_at(20);
+        mm_samus_init(&b, 200, 112); mm_tick(&world, &b, idle);
+        b.facing_left = side;
+        for (frame = 0; frame < (int)(sizeof reference_moonwalk / sizeof *reference_moonwalk); ++frame) {
+            mm_tick(&world, &b, (MmInput){.axis = direction, .shoot_held = 1, .run_held = 1});
+            assert(b.x == 200 * MM_UNIT + direction * reference_moonwalk[frame][0]);
+            assert(b.facing_left == side && b.grounded && b.moonwalk_ticks);
+            assert((b.moonwalk_ticks - 1) / MM_MOONWALK_FRAME_TICKS == reference_moonwalk[frame][1]);
+            assert(!b.run_extra && !b.turn_pose_ticks);
+        }
+        /* Stopping consumes the previous speed once, then stands still without turning. */
+        { int x = b.x;
+          mm_tick(&world, &b, (MmInput){.shoot_held = 1});
+          assert(!b.moonwalk_ticks && b.x == x + direction * MM_MOONWALK_SPEED);
+          x = b.x; mm_tick(&world, &b, (MmInput){.shoot_held = 1});
+          assert(b.x == x && b.facing_left == side);
+        }
+        mm_tick(&world, &b, (MmInput){.axis = direction, .shoot_held = 1});
+        mm_tick(&world, &b, (MmInput){.axis = direction, .shoot_held = 1});
+        mm_tick(&world, &b, (MmInput){.axis = direction});
+        assert(!b.moonwalk_ticks && b.turn_pose_ticks);
+        for (frame = 0; frame < 10; ++frame) mm_tick(&world, &b, (MmInput){.axis = direction});
+        assert(b.facing_left != side);
+        /* Disabled option preserves ordinary turning. */
+        mm_samus_init(&b, 200, 112); mm_tick(&world, &b, idle);
+        b.facing_left = side; b.moonwalk_enabled = 0;
+        mm_tick(&world, &b, (MmInput){.axis = direction, .shoot_held = 1});
+        assert(!b.moonwalk_ticks && b.turn_pose_ticks);
+        /* A wall in the backward path still stops the swept movement. */
+        mm_samus_init(&b, side ? 199 : 197, 112); mm_tick(&world, &b, idle);
+        b.facing_left = side;
+        tiles[19 * world.columns + (side ? 28 : 25)] = 0;
+        for (frame = 0; frame < 100; ++frame) {
+            mm_tick(&world, &b, (MmInput){.axis = direction, .shoot_held = 1});
+            assert(!mm_blocked(&world, &b, mm_pixel(b.x), mm_pixel(b.y)));
+        }
+        assert(mm_pixel(b.x) == (side ? 199 : 193));
+        /* Walking backward off a ledge immediately leaves the grounded animation. */
+        reset(); floor_at(20);
+        for (frame = 0; frame < world.columns; ++frame)
+            if (side ? frame >= 28 : frame < 26) tiles[20 * world.columns + frame] = 1;
+        mm_samus_init(&b, 200, 112); mm_tick(&world, &b, idle); b.facing_left = side;
+        { int fell = 0;
+          for (frame = 0; frame < 110; ++frame) {
+              mm_tick(&world, &b, (MmInput){.axis = direction, .shoot_held = 1});
+              if (!b.grounded) { fell = 1; assert(!b.moonwalk_ticks); }
+          }
+          assert(fell);
+        }
+    }
+    puts("PASS moonwalk: 110 archived displacements/frames both facings, stop, fire release, option and walls");
+}
+
 /* Original wall_open timing applied to both facings; collision is a controlled fixture. */
 static void wall_jump_animation(void) {
     MmBody b;
@@ -1567,7 +1627,7 @@ int main(void) {
     measured_missiles();
     missile_loadout();
     movement(); air_steering(); collisions(); jump_and_ledge(); states(); physics(); variable_jump(); ledge_jump();
-    slopes(); slope_sweep(); tunnels(); wall_climb(); wall_jump_rules(); wall_jump_animation(); poses(); crouch_poses(); crouch_tap(); double_tap(); ball_poses(); aiming(); beam_from_muzzle(); morph_rules(); ball_stands_on_slope();
+    slopes(); slope_sweep(); tunnels(); wall_climb(); wall_jump_rules(); wall_jump_animation(); moonwalk(); poses(); crouch_poses(); crouch_tap(); double_tap(); ball_poses(); aiming(); beam_from_muzzle(); morph_rules(); ball_stands_on_slope();
     ball_stand_real(); camera_and_input(); doors(); world_map(); door_locks(); real_levels();
     puts("All core regression tests passed."); return 0;
 }

@@ -6,6 +6,7 @@
 #include "world_map.h"
 #include "out/sm_wall.h"
 #include "out/sm_land_shoot.h"
+#include "out/sm_moonwalk.h"
 
 #ifndef MM_SMOKE_ROOM
 #define MM_SMOKE_ROOM ROOM_CRATERIA_1
@@ -463,6 +464,37 @@ static int shooting_landings(Game *g)
     return failed;
 }
 
+static int moonwalk(Game *g)
+{
+    static unsigned char tiles[64 * 32];
+    MmWorld saved_world = g->world;
+    MmBody saved_player = g->player;
+    int side, frame, failed = 0;
+    memset(tiles, 1, sizeof tiles); memset(tiles + 30 * 64, 0, 64 * 2);
+    g->world = (MmWorld){tiles, 64, 32, 0, 0};
+    for (side = 0; side < 2; ++side) {
+        int direction = side ? 1 : -1;
+        mm_samus_init(&g->player, 200, 192);
+        mm_weapon_init(&g->weapon);
+        game_update(g, (MmInput){0}); SYS_doVBlankProcess();
+        g->player.facing_left = side;
+        for (frame = 0; frame < (int)(sizeof reference_moonwalk / sizeof *reference_moonwalk); ++frame) {
+            game_update(g, (MmInput){.axis = direction, .shoot_held = 1});
+            SYS_doVBlankProcess();
+            if (g->player.x != 200 * MM_UNIT + direction * reference_moonwalk[frame][0] ||
+                g->player.facing_left != side || !g->player.moonwalk_ticks ||
+                g->animation != PLAYER_ANIM_MOONWALK_R + side ||
+                g->sprite->frameInd != reference_moonwalk[frame][1]) failed = 1;
+        }
+        game_update(g, (MmInput){.axis = direction}); SYS_doVBlankProcess();
+        if (g->player.moonwalk_ticks || !g->player.turn_pose_ticks) failed = 1;
+        idle(g, 15);
+    }
+    g->world = saved_world; g->player = saved_player;
+    mm_weapon_init(&g->weapon);
+    return failed;
+}
+
 static int turns(Game *g)
 {
     int side, air, t, failed = 0;
@@ -632,7 +664,7 @@ int main(bool hardReset)
         /* Aiming (3.2.5): up held standing, a walk while shooting, a walk aiming up-forward, then a
            short running jump with a shot (the shot stops the spin) still aiming up-forward. */
         if (frame >= 650 && frame < 670) input.aim_y = -1;
-        if (frame >= 680 && frame < 700) { input.axis = -1; input.shoot_held = 1; }
+        if (frame >= 680 && frame < 700) { input.axis = -1; input.shoot_held = frame >= 690; }
         input.shoot_pressed |= frame == 680 || frame == 722;
         if (frame >= 700 && frame < 740) { input.axis = 1; input.aim_y = -1; }
         input.jump_pressed |= frame == 720;
@@ -727,6 +759,7 @@ int main(bool hardReset)
         g.player = saved_player;
         mm_weapon_init(&g.weapon);
     }
+    if (moonwalk(&g)) failed |= 4096;
     if (shooting_landings(&g)) failed |= 4096; /* Shared animation regression group. */
     if (turns(&g)) failed |= 4096;
     if (wall_jump_animation(&g)) failed |= 1UL << 31;

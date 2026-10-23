@@ -7,6 +7,8 @@
 #define MM_SPEED 704 /* 2.75 px/tick, the walking speed. */
 #define MM_WALK_ACCEL 48 /* +0.1875 px/tick each tick... */
 #define MM_WALK_SNAP 480 /* ...and past 1.875 the walk jumps to MM_SPEED: full speed on the 11th tick. */
+#define MM_MOONWALK_SPEED 128 /* 0.5 px/tick after one entry tick, measured with moonwalk enabled. */
+#define MM_MOONWALK_FRAME_TICKS 16
 #define MM_DECEL 128 /* -0.5 px/tick when letting go on the ground, turning around or reversing in the air. */
 #define MM_TURN_TICKS 7 /* Turning around on the ground or in a normal jump or fall, the tick it starts on included. */
 #define MM_TURN_POSE_TICKS 6 /* Three original turn frames, two simulation ticks each. */
@@ -74,6 +76,7 @@ typedef struct {
     int turn_pose_ticks, turn_pose_left; /* Visual turn, facing at its start (independent of braking). */
     int slide, walking; /* Ground: sliding after letting go, already walking. */
     int falling; /* In the air without a jump: walked off a ledge. */
+    int moonwalk_enabled, moonwalk_ticks; /* Option; active cycle 1..96, zero outside moonwalk. */
     int spin_jumping;
     int shoot_pose_timer; /* Ticks the shooting pose still shows; refilled while the shot is held. */
     int ball, crouching; /* Toggled by down/up presses and the d-pad. */

@@ -90,6 +90,7 @@ static u16 player_row(const MmBody *p)
     };
     u16 side = p->facing_left ? 1 : 0, row;
     bool up = p->aim == MM_AIM_UP || p->aim == MM_AIM_DIAG_UP;
+    if (p->moonwalk_ticks) return PLAYER_ANIM_MOONWALK_R + side;
     if (p->pose == MM_POSE_LAND && p->aim == MM_AIM_FORWARD && p->shoot_pose_timer)
         return PLAYER_ANIM_LAND_SHOOT_R + side;
     /* Turn strips are indexed by the OLD facing. Aim/shoot keep their cannon pose,
@@ -179,7 +180,10 @@ static void render(Game *g)
             SPR_setAnim(g->sprite, animation);
         g->animation = animation;
     }
-    if (g->player.pose == MM_POSE_WALL_KICK) {
+    if (g->player.moonwalk_ticks) {
+        SPR_setAutoAnimation(g->sprite, FALSE);
+        SPR_setFrame(g->sprite, (g->player.moonwalk_ticks - 1) / MM_MOONWALK_FRAME_TICKS);
+    } else if (g->player.pose == MM_POSE_WALL_KICK) {
         /* Original wall frames 3..10 reuse the eight spin drawings (sheet frames 1..8). */
         SPR_setAutoAnimation(g->sprite, FALSE);
         SPR_setFrame(g->sprite, g->player.jump_frame < 2 ? g->player.jump_frame : g->player.jump_frame - 2);

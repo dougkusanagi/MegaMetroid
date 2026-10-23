@@ -245,6 +245,19 @@ def check():
             '/* Frames 342..421: right kick, held right+jump; mirrored timing is a port assumption. */\n'
             'static const int reference_wall_frames[] = {' +
             ', '.join(r['anim_frame'] for r in kick) + '};\n')
+    if all('moonwalk_' + side in manifest['scenarios'] for side in ('right', 'left')):
+        samples = []
+        for side, pose in (('right', 0x4A), ('left', 0x49)):
+            rows = list(csv.DictReader(io.StringIO(gzip.decompress((DEST/('moonwalk_' + side + '.csv.gz')).read_bytes()).decode())))
+            start = next(i for i, r in enumerate(rows) if int(r['pose']) == pose)
+            sample = rows[start:start+110]
+            assert all(int(r['pose']) == pose for r in sample)
+            origin = int(sample[0]['x'])*256 + int(sample[0]['xsub'])//256
+            sign = -1 if side == 'right' else 1
+            samples.append([(sign*(int(r['x'])*256 + int(r['xsub'])//256-origin), int(r['anim_frame'])) for r in sample])
+        assert samples[0] == samples[1]
+        (out/'sm_moonwalk.h').write_text('/* Moonwalk option enabled; both directions, flat ground, held fire. */\n'
+            'static const int reference_moonwalk[][2] = {' + ', '.join('{%d, %d}' % r for r in samples[0]) + '};\n')
     # Normal jump landing while holding fire, independently measured in both facings.
     if all('land_shoot_' + side in manifest['scenarios'] for side in ('right', 'left')):
         sequences = []

@@ -5860,6 +5860,162 @@
         "rom_sha256": "12b77c4bc9c1832cee8881244659065ee1d84c70c3d29e6eaf92e6798cc2ca72",
         "state_sha256": "19fc0e06e192cf66662e18b9853de096065b950092ee02fed3b005329bd1366c"
       }
+    },
+    "moonwalk_left": {
+      "file": "moonwalk_left.csv.gz",
+      "saved_at": "2026-10-22T21:49:47-03:00",
+      "rows": 434,
+      "csv_sha256": "34239bd37fc3fba9637c4b73431968b3683667f3448e816f18acc455c3e0cf3b",
+      "last_committed_script_before_saved_at": "b6307077f27997ae019f46dfa01ea57050486a69",
+      "source_file": "moonwalk_left.csv",
+      "observed_radii": [
+        {
+          "pose": "01",
+          "x": 5,
+          "y": 21,
+          "samples": 35
+        },
+        {
+          "pose": "02",
+          "x": 5,
+          "y": 21,
+          "samples": 53
+        },
+        {
+          "pose": "09",
+          "x": 5,
+          "y": 21,
+          "samples": 158
+        },
+        {
+          "pose": "25",
+          "x": 5,
+          "y": 21,
+          "samples": 6
+        },
+        {
+          "pose": "26",
+          "x": 5,
+          "y": 21,
+          "samples": 11
+        },
+        {
+          "pose": "26",
+          "x": 5,
+          "y": 24,
+          "samples": 1
+        },
+        {
+          "pose": "29",
+          "x": 5,
+          "y": 19,
+          "samples": 33
+        },
+        {
+          "pose": "29",
+          "x": 5,
+          "y": 21,
+          "samples": 1
+        },
+        {
+          "pose": "49",
+          "x": 5,
+          "y": 21,
+          "samples": 135
+        },
+        {
+          "pose": "A4",
+          "x": 5,
+          "y": 19,
+          "samples": 1
+        }
+      ],
+      "capture_reference": {
+        "script_sha256": "111cd04f89b2bc2b8698be9fc88d987a7a25706b2069a3d42ea05743d4a5a0b0",
+        "rom_sha256": "12b77c4bc9c1832cee8881244659065ee1d84c70c3d29e6eaf92e6798cc2ca72",
+        "state_sha256": "19fc0e06e192cf66662e18b9853de096065b950092ee02fed3b005329bd1366c"
+      }
+    },
+    "moonwalk_right": {
+      "file": "moonwalk_right.csv.gz",
+      "saved_at": "2026-10-22T21:49:44-03:00",
+      "rows": 393,
+      "csv_sha256": "facfbb482a60511cfb3ac88950cc56ab472b3aa25c56528c951ccdf625a6d3d5",
+      "last_committed_script_before_saved_at": "b6307077f27997ae019f46dfa01ea57050486a69",
+      "source_file": "moonwalk_right.csv",
+      "observed_radii": [
+        {
+          "pose": "01",
+          "x": 5,
+          "y": 21,
+          "samples": 52
+        },
+        {
+          "pose": "02",
+          "x": 5,
+          "y": 21,
+          "samples": 1
+        },
+        {
+          "pose": "09",
+          "x": 5,
+          "y": 21,
+          "samples": 140
+        },
+        {
+          "pose": "0A",
+          "x": 5,
+          "y": 21,
+          "samples": 18
+        },
+        {
+          "pose": "25",
+          "x": 5,
+          "y": 21,
+          "samples": 6
+        },
+        {
+          "pose": "26",
+          "x": 5,
+          "y": 21,
+          "samples": 5
+        },
+        {
+          "pose": "26",
+          "x": 5,
+          "y": 24,
+          "samples": 1
+        },
+        {
+          "pose": "29",
+          "x": 5,
+          "y": 19,
+          "samples": 33
+        },
+        {
+          "pose": "29",
+          "x": 5,
+          "y": 21,
+          "samples": 1
+        },
+        {
+          "pose": "4A",
+          "x": 5,
+          "y": 21,
+          "samples": 135
+        },
+        {
+          "pose": "A4",
+          "x": 5,
+          "y": 19,
+          "samples": 1
+        }
+      ],
+      "capture_reference": {
+        "script_sha256": "111cd04f89b2bc2b8698be9fc88d987a7a25706b2069a3d42ea05743d4a5a0b0",
+        "rom_sha256": "12b77c4bc9c1832cee8881244659065ee1d84c70c3d29e6eaf92e6798cc2ca72",
+        "state_sha256": "19fc0e06e192cf66662e18b9853de096065b950092ee02fed3b005329bd1366c"
+      }
     }
   },
   "reference": {
