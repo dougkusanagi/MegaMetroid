@@ -5,6 +5,7 @@
 #include "resources.h"
 #include "world_map.h"
 #include "out/sm_wall.h"
+#include "out/sm_land_shoot.h"
 
 #ifndef MM_SMOKE_ROOM
 #define MM_SMOKE_ROOM ROOM_CRATERIA_1
@@ -421,6 +422,47 @@ static int wall_jump_animation(Game *g)
     return failed;
 }
 
+/* Real falling/landing simulation and streamed E6/E7 frames, timed from original RAM. */
+static int shooting_landings(Game *g)
+{
+    static unsigned char tiles[64 * 32];
+    MmWorld saved_world = g->world;
+    MmBody saved_player = g->player;
+    int side, frame, failed = 0;
+    memset(tiles, 1, sizeof tiles);
+    memset(tiles + 30 * 64, 0, 64 * 2);
+    g->world = (MmWorld){tiles, 64, 32, 0, 0};
+    for (side = 0; side < 2; ++side) {
+        mm_samus_init(&g->player, 200, 180);
+        g->player.facing_left = side;
+        g->player.pose = MM_POSE_FALL; g->player.falling = 1;
+        mm_weapon_init(&g->weapon);
+        for (frame = 0; frame < 100 && !g->player.grounded; ++frame) {
+            game_update(g, (MmInput){.shoot_held = 1});
+            SYS_doVBlankProcess();
+        }
+        if (!g->player.grounded) failed = 1;
+        for (frame = 0; frame < (int)(sizeof reference_land_shoot_frames / sizeof *reference_land_shoot_frames); ++frame) {
+            if (g->player.pose != MM_POSE_LAND || g->animation != PLAYER_ANIM_LAND_SHOOT_R + side ||
+                g->sprite->animInd != g->animation || g->sprite->frameInd != reference_land_shoot_frames[frame]) failed = 1;
+            game_update(g, (MmInput){.shoot_held = 1});
+            SYS_doVBlankProcess();
+        }
+        if (g->player.pose != MM_POSE_GROUND || g->animation != PLAYER_ANIM_STAND_R + side) failed = 1;
+        /* Aiming keeps its cannon direction, and movement cancels the landing normally. */
+        g->player.pose = MM_POSE_LAND; g->player.pose_timer = MM_LAND_TICKS;
+        game_update(g, (MmInput){.shoot_held = 1, .aim_y = -1});
+        SYS_doVBlankProcess();
+        if (g->animation != PLAYER_ANIM_AIM_UP_R + side) failed = 1;
+        game_update(g, (MmInput){.shoot_held = 1, .axis = side ? -1 : 1});
+        SYS_doVBlankProcess();
+        if (g->player.pose == MM_POSE_LAND || g->animation != PLAYER_ANIM_WALK_SHOOT_R + side) failed = 1;
+    }
+    g->world = saved_world; g->player = saved_player;
+    mm_weapon_init(&g->weapon);
+    return failed;
+}
+
 static int turns(Game *g)
 {
     int side, air, t, failed = 0;
@@ -685,6 +727,7 @@ int main(bool hardReset)
         g.player = saved_player;
         mm_weapon_init(&g.weapon);
     }
+    if (shooting_landings(&g)) failed |= 4096; /* Shared animation regression group. */
     if (turns(&g)) failed |= 4096;
     if (wall_jump_animation(&g)) failed |= 1UL << 31;
     if (beam_motion()) failed |= 32768;

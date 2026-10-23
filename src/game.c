@@ -90,6 +90,8 @@ static u16 player_row(const MmBody *p)
     };
     u16 side = p->facing_left ? 1 : 0, row;
     bool up = p->aim == MM_AIM_UP || p->aim == MM_AIM_DIAG_UP;
+    if (p->pose == MM_POSE_LAND && p->aim == MM_AIM_FORWARD && p->shoot_pose_timer)
+        return PLAYER_ANIM_LAND_SHOOT_R + side;
     /* Turn strips are indexed by the OLD facing. Aim/shoot keep their cannon pose,
        and a ball, spin or wall kick keeps its own animation. */
     if (p->turn_pose_ticks && !p->ball && !p->spin_jumping && p->pose != MM_POSE_WALL_KICK &&
@@ -184,7 +186,8 @@ static void render(Game *g)
     } else if ((animation & ~1) == PLAYER_ANIM_MORPH_R || (animation & ~1) == PLAYER_ANIM_UNMORPH_R) {
         SPR_setAutoAnimation(g->sprite, FALSE);
         SPR_setFrame(g->sprite, (MM_MORPH_TICKS - g->player.pose_timer) / 3);
-    } else if ((animation & ~1) == PLAYER_ANIM_LAND_R || (animation & ~1) == PLAYER_ANIM_SPIN_LAND_R) {
+    } else if ((animation & ~1) == PLAYER_ANIM_LAND_R || (animation & ~1) == PLAYER_ANIM_SPIN_LAND_R ||
+               (animation & ~1) == PLAYER_ANIM_LAND_SHOOT_R) {
         SPR_setAutoAnimation(g->sprite, FALSE);
         SPR_setFrame(g->sprite, g->player.pose == MM_POSE_LAND && g->player.pose_timer <= 2 ? 1 : 0);
     } else if ((animation & ~1) == PLAYER_ANIM_TURN_R || (animation & ~1) == PLAYER_ANIM_TURN_AIR_R) {

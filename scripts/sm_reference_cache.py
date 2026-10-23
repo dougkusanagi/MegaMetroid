@@ -245,6 +245,16 @@ def check():
             '/* Frames 342..421: right kick, held right+jump; mirrored timing is a port assumption. */\n'
             'static const int reference_wall_frames[] = {' +
             ', '.join(r['anim_frame'] for r in kick) + '};\n')
+    # Normal jump landing while holding fire, independently measured in both facings.
+    if all('land_shoot_' + side in manifest['scenarios'] for side in ('right', 'left')):
+        sequences = []
+        for side, pose in (('right', 0xE6), ('left', 0xE7)):
+            rows = list(csv.DictReader(io.StringIO(gzip.decompress((DEST/('land_shoot_' + side + '.csv.gz')).read_bytes()).decode())))
+            landing = [r for r in rows if int(r['pose']) == pose]
+            sequences.append([int(r['anim_frame']) for r in landing])
+        assert sequences == [[0]*5 + [1]*2]*2
+        (out/'sm_land_shoot.h').write_text('/* Archived E6/E7: both facings, held fire, normal jump. */\n'
+            'static const int reference_land_shoot_frames[] = {' + ', '.join(map(str, sequences[0])) + '};\n')
     held = list(csv.DictReader(io.StringIO(gzip.decompress((DEST/'shoot_hold.csv.gz').read_bytes()).decode())))
     reloads = [int(r['frame']) for i,r in enumerate(held) if i and int(r['cooldown'])>int(held[i-1]['cooldown'])]
     assert reloads[:3] == [216,231,256], 'Original held Power Beam repeats (first gap 15, then 25)'

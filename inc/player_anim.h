@@ -21,6 +21,8 @@ enum {
     PLAYER_ANIM_LAND_L, /* pose A5 */
     PLAYER_ANIM_SPIN_LAND_R, /* pose A6 */
     PLAYER_ANIM_SPIN_LAND_L, /* pose A7 */
+    PLAYER_ANIM_LAND_SHOOT_R, /* pose E6 */
+    PLAYER_ANIM_LAND_SHOOT_L, /* pose E7 */
     PLAYER_ANIM_WALL_KICK_R, /* pose 83 */
     PLAYER_ANIM_WALL_KICK_L, /* pose 84 */
     PLAYER_ANIM_CROUCH_DOWN_R, /* pose 35 */
@@ -98,6 +100,8 @@ static const signed char player_muzzle[PLAYER_ANIM_COUNT][2] = {
     {14, 11}, /* A5 */
     {25, 11}, /* A6 */
     {14, 11}, /* A7 */
+    {32, 21}, /* E6 */
+    {7, 21}, /* E7 */
     {34, 25}, /* 83 */
     {7, 18}, /* 84 */
     {32, 25}, /* 35 */

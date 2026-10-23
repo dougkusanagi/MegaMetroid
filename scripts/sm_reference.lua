@@ -34,6 +34,8 @@ local function after_prep(...)
 end
 
 local SCENARIOS = {
+  {name = "land_shoot_right", steps = after_prep({10, "jump"}, {100, "jump shot"})},
+  {name = "land_shoot_left", steps = after_prep({1, "left"}, {40, ""}, {10, "jump"}, {100, "jump shot"})},
   {name = "wall_open", steps = {{300, "left run"}, {15, "right"}, {10, "left"}, {14, "left jump"}, {2, "right"}, {80, "right jump"}}},
   {name = "walk_right", steps = {{900, "right"}}},
   {name = "run_left", steps = {{400, "left run"}}},

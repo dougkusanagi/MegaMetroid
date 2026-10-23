@@ -205,7 +205,7 @@ quadros, com `SMOKE PASS` via API GDB do BlastEm. Custo em `docs/SPRITES.md`.
 **Fora da 3.2.** Ficam para a 3.3:
 - Mira diagonal parado (`05`–`08`) e agachado (`71`–`74`): no SNES vem de L/R, e o controle de 3 botões não tem botões livres. **Decidido:** no controle de 6 botões, L = Z (mirar para baixo) e R = Y (mirar para cima); X fica livre para cancelar item. Implementado na 3.3.1 abaixo.
 - Saída e duração da pose do wall jump: duração visual corrigida na 3.3.2 e saída física na 3.3.3.
-- Moonwalk, pouso atirando (`E6`/`E7`), pouco HP, space jump e screw attack.
+- Moonwalk, pouco HP, space jump e screw attack. Pouso atirando (`E6`/`E7`) entregue na 3.3.4.
 
 **3.3.1 Mira diagonal de seis botões** ✅ (2026-10-21). Y mira acima e Z abaixo,
 sem andar ou desfazer a agachada. Y+Z juntos retornam à mira do direcional.
@@ -233,6 +233,15 @@ com 0 / 0,75 / 1,375 px por tick conforme o cache `wall_open`. A caixa inicial
 conferem velocidades nos 80 quadros dos dois sentidos, posição inicial e caixas.
 Sem novos recursos ou campos de RAM. A simetria à esquerda continua sendo uma
 decisão do port; não se declara equivalência completa da trajetória.
+
+**3.3.4 Pouso atirando** ✅ (2026-10-22). Poses E6/E7 substituem a pose
+parada ao pousar de um pulo normal com tiro frontal. Duas novas medições
+headless, arquivadas como `land_shoot_right/left`, confirmam cinco ticks no
+quadro 0 e dois no 1 nos dois sentidos. Mira mantém sua direção; começar a
+andar cancela o pouso. O smoke compara os sete quadros do sprite com os dados
+arquivados, nos dois sentidos, e confere essas saídas. Sem novos campos de RAM
+ou reserva adicional de VRAM; quatro desenhos acrescentados à ROM. Moonwalk e
+animações dependentes de energia/upgrades continuam pendentes.
 
 **Lacunas da prancha.**
 - A pose `16` (pulo parado, esquerda, mirando para cima) não tem faixa própria: são os quadros 2–3 da tira `15`.

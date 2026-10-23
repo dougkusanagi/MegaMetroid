@@ -77,3 +77,11 @@ screenshots do original. O port ainda não reproduz vento HDMA e chuva.
 No quadro 340, a Samus já girando é reposicionada em (629,720), com velocidade
 vertical zerada. O terreno não é alterado. O limite lateral observado é 1,375
 px/quadro; não usar essa única amostra como prova de todos os wall jumps.
+
+`land_shoot_right/left` cobrem a lacuna E6/E7: após PREP, salto normal e tiro
+segurado até depois do pouso; à esquerda há uma virada e espera antes do salto.
+Ambos mostram sete ticks de pouso (quadros 0×5 e 1×2). O importador preserva
+hashes da ROM, state e script efetivamente usados; o script tinha alterações
+locais na captura. Posições e tempos são leituras de RAM por quadro. Não cobrem
+mira não frontal, outros equipamentos ou todas as formas de chegada ao chão.
+`check` gera `tests/out/sm_land_shoot.h` diretamente dessas duas amostras.

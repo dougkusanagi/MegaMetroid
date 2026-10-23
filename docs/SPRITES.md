@@ -319,3 +319,20 @@ preta; a tampa reaproveita a paleta do Landing Site e não causa regressão vis�
 Validação: o smoke no BlastEm confere visibilidade, quadro (`mm_lock_frame`), espelhamento,
 posição com a câmera e ordem de profundidade nos quadros 1–4, e que sprites de portas
 inexistentes permanecem ocultos.
+
+### Pouso atirando (3.3.4)
+
+E6/E7 entram como LAND_SHOOT na folha, com os pés alinhados na linha 58.
+Com LAND, mira frontal e pose de tiro ativa, o render usa essa tira e o mesmo
+relógio do pouso normal: cinco ticks no quadro 0, dois no 1. Ao terminar volta
+à pose de tiro parada; mirar em outra direção mantém a pose dessa mira.
+Começar a andar cancela o pouso pelo núcleo existente.
+
+As capturas `land_shoot_right/left` medem ambas as direções, em chão plano,
+com salto normal e tiro segurado. O smoke compara os quadros após VBlank com
+o cabeçalho gerado do cache. A cobertura não demonstra todas as combinações
+de mira, equipamento ou disparo no instante do contato. A retenção curta da
+pose após soltar o tiro segue a regra já existente do port.
+
+Quatro desenhos de 64×64 são acrescentados à ROM; a reserva do sprite continua
+sendo o máximo da folha, sem novo sprite ou campo na struct do jogo.

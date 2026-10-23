@@ -5674,6 +5674,192 @@
         "state_sha256": "19fc0e06e192cf66662e18b9853de096065b950092ee02fed3b005329bd1366c",
         "rom_sha256": "12b77c4bc9c1832cee8881244659065ee1d84c70c3d29e6eaf92e6798cc2ca72"
       }
+    },
+    "land_shoot_left": {
+      "file": "land_shoot_left.csv.gz",
+      "saved_at": "2026-10-22T21:39:00-03:00",
+      "rows": 366,
+      "csv_sha256": "261371f290e4bb262cc9b4f311fb26afd220b2a1b8b0234549bdca5f8a94e978",
+      "last_committed_script_before_saved_at": "41288ff3e96e14d3d55cc4a4ef9f0a5ece2f11d5",
+      "source_file": "land_shoot_left.csv",
+      "observed_radii": [
+        {
+          "pose": "01",
+          "x": 5,
+          "y": 21,
+          "samples": 34
+        },
+        {
+          "pose": "02",
+          "x": 5,
+          "y": 21,
+          "samples": 46
+        },
+        {
+          "pose": "09",
+          "x": 5,
+          "y": 21,
+          "samples": 140
+        },
+        {
+          "pose": "14",
+          "x": 5,
+          "y": 19,
+          "samples": 82
+        },
+        {
+          "pose": "25",
+          "x": 5,
+          "y": 21,
+          "samples": 6
+        },
+        {
+          "pose": "26",
+          "x": 5,
+          "y": 21,
+          "samples": 5
+        },
+        {
+          "pose": "26",
+          "x": 5,
+          "y": 24,
+          "samples": 1
+        },
+        {
+          "pose": "29",
+          "x": 5,
+          "y": 19,
+          "samples": 33
+        },
+        {
+          "pose": "29",
+          "x": 5,
+          "y": 21,
+          "samples": 1
+        },
+        {
+          "pose": "4C",
+          "x": 5,
+          "y": 21,
+          "samples": 1
+        },
+        {
+          "pose": "4E",
+          "x": 5,
+          "y": 19,
+          "samples": 9
+        },
+        {
+          "pose": "A4",
+          "x": 5,
+          "y": 19,
+          "samples": 1
+        },
+        {
+          "pose": "E7",
+          "x": 5,
+          "y": 19,
+          "samples": 1
+        },
+        {
+          "pose": "E7",
+          "x": 5,
+          "y": 21,
+          "samples": 6
+        }
+      ],
+      "capture_reference": {
+        "state_sha256": "19fc0e06e192cf66662e18b9853de096065b950092ee02fed3b005329bd1366c",
+        "script_sha256": "3f18db58b8b2ee6c087da1ecd0f85ccded5bb46da443c1503626da428c5b77d1",
+        "rom_sha256": "12b77c4bc9c1832cee8881244659065ee1d84c70c3d29e6eaf92e6798cc2ca72"
+      }
+    },
+    "land_shoot_right": {
+      "file": "land_shoot_right.csv.gz",
+      "saved_at": "2026-10-22T21:38:44-03:00",
+      "rows": 325,
+      "csv_sha256": "033f8be580f343ca26ad9af43fb38392ca76584274c3e0e089ff55e849150ba8",
+      "last_committed_script_before_saved_at": "41288ff3e96e14d3d55cc4a4ef9f0a5ece2f11d5",
+      "source_file": "land_shoot_right.csv",
+      "observed_radii": [
+        {
+          "pose": "01",
+          "x": 5,
+          "y": 21,
+          "samples": 45
+        },
+        {
+          "pose": "09",
+          "x": 5,
+          "y": 21,
+          "samples": 140
+        },
+        {
+          "pose": "13",
+          "x": 5,
+          "y": 19,
+          "samples": 82
+        },
+        {
+          "pose": "26",
+          "x": 5,
+          "y": 21,
+          "samples": 5
+        },
+        {
+          "pose": "26",
+          "x": 5,
+          "y": 24,
+          "samples": 1
+        },
+        {
+          "pose": "29",
+          "x": 5,
+          "y": 19,
+          "samples": 33
+        },
+        {
+          "pose": "29",
+          "x": 5,
+          "y": 21,
+          "samples": 1
+        },
+        {
+          "pose": "4B",
+          "x": 5,
+          "y": 21,
+          "samples": 1
+        },
+        {
+          "pose": "4D",
+          "x": 5,
+          "y": 19,
+          "samples": 9
+        },
+        {
+          "pose": "A4",
+          "x": 5,
+          "y": 19,
+          "samples": 1
+        },
+        {
+          "pose": "E6",
+          "x": 5,
+          "y": 19,
+          "samples": 1
+        },
+        {
+          "pose": "E6",
+          "x": 5,
+          "y": 21,
+          "samples": 6
+        }
+      ],
+      "capture_reference": {
+        "script_sha256": "3f18db58b8b2ee6c087da1ecd0f85ccded5bb46da443c1503626da428c5b77d1",
+        "rom_sha256": "12b77c4bc9c1832cee8881244659065ee1d84c70c3d29e6eaf92e6798cc2ca72",
+        "state_sha256": "19fc0e06e192cf66662e18b9853de096065b950092ee02fed3b005329bd1366c"
+      }
     }
   },
   "reference": {
