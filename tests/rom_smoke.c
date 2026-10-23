@@ -4,6 +4,7 @@
 #include "player_anim.h"
 #include "resources.h"
 #include "world_map.h"
+#include "out/sm_wall.h"
 
 #ifndef MM_SMOKE_ROOM
 #define MM_SMOKE_ROOM ROOM_CRATERIA_1
@@ -377,6 +378,46 @@ static int beam_motion(void)
     return 0;
 }
 
+/* Controlled collision fixture: production simulation, sprite streaming and VBlank on the ROM.
+   Timing comes from cached original RAM; the room's actual walls are covered separately. */
+static int wall_jump_animation(Game *g)
+{
+    static unsigned char tiles[64 * 32];
+    MmWorld saved_world = g->world;
+    MmBody saved_player = g->player;
+    int side, y, frame, failed = 0;
+    for (side = 0; side < 2; ++side) {
+        int wall = side ? 48 : 16;
+        memset(tiles, 1, sizeof tiles);
+        for (y = 0; y < 30; ++y) tiles[y * 64 + wall] = 0;
+        memset(tiles + 30 * 64, 0, 64 * 2);
+        g->world = (MmWorld){tiles, 64, 32, 0, 0};
+        mm_samus_init(&g->player, side ? 359 : 121, 144);
+        g->player.spin_jumping = 1; g->player.pose = MM_POSE_SPIN;
+        mm_weapon_init(&g->weapon);
+        for (frame = 0; frame < (int)(sizeof reference_wall_frames / sizeof *reference_wall_frames); ++frame) {
+            int original = reference_wall_frames[frame];
+            u16 row = (original < 2 ? PLAYER_ANIM_WALL_KICK_R : PLAYER_ANIM_SPIN_R) + side;
+            game_update(g, (MmInput){.axis = side ? -1 : 1,
+                        .jump_pressed = frame == 0, .jump_held = 1});
+            SYS_doVBlankProcess();
+            if (g->player.grounded || g->player.pose != MM_POSE_WALL_KICK ||
+                g->animation != row || g->sprite->animInd != row ||
+                g->sprite->frameInd != (original < 2 ? original : original - 2)) failed = 1;
+        }
+        /* Shooting interrupts the kick and must restore the ordinary automatic pose handling. */
+        game_update(g, (MmInput){.shoot_pressed = 1, .shoot_held = 1, .jump_held = 1});
+        SYS_doVBlankProcess();
+        if (g->player.spin_jumping || g->player.pose == MM_POSE_WALL_KICK ||
+            (g->animation & ~1) != PLAYER_ANIM_FALL_SHOOT_R) failed = 1;
+        idle(g, 200);
+        if (!g->player.grounded || g->player.pose != MM_POSE_GROUND) failed = 1;
+    }
+    g->world = saved_world; g->player = saved_player;
+    mm_weapon_init(&g->weapon);
+    return failed;
+}
+
 static int turns(Game *g)
 {
     int side, air, t, failed = 0;
@@ -642,6 +683,7 @@ int main(bool hardReset)
         mm_weapon_init(&g.weapon);
     }
     if (turns(&g)) failed |= 4096;
+    if (wall_jump_animation(&g)) failed |= 1UL << 31;
     if (beam_motion()) failed |= 32768;
     /* A downward beam just above the floor must render all five impact frames, then hide. */
     mm_weapon_init(&g.weapon);

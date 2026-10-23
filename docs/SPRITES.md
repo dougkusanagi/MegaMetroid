@@ -278,6 +278,22 @@ A folha passa de 64 para 72 linhas, mantendo streaming de um quadro por vez,
 sem novos sprites simultâneos. O input acrescenta um inteiro a `MmInput`
 (4 bytes no alvo), sem alocação dinâmica. Y+Z cancelam o modificador.
 
+### Wall jump (3.3.2)
+
+O cache `wall_open` fornece 80 quadros da pose 83, incluindo `anim_frame` e
+`anim_timer`. Os desenhos 0/1 duram cinco ticks cada; depois os índices
+originais 3–10 fazem um ciclo com três ticks nos ímpares e dois nos pares.
+O render reutiliza os dois quadros de WALL_KICK e os quadros 1–8 de SPIN,
+sem acrescentar tiles ou sprites. `jump_frame/jump_frame_ticks` são reutilizados,
+sem aumento da struct ou do consumo de RAM da ROM padrão. Ao sair do chute,
+o relógio é reiniciado para não passar um índice 6–10 à tira de pulo normal.
+
+O smoke usa uma parede controlada de colisão (2 KB adicionais apenas na ROM
+de teste), compara tira e quadro após cada VBlank nos dois lados e confere tiro
+e pouso. Os tempos à esquerda são espelhados do cenário à direita; a captura
+não demonstra todas as variantes de equipamento ou entrada. Limites físicos
+da saída estão em `FISICA.md`.
+
 ### Tampa de porta animada (6.6.3)
 
 `python scripts/build_door_cap.py` gera `res/images/doors/door_cap.png` a partir dos quadros

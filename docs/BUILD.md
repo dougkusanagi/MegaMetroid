@@ -68,6 +68,9 @@ com `--blastem` e `--gdb`; `--timeout` limita a espera (padrão: 120 segundos; o
 smoke completo leva cerca de 50).
 O `out/symbol.txt` deve pertencer à mesma build `-SmokeTest`. Para uma ROM em
 outro diretório, passe os caminhos correspondentes com `--rom` e `--symbols`.
+A build `-SmokeTest` valida o cache original e gera as expectativas de animação
+em `tests/out/sm_wall.h`, sem iniciar o Mesen. O smoke compara os 80 quadros
+arquivados do wall jump com a tira e o quadro do sprite após cada VBlank.
 Ao fim, o smoke imprime também as métricas de orçamento (`VRAM_TILES_*`, `HEAP_*`;
 ver 6.4 em `docs/PLANO.md`) e falha se uma sala não couber na VRAM, a troca vazar heap ou
 uma porta fechada deixar passar (6.6.2).

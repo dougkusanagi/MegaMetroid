@@ -10,6 +10,24 @@ O registro detalhado começa em 18/10/2026. A entrada anterior abaixo foi
 reconstituída do commit indicado; o histórico anterior completo permanece no Git
 (`git log`) e as entregas por etapa estão em [docs/PLANO.md](docs/PLANO.md).
 
+## 2026-10-22 21:33:03 −03:00 (America/Sao_Paulo) — Animação do wall jump (3.3.2)
+
+### Melhorado
+
+- O chute de parede mantém a pose durante o giro no ar e usa os tempos do cache
+  original `wall_open`: dois quadros de cinco ticks e ciclo de giro 3/2 ticks.
+  A caixa de 38 px permanece no chute; o relógio visual é reiniciado ao sair,
+  evitando índices fora da tira normal após atirar. Sem novos tiles ou RAM na ROM padrão.
+- A build de smoke gera as expectativas diretamente das medições versionadas.
+  Host e ROM comparam 80 quadros por lado e verificam interrupção por tiro e pouso.
+
+**Validação:** `scripts/test.ps1 -Compiler gcc`, build SGDK `-SmokeTest` sem novos
+avisos e `smoke_test.py --capture-scenes`: `SMOKE PASS`, máscara zero e seis cenas
+VDP aprovadas. BlastEm no monitor secundário via GDB; heap estável nas viagens,
+CPU máxima média nos saltos medidos 39/45%, DMA 912/1.032 bytes, VInts perdidos zero.
+Não executado Mesen. Limites: medição original só para a direita; saída física
+um tick antecipada e caixa transitória do primeiro tick ainda pendentes.
+
 ## 2026-10-22 21:04:35 −03:00 (America/Sao_Paulo) — Aviso de porta sem travamento
 
 ### Corrigido

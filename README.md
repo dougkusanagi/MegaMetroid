@@ -28,6 +28,8 @@ não tem sala de destino: depois de abri-la e chegar à borda, o jogo mostra
 
 A Samus usa animações originais de movimento, pulo, agachar, bola, mira e virada.
 A virada tem três quadros, tanto no chão quanto no ar, preservando a física do movimento.
+O pulo de parede mantém a sequência de chute e giro até pousar ou interromper
+o giro, com tempos visuais baseados na referência original arquivada.
 
 Small project with the intention of porting Super Metroid for Mega Drive / Sega Genesis.
 

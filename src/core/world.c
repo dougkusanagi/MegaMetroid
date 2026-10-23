@@ -155,7 +155,7 @@ static MmRect samus_box(const MmBody *b)
     if (b->pose == MM_POSE_UNMORPH && b->pose_timer) return mm_samus_boxes[MM_BOX_CROUCH];
     if (b->grounded) return mm_samus_boxes[b->crouching ? MM_BOX_CROUCH : MM_BOX_STAND];
     if (b->pose == MM_POSE_GROUND && !b->vy && !b->falling) return mm_samus_boxes[MM_BOX_STAND];
-    if (b->pose == MM_POSE_WALL_KICK && b->pose_timer) return mm_samus_boxes[MM_BOX_JUMP];
+    if (b->pose == MM_POSE_WALL_KICK) return mm_samus_boxes[MM_BOX_JUMP];
     if (b->spin_jumping) return mm_samus_boxes[MM_BOX_SPIN];
     return mm_samus_boxes[b->aim == MM_AIM_DOWN ? MM_BOX_AIR_DOWN : MM_BOX_JUMP];
 }
@@ -253,7 +253,7 @@ static MmPose looping_pose(const MmBody *b)
 {
     if (b->ball) return MM_POSE_BALL;
     if (b->grounded) return b->crouching ? MM_POSE_CROUCH : MM_POSE_GROUND;
-    if (b->spin_jumping) return MM_POSE_SPIN;
+    if (b->spin_jumping) return b->pose == MM_POSE_WALL_KICK ? MM_POSE_WALL_KICK : MM_POSE_SPIN;
     return b->vy < 0 || b->takeoff ? MM_POSE_JUMP_UP : MM_POSE_FALL;
 }
 
@@ -290,6 +290,17 @@ static int max_int(int a, int b) { return a > b ? a : b; }
    Fall pose 29/2A is reserved for walking off a ledge. */
 static void update_jump_animation(MmBody *b)
 {
+    if (b->pose == MM_POSE_WALL_KICK) {
+        if (!b->jumped && !--b->jump_frame_ticks) {
+            if (b->jump_frame == 0) {
+                b->jump_frame = 1; b->jump_frame_ticks = MM_WALL_KICK_START_TICKS;
+            } else {
+                b->jump_frame = b->jump_frame == 1 || b->jump_frame == 10 ? 3 : b->jump_frame + 1;
+                b->jump_frame_ticks = b->jump_frame & 1 ? 3 : 2;
+            }
+        }
+        return;
+    }
     if (b->grounded || b->takeoff || b->spin_jumping || b->pose == MM_POSE_TAKEOFF) {
         b->jump_frame = 0; b->jump_frame_ticks = 3;
     } else if (b->vy <= 0) {
@@ -401,7 +412,7 @@ void mm_tick(const MmWorld *w, MmBody *b, MmInput input)
 {
     int direction = input.axis < 0 ? -1 : input.axis > 0 ? 1 : 0;
     int moving_before_jump = b->vx != 0, wall_jump, was_grounded = b->grounded, was_crouching = b->crouching;
-    int was_ball = b->ball;
+    int was_ball = b->ball, was_wall_kick = b->pose == MM_POSE_WALL_KICK;
     if (b->pose_timer) --b->pose_timer;
     if (b->turn_pose_ticks) --b->turn_pose_ticks;
     b->jumped = input.jump_pressed && b->grounded && !b->ball &&
@@ -461,7 +472,8 @@ void mm_tick(const MmWorld *w, MmBody *b, MmInput input)
         /* A kick shows its own pose first, a spin goes straight into the spin, a standing jump shows its
            takeoff. A ball that jumps stays a ball. */
         b->pose = wall_jump ? MM_POSE_WALL_KICK : b->spin_jumping ? MM_POSE_SPIN : MM_POSE_TAKEOFF;
-        b->pose_timer = wall_jump ? MM_WALL_KICK_TICKS : b->spin_jumping ? 0 : MM_TAKEOFF_TICKS;
+        b->pose_timer = b->spin_jumping ? 0 : MM_TAKEOFF_TICKS;
+        if (wall_jump) { b->jump_frame = 0; b->jump_frame_ticks = MM_WALL_KICK_START_TICKS; }
         if (b->ball) { b->pose = MM_POSE_BALL; b->pose_timer = 0; }
     }
     /* Releasing jump stops the ascent at once, also before the takeoff ends: a tap is a short hop. */
@@ -489,6 +501,9 @@ void mm_tick(const MmWorld *w, MmBody *b, MmInput input)
     if (b->grounded) b->falling = 0;
     /* Before the spin flag is cleared: a landing needs to know whether it came from a spin. */
     update_pose(b, was_grounded, was_crouching, was_ball);
+    if (was_wall_kick && b->pose != MM_POSE_WALL_KICK) {
+        b->jump_frame = 0; b->jump_frame_ticks = 3;
+    }
     update_jump_animation(b);
     if (b->grounded) b->spin_jumping = 0;
     if (b->ball || b->spin_jumping || b->pose == MM_POSE_WALL_KICK) b->turn_pose_ticks = 0;

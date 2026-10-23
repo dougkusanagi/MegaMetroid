@@ -240,7 +240,10 @@ def check():
         speeds = [int(r['vx_base'])*256 + int(r['vx_basesub'])//256 for r in kick]
         assert speeds[:4] == [0,192,352,352] and max(speeds) == 352
         (out/'sm_wall.h').write_text('/* Original wall_open, kick away from an unobstructed wall. */\n'
-            f'#define REFERENCE_WALL_SPEED {max(speeds)}\n')
+            f'#define REFERENCE_WALL_SPEED {max(speeds)}\n'
+            '/* Frames 342..421: right kick, held right+jump; mirrored timing is a port assumption. */\n'
+            'static const int reference_wall_frames[] = {' +
+            ', '.join(r['anim_frame'] for r in kick) + '};\n')
     held = list(csv.DictReader(io.StringIO(gzip.decompress((DEST/'shoot_hold.csv.gz').read_bytes()).decode())))
     reloads = [int(r['frame']) for i,r in enumerate(held) if i and int(r['cooldown'])>int(held[i-1]['cooldown'])]
     assert reloads[:3] == [216,231,256], 'Original held Power Beam repeats (first gap 15, then 25)'

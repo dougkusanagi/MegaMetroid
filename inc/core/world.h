@@ -27,7 +27,7 @@
 #define MM_WALL_REACH 8 /* A wall up to 8 px behind still counts as touched. */
 /* Pose durations in simulation ticks; short transitions use measured timings, not the SGDK default. */
 #define MM_TAKEOFF_TICKS 5 /* 4B: one frame. */
-#define MM_WALL_KICK_TICKS 10 /* 83/84: two frames, then the spin. */
+#define MM_WALL_KICK_START_TICKS 5 /* wall_open: each of the two opening frames lasts five ticks. */
 #define MM_LAND_TICKS 7 /* A4/A5: first frame 5 ticks, second 2; ends when walking starts. */
 #define MM_SPIN_LAND_TICKS 1 /* A6/A7: one tick before returning to movement. */
 #define MM_CROUCH_DOWN_TICKS 3 /* 35/36, measured in the original. */
@@ -83,8 +83,8 @@ typedef struct {
     MmState state; /* Derived at the end of every mm_tick. */
     MmPose pose; /* Derived at the end of every mm_tick, like state. */
     MmAim aim; /* Derived at the end of every mm_tick, while the d-pad is held, shot or not. */
-    int jump_frame, jump_frame_ticks; /* Normal jump: rise 0/1, descend 2/3/4, hold 5. */
-    int pose_timer; /* Ticks left in a one-shot pose (takeoff, wall kick, landing); 0 for looping poses. */
+    int jump_frame, jump_frame_ticks; /* Normal jump 0..5; wall kick 0/1, then looping 3..10. */
+    int pose_timer; /* Ticks left in a one-shot pose (takeoff, landing); 0 for looping poses. */
 } MmBody;
 typedef struct {
     int axis, jump_pressed;

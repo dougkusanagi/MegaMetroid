@@ -62,7 +62,7 @@ static u16 plain_row(const MmBody *p)
     case MM_POSE_JUMP_UP: return PLAYER_ANIM_JUMP_UP_R;
     case MM_POSE_FALL: return p->falling ? PLAYER_ANIM_FALL_R : PLAYER_ANIM_JUMP_UP_R;
     case MM_POSE_SPIN: return PLAYER_ANIM_SPIN_R;
-    case MM_POSE_WALL_KICK: return PLAYER_ANIM_WALL_KICK_R;
+    case MM_POSE_WALL_KICK: return p->jump_frame < 2 ? PLAYER_ANIM_WALL_KICK_R : PLAYER_ANIM_SPIN_R;
     case MM_POSE_LAND: return PLAYER_ANIM_LAND_R;
     case MM_POSE_SPIN_LAND: return PLAYER_ANIM_SPIN_LAND_R;
     case MM_POSE_CROUCH_DOWN: return PLAYER_ANIM_CROUCH_DOWN_R;
@@ -177,7 +177,11 @@ static void render(Game *g)
             SPR_setAnim(g->sprite, animation);
         g->animation = animation;
     }
-    if ((animation & ~1) == PLAYER_ANIM_MORPH_R || (animation & ~1) == PLAYER_ANIM_UNMORPH_R) {
+    if (g->player.pose == MM_POSE_WALL_KICK) {
+        /* Original wall frames 3..10 reuse the eight spin drawings (sheet frames 1..8). */
+        SPR_setAutoAnimation(g->sprite, FALSE);
+        SPR_setFrame(g->sprite, g->player.jump_frame < 2 ? g->player.jump_frame : g->player.jump_frame - 2);
+    } else if ((animation & ~1) == PLAYER_ANIM_MORPH_R || (animation & ~1) == PLAYER_ANIM_UNMORPH_R) {
         SPR_setAutoAnimation(g->sprite, FALSE);
         SPR_setFrame(g->sprite, (MM_MORPH_TICKS - g->player.pose_timer) / 3);
     } else if ((animation & ~1) == PLAYER_ANIM_LAND_R || (animation & ~1) == PLAYER_ANIM_SPIN_LAND_R) {

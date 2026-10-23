@@ -204,7 +204,7 @@ quadros, com `SMOKE PASS` via API GDB do BlastEm. Custo em `docs/SPRITES.md`.
 
 **Fora da 3.2.** Ficam para a 3.3:
 - Mira diagonal parado (`05`–`08`) e agachado (`71`–`74`): no SNES vem de L/R, e o controle de 3 botões não tem botões livres. **Decidido:** no controle de 6 botões, L = Z (mirar para baixo) e R = Y (mirar para cima); X fica livre para cancelar item. Implementado na 3.3.1 abaixo.
-- Revisar saída e duração da pose do wall jump: a auditoria 6.0.1 confirmou o limite lateral, mas não equivalência dos tempos visuais.
+- Saída e duração da pose do wall jump: duração visual corrigida na 3.3.2; resta o deslocamento um tick antecipado na saída.
 - Moonwalk, pouso atirando (`E6`/`E7`), pouco HP, space jump e screw attack.
 
 **3.3.1 Mira diagonal de seis botões** ✅ (2026-10-21). Y mira acima e Z abaixo,
@@ -213,6 +213,18 @@ As poses 05–08 e 71–74 entram na folha, com pés alinhados e origem do tiro 
 por pose. Testes do núcleo cobrem ambos os lados e posturas e soltura;
 a ROM confere as oito linhas e direções dos tiros no BlastEm via GDB.
 A etapa 3.3 continua aberta para a revisão do wall jump e demais animações listadas.
+
+**3.3.2 Animação do wall jump** ✅ (2026-10-22). A referência versionada
+`wall_open`, quadros 342–421, mantém a pose 83: quadros iniciais 0/1 por cinco
+ticks cada, depois ciclo 3–10 com durações alternadas de 3/2 ticks. O núcleo
+conserva a pose enquanto gira no ar; o render usa os dois desenhos de 83/84 e
+os oito desenhos do giro, com quadro escolhido pela simulação. A caixa de
+38 px permanece até interromper o chute. Testes comparam os 80 quadros do cache
+nos dois sentidos, no host e na ROM, incluindo saída por tiro e pouso.
+Limites: o original medido chuta para a direita; aplicar o mesmo tempo à
+esquerda é uma decisão simétrica do port. O primeiro tick original tem caixa
+transitória de 24 px e saída sem deslocamento; esses detalhes físicos ainda
+não foram reproduzidos. A 3.3 segue aberta para as demais animações.
 
 **Lacunas da prancha.**
 - A pose `16` (pulo parado, esquerda, mirando para cima) não tem faixa própria: são os quadros 2–3 da tira `15`.

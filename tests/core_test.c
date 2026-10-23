@@ -782,8 +782,6 @@ static void poses(void) {
     assert(!b.grounded && mm_pixel(b.x) == 88);
     run_poses(&b, log, (MmInput){.axis = -1, .jump_pressed = 1, .jump_held = 1}, 1);
     assert(b.jumped && b.spin_jumping && b.pose == MM_POSE_WALL_KICK && b.vx < 0);
-    /* hold_ticks does not log, so the spin after the kick is checked here instead of in the log. */
-    assert(hold_ticks(&b, idle, MM_POSE_WALL_KICK) == MM_WALL_KICK_TICKS && b.pose == MM_POSE_SPIN);
     run_poses(&b, log, idle, 200);
     assert(strcmp(log, "GROUND SPIN WALL_KICK SPIN_LAND GROUND") == 0);
 
@@ -1050,6 +1048,32 @@ static void ball_poses(void) {
     assert(strcmp(log, "GROUND CROUCH_DOWN CROUCH MORPH BALL UNMORPH CROUCH STAND_UP GROUND") == 0);
     puts("PASS ball poses: morph and unmorph take six ticks; jump unmorphs to crouch without lifting");
 }
+/* Original wall_open timing applied to both facings; collision is a controlled fixture. */
+static void wall_jump_animation(void) {
+    MmBody b;
+    int side, y, frame;
+    for (side = 0; side < 2; ++side) {
+        int wall = side ? 48 : 16;
+        reset(); floor_at(30);
+        for (y = 0; y < 30; ++y) tiles[y * 64 + wall] = 0;
+        mm_samus_init(&b, side ? 359 : 121, 144);
+        b.spin_jumping = 1; b.pose = MM_POSE_SPIN;
+        for (frame = 0; frame < (int)(sizeof reference_wall_frames / sizeof *reference_wall_frames); ++frame) {
+            mm_tick(&world, &b, (MmInput){.axis = side ? -1 : 1,
+                    .jump_pressed = frame == 0, .jump_held = 1});
+            assert(!b.grounded && b.pose == MM_POSE_WALL_KICK);
+            assert(b.jump_frame == reference_wall_frames[frame]);
+            assert(b.hitbox.bottom - b.hitbox.top == 38);
+        }
+        mm_tick(&world, &b, (MmInput){.shoot_pressed = 1, .jump_held = 1});
+        assert(!b.spin_jumping && b.pose != MM_POSE_WALL_KICK);
+        assert(b.jump_frame <= 5);
+        for (frame = 0; frame < 200; ++frame) mm_tick(&world, &b, idle);
+        assert(b.grounded && b.pose == MM_POSE_GROUND);
+    }
+    puts("PASS wall kick: 80 archived animation frames, both facings, 38px box, shooting exits");
+}
+
 /* A wall jump needs all three: a spin jump, a wall touched (up to MM_WALL_REACH px behind) and the
    d-pad pressed away from it. Pressing into the wall, no direction or a jump without spin do nothing. */
 static void wall_jump_rules(void) {
@@ -1541,7 +1565,7 @@ int main(void) {
     measured_missiles();
     missile_loadout();
     movement(); air_steering(); collisions(); jump_and_ledge(); states(); physics(); variable_jump(); ledge_jump();
-    slopes(); slope_sweep(); tunnels(); wall_climb(); wall_jump_rules(); poses(); crouch_poses(); crouch_tap(); double_tap(); ball_poses(); aiming(); beam_from_muzzle(); morph_rules(); ball_stands_on_slope();
+    slopes(); slope_sweep(); tunnels(); wall_climb(); wall_jump_rules(); wall_jump_animation(); poses(); crouch_poses(); crouch_tap(); double_tap(); ball_poses(); aiming(); beam_from_muzzle(); morph_rules(); ball_stands_on_slope();
     ball_stand_real(); camera_and_input(); doors(); world_map(); door_locks(); real_levels();
     puts("All core regression tests passed."); return 0;
 }

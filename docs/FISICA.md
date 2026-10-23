@@ -286,8 +286,17 @@ pelo BlastEm via API. As larguras e alturas foram atualizadas na 2.8.4 abaixo.
   1,375 px/quadro, sem bônus de corrida. O limite sustentado de 1,375 já coincide
   com o port e agora é comparado diretamente com o cache pelos testes.
 - Não houve aumento arbitrário do impulso. Isso não prova equivalência completa:
-  o port começa a mover um tick antes na saída; sua pose de chute dura 10 ticks,
+  o port começa a mover um tick antes na saída; à época, sua pose de chute durava 10 ticks,
   enquanto a 83 permanece por toda a janela observada no original. Tempos e
   poses do chute ficam explicitamente na auditoria 3.3, e não foram corrigidos
   nesta entrega. A amostra nova cobre só a parede à esquerda, sem outros itens
   ou bônus de corrida; não generalizar para todas as condições.
+
+**Revisão visual 3.3.2 (22/10/2026).** Reutilizando `wall_open`, sem executar o
+Mesen, o port agora mantém WALL_KICK durante o giro no ar. O relógio visual
+segue os 80 quadros arquivados: 0/1 por cinco ticks cada e 3–10 em ciclo 3/2.
+A caixa de 38 px também permanece durante o chute. Tiro, morph e pouso saem
+da pose pelas transições normais. A antecipação do deslocamento na saída e a
+caixa transitória de 24 px no primeiro tick original continuam como limites;
+não há alegação de equivalência de toda a trajetória. O tempo espelhado para
+a esquerda não possui medição independente.
