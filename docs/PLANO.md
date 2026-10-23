@@ -465,6 +465,11 @@ Landing Site sem regressão visível ali. Validação: `door_locks` no host e, n
 `door_art` confere visibilidade, quadro, espelhamento, posição e profundidade da tampa nos
 quadros 1–4, além de manter ocultos os sprites de portas inexistentes. `SMOKE PASS`.
 
+**Correção complementar de 6.6.2 (2026-10-22):** ✅ avisos de porta protegidos contra
+interrupções de VBlank durante a escrita no VDP. Restaurado `ROOM NOT BUILT YET`
+na porta leste inferior sem destino. O smoke entra e sai da borda três vezes,
+confere o texto e sua remoção, o limite da sala e a ausência de troca de mapa.
+
 ### Fase 7 — Itens, progressão e HUD
 
 | # | Etapa | Entrega | Teste |

@@ -23,7 +23,7 @@ static SpriteDefinition beam_definition;
 /* Window text while Samus is at a door: a shut door that leads somewhere, and an open door whose
    room is not built yet (the original's room behind it is not in the port). */
 #define DOOR_SHOOT_TEXT "A: SHOOT TO OPEN"
-#define DOOR_NOT_BUILT_TEXT NULL
+#define DOOR_NOT_BUILT_TEXT "ROOM NOT BUILT YET"
 
 #if MM_DEBUG_OVERLAY
 /* Q24.8 as fixed-width signed text with two decimals, e.g. "+ 2.75". */
@@ -242,10 +242,13 @@ static void render(Game *g)
                 body.top < opening.bottom && body.bottom > opening.top) prompt = DOOR_SHOOT_TEXT;
         }
         if (prompt != g->door_prompt) {
+            /* CPU text writes must not be interrupted by VBlank VDP scroll/DMA commands. */
+            SYS_disableInts();
             VDP_setTextPlane(WINDOW);
             VDP_clearTextLine(0);
             if (prompt) VDP_drawText(prompt, 1, 0);
             g->door_prompt = prompt;
+            SYS_enableInts();
         }
     }
     for (i = 0; i < MM_BEAM_COUNT; ++i) {

@@ -22,6 +22,10 @@ não tem colisão, save ou recarga. O ponto inicial da Samus foi mantido; caminh
 para a direita até o centro da sala para ver a nave. Há adaptação de cores às
 quatro paletas do Mega Drive. Regeneração e capturas da ROM em `docs/BUILD.md`.
 
+A porta leste superior do Landing Site leva à Crateria 2. A leste inferior ainda
+não tem sala de destino: depois de abri-la e chegar à borda, o jogo mostra
+`ROOM NOT BUILT YET`; afastar-se da porta remove o aviso.
+
 A Samus usa animações originais de movimento, pulo, agachar, bola, mira e virada.
 A virada tem três quadros, tanto no chão quanto no ar, preservando a física do movimento.
 

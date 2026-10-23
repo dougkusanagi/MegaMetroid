@@ -10,6 +10,22 @@ O registro detalhado começa em 18/10/2026. A entrada anterior abaixo foi
 reconstituída do commit indicado; o histórico anterior completo permanece no Git
 (`git log`) e as entregas por etapa estão em [docs/PLANO.md](docs/PLANO.md).
 
+## 2026-10-22 21:04:35 −03:00 (America/Sao_Paulo) — Aviso de porta sem travamento
+
+### Corrigido
+
+- A atualização do aviso de porta bloqueia interrupções durante os comandos de
+  escrita no VDP, evitando conflito com scroll/DMA do VBlank e o travamento no BlastEm.
+- Restaurado `ROOM NOT BUILT YET` na borda da porta leste inferior do Landing Site,
+  cuja sala de destino ainda não foi construída.
+- Removido o reposicionamento temporário de depuração; o smoke entra e sai da
+  porta três vezes, confere o texto, sua remoção e a permanência na mesma sala.
+
+**Validação:** `scripts/test.ps1 -Compiler gcc`, build SGDK `-SmokeTest` e
+`smoke_test.py --capture-scenes`: `SMOKE PASS`, seis cenas VDP aprovadas,
+heap estável nas três viagens entre salas e nenhum VBlank perdido nos saltos
+medidos. BlastEm visível no monitor secundário, via GDB, sem retirar o foco.
+
 ## 2026-10-21 22:34:00 −03:00 (America/Sao_Paulo) — Mísseis e supers na ROM (4.3.2)
 
 ### Adicionado

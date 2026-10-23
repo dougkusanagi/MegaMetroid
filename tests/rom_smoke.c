@@ -286,11 +286,15 @@ static int room_transitions(Game *g)
     if (shoot_door(g, 3) < 0) failed |= 4096;
     idle(g, MM_DOOR_OPEN_TICKS);
     if (g->door_locks[3].state != MM_DOOR_OPEN) failed |= 4096;
-    for (i = 0; i < 90; ++i) { game_update(g, (MmInput){.axis = 1}); SYS_doVBlankProcess(); }
-    if (g->room != room_get(ROOM_CRATERIA_1) || !g->door_prompt ||
-        mm_pixel(g->player.x) + g->player.hitbox.right != 2304) failed |= 8192;
-    mm_samus_init(&g->player, 256, 1176);
-    idle(g, 60);
+    /* Enter and leave the strip repeatedly: draw and clear the text while the camera scrolls. */
+    for (trip = 0; trip < 3; ++trip) {
+        for (i = 0; i < 90; ++i) { game_update(g, (MmInput){.axis = 1}); SYS_doVBlankProcess(); }
+        if (g->room != room_get(ROOM_CRATERIA_1) || !g->door_prompt ||
+            strcmp(g->door_prompt, "ROOM NOT BUILT YET") ||
+            mm_pixel(g->player.x) + g->player.hitbox.right != 2304) failed |= 8192;
+        for (i = 0; i < 60; ++i) { game_update(g, (MmInput){.axis = -1}); SYS_doVBlankProcess(); }
+        if (g->door_prompt || g->room != room_get(ROOM_CRATERIA_1)) failed |= 8192;
+    }
     mm_smoke_memory[7] = MEM_getLargestFreeBlock();
     return failed;
 }
