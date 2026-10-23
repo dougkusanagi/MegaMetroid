@@ -336,3 +336,6 @@ pose após soltar o tiro segue a regra já existente do port.
 
 Quatro desenhos de 64×64 são acrescentados à ROM; a reserva do sprite continua
 sendo o máximo da folha, sem novo sprite ou campo na struct do jogo.
+
+O piso controlado desta verificação reserva 2 KB estáticos apenas na ROM
+de smoke, sem afetar a RAM da ROM padrão.

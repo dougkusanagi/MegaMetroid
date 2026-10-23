@@ -10,6 +10,23 @@ O registro detalhado começa em 18/10/2026. A entrada anterior abaixo foi
 reconstituída do commit indicado; o histórico anterior completo permanece no Git
 (`git log`) e as entregas por etapa estão em [docs/PLANO.md](docs/PLANO.md).
 
+## 2026-10-22 21:43:44 −03:00 (America/Sao_Paulo) — Pouso atirando (3.3.4)
+
+### Adicionado
+
+- Poses E6/E7 no pouso com tiro frontal: cinco ticks no quadro 0 e dois no 1,
+  medidos nos dois sentidos no Mesen headless. Capturas e origem arquivadas.
+- Smoke compara os sete quadros do sprite após VBlank, volta à pose parada,
+  prioridade da mira e cancelamento ao andar. Quatro desenhos novos na ROM,
+  sem aumentar a reserva de VRAM ou a struct do jogo; fixture de 2 KB só no smoke.
+
+**Validação:** `scripts/test.ps1 -Compiler gcc`, build SGDK `-SmokeTest` e
+`python scripts/smoke_test.py --realtime`: `SMOKE PASS` via GDB no monitor
+secundário, sem ativação. Heap estável em três viagens, zero VInts perdidos;
+CPU máxima média 39/45%, DMA 912/1.032 bytes nos saltos medidos. Duas tentativas
+aceleradas anteriores falharam na negociação GDB antes da execução da ROM.
+Limites: salto normal, tiro frontal segurado e equipamento do save de referência.
+
 ## 2026-10-22 21:37:00 −03:00 (America/Sao_Paulo) — Saída do wall jump (3.3.3)
 
 ### Corrigido
