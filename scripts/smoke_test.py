@@ -99,7 +99,9 @@ def main():
     parser.add_argument('--rom', default='tests/out/smoke.bin', help='ROM path relative to the project root')
     parser.add_argument('--symbols', default='out/symbol.txt', help='SGDK symbol table relative to the project root')
     parser.add_argument('--capture-scenes', action='store_true', help='Read back VDP video memory through GDB')
-    parser.add_argument('--hidden', action='store_true', help='Keep the emulator hidden even with a secondary monitor')
+    visibility = parser.add_mutually_exclusive_group()
+    visibility.add_argument('--hidden', dest='hidden', action='store_true', default=True, help='Headless execution (default; VDP rendering remains enabled for readback)')
+    visibility.add_argument('--visible', dest='hidden', action='store_false', help='Show the test only on a secondary monitor, without activation')
     parser.add_argument('--realtime', action='store_true', help='Run at 60 fps with audio instead of unthrottled')
     args = parser.parse_args()
     root = Path(__file__).resolve().parents[1]
@@ -117,7 +119,7 @@ def main():
     flags = subprocess.CREATE_NO_WINDOW if hasattr(subprocess, 'CREATE_NO_WINDOW') else 0
     monitor = secondary_monitor() if not args.hidden and hasattr(subprocess, 'STARTUPINFO') else None
     if not args.hidden and not monitor:
-        print('No secondary monitor available; keeping BlastEm hidden.', flush=True)
+        raise SystemExit('Visible test requires a secondary monitor; no emulator started.')
     startup = None
     if hasattr(subprocess, 'STARTUPINFO'):
         startup = subprocess.STARTUPINFO()
@@ -137,7 +139,8 @@ def main():
         # Wait for the listener without consuming its single accepted GDB connection.
         time.sleep(1)
         commands = [args.gdb, '-nx', '-batch', '-ex', 'set confirm off',
-            '-ex', 'target remote localhost:1234', '-ex', f'break *0x{finish:x}',
+            '-ex', 'set remote supported-packets-packet off',
+            '-ex', 'set remotetimeout 10', '-ex', 'target remote 127.0.0.1:1234', '-ex', f'break *0x{finish:x}',
             '-ex', 'continue', '-ex', f'printf "MM_SMOKE_RESULT=%d\\n", *(unsigned short*)0x{result:x}',
             ]
         if 'mm_smoke_failure' in symbols:
@@ -175,13 +178,16 @@ end
             index = commands.index('continue') - 1
             commands[index:index] = ['-ex', 'source scene-capture.gdb']
         commands += ['-ex', 'disconnect']
+        started = time.monotonic()
         completed = subprocess.run(commands, capture_output=True, text=True, timeout=args.timeout,
                                    creationflags=flags, cwd=root/'tests/out')
         output = completed.stdout + completed.stderr
         (root / 'tests/out/smoke-gdb.log').write_text(output)
         if completed.returncode or 'MM_SMOKE_RESULT=1' not in output:
             raise SystemExit('Smoke test failed; see tests/out/smoke-gdb.log\n' + output)
-        print('SMOKE PASS (BlastEm GDB API, no desktop input)')
+        print(f'SMOKE PASS (BlastEm GDB API, {time.monotonic()-started:.1f}s, ' +
+              ('realtime audio' if args.realtime else 'unthrottled, no audio') +
+              (', headless)' if args.hidden else ', secondary monitor)'))
         metrics = [line for line in output.splitlines() if line.startswith(('NORMAL_', 'SPIN_', 'VRAM_', 'HEAP_'))]
         if any(int(line.split('=', 1)[1]) for line in metrics):
             for line in metrics: print(line)

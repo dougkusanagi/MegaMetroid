@@ -46,7 +46,7 @@ Teste das ROMs em:
 
 Neste ambiente o BlastEm 1.0.0 está em `D:\emuladores\blastem\blastem-win64-1.0.0\blastem.exe`. Abra com `blastem.exe out\rom.bin`. O FPS aparece no título da janela.
 
-## Teste automatizado no BlastEm, visível no monitor secundário
+## Teste automatizado no BlastEm, acelerado e headless
 
 ```powershell
 ./scripts/build.ps1 -Sgdk D:/apps/sgdk -Java D:/apps/jre/bin/java.exe -SmokeTest
@@ -57,11 +57,15 @@ O script inicia o BlastEm com `-D` e conecta ao protocolo GDB em
 `localhost:1234`. Aguarda o fim da sequência roteirizada e lê `mm_smoke_result`
 diretamente da RAM (1 = passou, 2 = falhou). O log fica em
 `tests/out/smoke-gdb.log`; o processo iniciado é encerrado mesmo se o teste falhar.
-No Windows, a janela aparece centralizada na área útil do primeiro monitor secundário,
-sem ativação, sem subir na ordem das janelas e sem retirar o foco do aplicativo em uso.
-A janela nasce oculta e só é mostrada depois do posicionamento. Sem monitor secundário,
-ou se não for possível posicioná-la, permanece oculta. `python scripts/smoke_test.py --hidden`
-força o teste oculto. Apenas a janela pertencente ao processo do teste é movida.
+O padrão é acelerado, sem áudio e headless: o driver de áudio SDL `disk`, sem
+atraso e descartando a saída, remove o limite de 60 fps apenas neste processo.
+O VDP continua renderizando para as leituras de VRAM/CRAM/SAT. `--hidden` é
+um alias explícito desse padrão. `--visible` mostra a janela somente no monitor
+secundário, sem ativação nem mudança de foco; sem ele, recusa iniciar essa sessão.
+`--realtime` fica reservado a verificações que precisam de áudio ou tempo de parede;
+não o use como contorno para falhas GDB. O script desativa a negociação opcional
+`qSupported`, que causava respostas fora de sequência com este stub do BlastEm,
+e usa IPv4 e timeout remoto de 10 s. Não é preciso alterar o emulador instalado.
 Não usa cliques, teclado ou captura da área de trabalho. Se a porta já estiver
 ocupada, recusa executar para não interferir em outra sessão. Ajuste os caminhos
 com `--blastem` e `--gdb`; `--timeout` limita a espera (padrão: 120 segundos; o
@@ -167,7 +171,7 @@ python scripts/smoke_test.py --capture-scenes
 `--capture-scenes` salva o readback da VRAM/CRAM e reconstrói a nave, as quatro
 portas e a base de blocos em `tests/out/blastem-*.png`. Os pixels dos planos,
 paletas e scroll são conferidos automaticamente. Não captura a área de trabalho.
-Pode combinar com `--hidden`. As leituras reservam um buffer de 8 KB na ROM de
+Headless é o padrão; use `--visible` somente para inspeção no monitor secundário. As leituras reservam um buffer de 8 KB na ROM de
 smoke, sem afetar a ROM padrão.
 
 Para conferir separadamente o carregamento da segunda sala, gere uma variante

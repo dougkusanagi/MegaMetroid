@@ -10,6 +10,19 @@ O registro detalhado começa em 18/10/2026. A entrada anterior abaixo foi
 reconstituída do commit indicado; o histórico anterior completo permanece no Git
 (`git log`) e as entregas por etapa estão em [docs/PLANO.md](docs/PLANO.md).
 
+## 2026-10-22 22:02:24 −03:00 (America/Sao_Paulo) — Smoke acelerado e headless
+
+### Corrigido
+
+- Negociação GDB com `qSupported` desativado, IPv4 e timeout remoto explícito;
+  preserva a execução acelerada sem áudio. Headless agora é o padrão, `--visible`
+  exige monitor secundário. AGENTS.md proíbe usar tempo real como contorno de falha.
+- O resultado informa duração e modo para tornar regressões de tempo visíveis.
+
+**Validação:** build SGDK `-SmokeTest` e `python scripts/smoke_test.py`:
+`SMOKE PASS` em 11,5 s, acelerado, sem áudio, headless; heap estável e zero
+VInts perdidos nos saltos medidos. Nenhuma alteração de configuração global do PC.
+
 ## 2026-10-22 21:56:11 −03:00 (America/Sao_Paulo) — Moonwalk frontal (3.3.5)
 
 ### Adicionado
