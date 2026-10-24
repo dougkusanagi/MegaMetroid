@@ -1,91 +1,50 @@
 #pragma once
 #include <genesis.h>
+#include "core/world.h"
+
+#define ROOM_NO_CONNECTION 0xFFFF
+#define ROOM_NO_LINK 0xFFFF
 
 typedef struct {
+    u16 kind;
     Vect2D_s16 position;
-} Camera;
+} RoomEnemySpawn;
+
+typedef enum {
+    ROOM_DOOR_BLUE,
+    ROOM_DOOR_RED,
+    ROOM_DOOR_GREEN
+} RoomDoorColor;
+
+typedef enum {
+    ROOM_DOOR_FACING_LEFT = MM_DOOR_FACING_LEFT,
+    ROOM_DOOR_FACING_RIGHT = MM_DOOR_FACING_RIGHT,
+    ROOM_DOOR_FACING_UP = MM_DOOR_FACING_UP,
+    ROOM_DOOR_FACING_DOWN = MM_DOOR_FACING_DOWN
+} RoomDoorFacing;
 
 typedef struct {
-	u8 x;
-	u8 y;
-} Vect2D_u8;
+    Vect2D_s16 position; /* Upper-left corner in world pixels. */
+    u16 target_room; /* ROOM_NO_CONNECTION until the route is confirmed. */
+    Vect2D_s16 target_spawn;
+    RoomDoorColor color;
+    RoomDoorFacing facing;
+    u16 link; /* Index of this door in the room's node of rooms/world.json. */
+} RoomDoorDef;
 
-typedef struct {
-	s8 x;
-	s8 y;
-} Vect2D_s8;
-
-typedef struct {
-	Vect2D_s16 min;
-	Vect2D_s16 max;
-} AABB;
-
-struct {
-    Vect2D_s16 d_pad;
-    bool a;
-    bool b;
-    bool c;
-    bool x;
-    bool y;
-    bool z;
-} control;
-
-typedef struct level_def
-{
-	TileSet *tileset_fg;
-	TileSet *tileset_bg;
-	Image *image_fg;
-	Image *image_bg;
-	MapDefinition *map_fg;
-	MapDefinition *map_bg;
-	Palette *palette_fg;
-	Palette *palette_bg;
-	
-	u16 map_width;
-	u16 map_height;
-  
-	// 1D array with all collisions in 16x16
-	// should be converted to 2D array when loaded to curr_collision_map
-	u8 *map_collision;
-	AABB room_size;
-
-	Sprite *level_elements;
-	u8 *num_level_elements;
-	Sprite enemies;
-	u8 num_enemies;
-
-	Vect2D_s16 player_initial_pos;
-} level_def;
-
-// Empty array
-// typedef struct InstanceData{
-//     s8 type;
-//     s16 x, y;
-// }InstanceData;
-
-// Level definition
-// typedef struct Level
-// {
-//     InstanceData instances[];
-// }Level;
-
-// Then in level03.c
-// const Level level03 = {
-//     .instances = {
-        // {PLAYER, 80, 152}, {GAME_MANAGER, 16, 16}, {ENEMY, 152, 128}
-//     }
-// };
-
-AABB newAABB(s16 x1, s16 x2, s16 y1, s16 y2);
-
-Vect2D_f16 newVector2D_f16(f16 x, f16 y);
-Vect2D_f32 newVector2D_f32(f32 x, f32 y);
-
-Vect2D_s8 newVector2D_s8(s8 x, s8 y);
-Vect2D_s16 newVector2D_s16(s16 x, s16 y);
-Vect2D_s32 newVector2D_s32(s32 x, s32 y);
-
-Vect2D_u8 newVector2D_u8(u8 x, u8 y);
-Vect2D_u16 newVector2D_u16(u16 x, u16 y);
-Vect2D_u32 newVector2D_u32(u32 x, u32 y);
-
+typedef struct room_def {
+    const TileSet *tileset_fg, *tileset_bg;
+    const Image *image_fg, *image_bg;
+    const MapDefinition *map_fg, *map_bg;
+    const Palette *palette_fg, *palette_bg;
+    u16 map_width, map_height;
+    u16 background_scroll_height; /* 0: fixed; nonzero: continuous camera Y, MAP wraps its resource. */
+    const u8 *map_collision;
+    Vect2D_s16 player_initial_pos;
+    const MmCameraZone *camera_zones;
+    u16 camera_zone_count;
+    const RoomEnemySpawn *enemy_spawns;
+    u16 enemy_spawn_count;
+    const RoomDoorDef *doors;
+    u16 door_count;
+} room_def;

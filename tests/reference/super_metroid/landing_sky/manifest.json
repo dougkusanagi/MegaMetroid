@@ -1,0 +1,48 @@
+{
+  "scenario": "landing_sky_scanlines",
+  "emulator": "Mesen 2.1.1 --testrunner",
+  "captures": [
+    {
+      "file": "sky_reference.csv",
+      "reference": {
+        "script_sha256": "9041bddf998883126c3faf726bd123ea77782c330e064294d49a8b42732db967",
+        "state_sha256": "19fc0e06e192cf66662e18b9853de096065b950092ee02fed3b005329bd1366c",
+        "rom_sha256": "12b77c4bc9c1832cee8881244659065ee1d84c70c3d29e6eaf92e6798cc2ca72"
+      },
+      "captured_at": "2026-10-18T17:22:47-03:00"
+    },
+    {
+      "file": "sky_upper.csv",
+      "reference": {
+        "rom_sha256": "12b77c4bc9c1832cee8881244659065ee1d84c70c3d29e6eaf92e6798cc2ca72",
+        "script_sha256": "60e65ccc207c0780e7af79ffa5740af26b7252241be37d53f6260902755f5531",
+        "state_sha256": "19fc0e06e192cf66662e18b9853de096065b950092ee02fed3b005329bd1366c"
+      },
+      "captured_at": "2026-10-18T17:29:55-03:00"
+    }
+  ],
+  "files": {
+    "sky_reference.csv.gz": "3532470bed4753e54f5b90b7d2bdaff703502267e82e6c05c5d0cd59d9ac0324",
+    "sky_reference.csv.ground.png.gz": "0919bba5171a4f86f90261615316784a7130cc741798427246b89754c196f385",
+    "sky_reference.csv.ground.snesCgRam.gz": "e127681e4e90cdacb4ea649a75b9162fee84c714105e3783d8038308a52e82d0",
+    "sky_reference.csv.ground.snesVideoRam.gz": "efd4365ea60a195518c7a2c8a330ef65e3f2d06fa70872267766a9ba3b0d70dd",
+    "sky_reference.csv.high.png.gz": "109cb8236b45a7128699491b43be119ec4d05bfd73fde91749bbdb0168882a64",
+    "sky_reference.csv.high.snesCgRam.gz": "1b1d51adbeb197d584088b9fd4fae9e52e84a6ef96c47ef9fe1078fac223857c",
+    "sky_reference.csv.high.snesVideoRam.gz": "735c0789afcb23acc9b86fbdeda2ab64b082ead91447618b731eacbcb99ef7c0",
+    "sky_reference.csv.ship.png.gz": "3889ec2003e3d3d3efb5ae6a6b53bbe2c27f7ae942b6d21d21e51c6464fc8ba5",
+    "sky_reference.csv.ship.snesCgRam.gz": "1b1d51adbeb197d584088b9fd4fae9e52e84a6ef96c47ef9fe1078fac223857c",
+    "sky_reference.csv.ship.snesVideoRam.gz": "00ccda325edbcdccd5113bb2a2321e40a0d634d8950484e90b84ae8b6a2e0894",
+    "sky_reference.csv.source.json.gz": "28c34cdfb9ef9bf3ee9ccd7f2dccf793c80b7d99d0ac76cf6cca5a68f86cf9b3",
+    "sky_upper.csv.gz": "d00f5e13ebd555d2dc1ab79a83b95a62991ed72e9e855ab8f70e45a4d9207f7b",
+    "sky_upper.csv.source.json.gz": "5dc346671c35cee5817f2665b0d94bd75f855ab60ac2dc6d458a4086c522005a",
+    "sky_upper.csv.upper.png.gz": "5936d2303926935427a2c4d272081c04cb84ec5b9db5ac49e5ea2183f534f967",
+    "sky_upper.csv.upper.snesCgRam.gz": "1b1d51adbeb197d584088b9fd4fae9e52e84a6ef96c47ef9fe1078fac223857c",
+    "sky_upper.csv.upper.snesVideoRam.gz": "e5cf8027d0ee3719225f8cc8dc86949974e748a55f310c6a4665bcc98c33b557"
+  },
+  "limits": [
+    "Four saved-state probes only: ship, ground, high and upper; no rendering registers modified.",
+    "High/upper positions are held artificially to let the camera settle; not normal traversal.",
+    "One CPU-execution sample per scanline; not every HDMA write or subscanline timing.",
+    "Sky wraps vertically at 512 pixels in these samples; horizontal HDMA/weather are not ported."
+  ]
+}

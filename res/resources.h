@@ -1,7 +1,21 @@
+#include <genesis.h>
+
 #ifndef _RES_RESOURCES_H_
 #define _RES_RESOURCES_H_
 
-extern const u8 jump_sfx[3840];
+extern const u8 beam_sfx[4352];
+extern const u8 missile_sfx[10752];
+extern const u8 super_sfx[13312];
+extern const u8 select_sfx[768];
+extern const u8 spin_sfx[3840];
+extern const u8 land_sfx[1536];
+extern const u8 music_crateria_arrival_intro[256000];
+extern const u8 music_crateria_arrival_loop[887040];
+extern const Palette pal_samus_power_suit;
 extern const SpriteDefinition player_sprite;
+extern const SpriteDefinition beam_sprite;
+extern const SpriteDefinition beam_impact_sprite;
+extern const SpriteDefinition missile_sprite;
+extern const SpriteDefinition door_cap;
 
 #endif // _RES_RESOURCES_H_

@@ -1,0 +1,156 @@
+{
+ "source": "Super Metroid (Japan, USA) room headers (bank $8F) and door tables (bank $83), decoded by scripts/extract_world.py. Layout facts only; no ROM data, art or collision.",
+ "area": "Crateria",
+ "block": 16,
+ "screen_blocks": 16,
+ "nodes": [
+  {"id": "91F8", "screens": [9, 5], "map": [23, 0], "name": "Landing Site", "doors": [
+   {"wall": "left", "close": true, "flags": 0, "at": [1, 70], "to": "92FD", "peer": 1, "arrive": [78, 6], "arrive_screen": [4, 0]},
+   {"wall": "right", "close": false, "flags": 0, "at": [142, 70], "to": "95D4", "peer": 0, "arrive": [0, 0], "arrive_screen": [0, 0]},
+   {"wall": "left", "close": true, "flags": 0, "at": [1, 38], "to": "92B3", "peer": 0, "arrive": [78, 6], "arrive_screen": [4, 0]},
+   {"wall": "right", "close": true, "flags": 0, "at": [142, 22], "to": "93AA", "peer": 0, "arrive": [1, 6], "arrive_screen": [0, 0]}
+  ]},
+  {"id": "92B3", "screens": [5, 1], "map": [18, 2], "doors": [
+   {"wall": "right", "close": true, "flags": 0, "at": [78, 6], "to": "91F8", "peer": 2, "arrive": [1, 38], "arrive_screen": [0, 2]},
+   {"wall": "left", "close": true, "flags": 0, "at": [1, 6], "to": "965B", "peer": 0, "arrive": [94, 6], "arrive_screen": [5, 0]}
+  ]},
+  {"id": "92FD", "screens": [5, 5], "map": [18, 4], "doors": [
+   {"wall": "left", "close": true, "flags": 0, "at": [1, 6], "to": "990D", "peer": 1, "arrive": [94, 6], "arrive_screen": [5, 0]},
+   {"wall": "right", "close": true, "flags": 0, "at": [78, 6], "to": "91F8", "peer": 0, "arrive": [1, 70], "arrive_screen": [0, 4]},
+   {"wall": "right", "close": true, "flags": 0, "at": [30, 54], "to": "98E2", "peer": 0, "arrive": [1, 6], "arrive_screen": [0, 0]},
+   {"wall": "right", "close": true, "flags": 0, "at": [62, 38], "to": "9879", "peer": 0, "arrive": [1, 6], "arrive_screen": [0, 0]},
+   {"wall": "bottom", "close": true, "flags": 0, "at": [22, 77], "to": "96BA", "peer": 0, "arrive": [22, 2], "arrive_screen": [1, 0]},
+   {"wall": "left", "close": true, "flags": 0, "at": [17, 38], "to": "93D5", "peer": 0, "arrive": [14, 6], "arrive_screen": [0, 0]},
+   {"wall": "left", "close": true, "flags": 0, "at": [17, 54], "to": "9A44", "peer": 1, "arrive": [30, 6], "arrive_screen": [1, 0]}
+  ]},
+  {"id": "93AA", "screens": [2, 1], "map": [32, 1], "doors": [
+   {"wall": "left", "close": true, "flags": 0, "at": [1, 6], "to": "91F8", "peer": 3, "arrive": [142, 22], "arrive_screen": [8, 1]}
+  ]},
+  {"id": "93D5", "screens": [1, 1], "map": [18, 6], "doors": [
+   {"wall": "right", "close": true, "flags": 0, "at": [14, 6], "to": "92FD", "peer": 5, "arrive": [17, 38], "arrive_screen": [1, 2]}
+  ]},
+  {"id": "93FE", "screens": [8, 6], "map": [38, 0], "doors": [
+   {"wall": "left", "close": true, "flags": 0, "at": [1, 70], "to": "95FF", "peer": 1, "arrive": [30, 6], "arrive_screen": [1, 0]},
+   {"wall": "right", "close": true, "flags": 80, "at": null, "to": null, "peer": null, "arrive": [1, 6], "arrive_screen": [0, 0], "leaves": {"area": "Wrecked Ship", "room": "CA08"}},
+   {"wall": "right", "close": true, "flags": 0, "at": [46, 38], "to": "9461", "peer": 0, "arrive": [1, 6], "arrive_screen": [0, 0]},
+   {"wall": "right", "close": true, "flags": 64, "at": null, "to": null, "peer": null, "arrive": [1, 6], "arrive_screen": [0, 0], "leaves": {"area": "Wrecked Ship", "room": "CA52"}},
+   {"wall": "right", "close": true, "flags": 64, "at": null, "to": null, "peer": null, "arrive": [33, 6], "arrive_screen": [2, 0], "leaves": {"area": "Wrecked Ship", "room": "C98E"}},
+   {"wall": "right", "close": true, "flags": 64, "at": null, "to": null, "peer": null, "arrive": [1, 6], "arrive_screen": [0, 0], "leaves": {"area": "Wrecked Ship", "room": "CE40"}}
+  ]},
+  {"id": "9461", "screens": [2, 1], "map": [41, 2], "doors": [
+   {"wall": "left", "close": true, "flags": 0, "at": [1, 6], "to": "93FE", "peer": 2, "arrive": [46, 38], "arrive_screen": [2, 2]},
+   {"wall": "right", "close": true, "flags": 0, "at": [30, 6], "to": "968F", "peer": 0, "arrive": [1, 6], "arrive_screen": [0, 0]}
+  ]},
+  {"id": "948C", "screens": [3, 3], "map": [33, 4], "doors": [
+   {"wall": "left", "close": false, "flags": 0, "at": [1, 6], "to": "95D4", "peer": 1, "arrive": [0, 0], "arrive_screen": [0, 0]},
+   {"wall": "right", "close": true, "flags": 0, "at": [46, 6], "to": "95FF", "peer": 0, "arrive": [1, 6], "arrive_screen": [0, 0]},
+   {"wall": "bottom", "close": true, "flags": 0, "at": [22, 45], "to": "962A", "peer": 0, "arrive": [6, 2], "arrive_screen": [0, 0]}
+  ]},
+  {"id": "94CC", "screens": [1, 1], "map": [52, 10], "doors": [
+   {"wall": "top", "close": true, "flags": 0, "at": [6, 2], "to": "95A8", "peer": 1, "arrive": [6, 13], "arrive_screen": [0, 0]},
+   {"wall": "bottom", "close": false, "flags": 208, "at": null, "to": null, "peer": null, "arrive": [0, 0], "arrive_screen": [0, 0], "leaves": {"area": "Maridia", "room": "D30B"}}
+  ]},
+  {"id": "94FD", "screens": [7, 6], "map": [49, 0], "doors": [
+   {"wall": "left", "close": true, "flags": 64, "at": null, "to": null, "peer": null, "arrive": [14, 22], "arrive_screen": [0, 1], "leaves": {"area": "Wrecked Ship", "room": "CBD5"}},
+   {"wall": "right", "close": true, "flags": 0, "at": [110, 70], "to": "9552", "peer": 0, "arrive": [1, 6], "arrive_screen": [0, 0]}
+  ]},
+  {"id": "9552", "screens": [1, 4], "map": [56, 4], "doors": [
+   {"wall": "left", "close": true, "flags": 0, "at": [1, 6], "to": "94FD", "peer": 1, "arrive": [110, 70], "arrive_screen": [6, 4]},
+   {"wall": "bottom", "close": true, "flags": 0, "at": [6, 61], "to": "957D", "peer": 0, "arrive": [54, 2], "arrive_screen": [3, 0]}
+  ]},
+  {"id": "957D", "screens": [4, 2], "map": [53, 8], "doors": [
+   {"wall": "top", "close": true, "flags": 0, "at": [54, 2], "to": "9552", "peer": 1, "arrive": [6, 61], "arrive_screen": [0, 3]},
+   {"wall": "left", "close": true, "flags": 0, "at": [1, 22], "to": "95A8", "peer": 0, "arrive": [14, 6], "arrive_screen": [0, 0]}
+  ]},
+  {"id": "95A8", "screens": [1, 1], "map": [52, 9], "doors": [
+   {"wall": "right", "close": true, "flags": 0, "at": [14, 6], "to": "957D", "peer": 1, "arrive": [1, 22], "arrive_screen": [0, 1]},
+   {"wall": "bottom", "close": true, "flags": 0, "at": [6, 13], "to": "94CC", "peer": 0, "arrive": [6, 2], "arrive_screen": [0, 0]}
+  ]},
+  {"id": "95D4", "screens": [1, 1], "map": [32, 4], "doors": [
+   {"wall": "left", "close": true, "flags": 0, "at": [0, 0], "to": "91F8", "peer": 1, "arrive": [142, 70], "arrive_screen": [8, 4]},
+   {"wall": "right", "close": true, "flags": 0, "at": [0, 0], "to": "948C", "peer": 0, "arrive": [1, 6], "arrive_screen": [0, 0]}
+  ]},
+  {"id": "95FF", "screens": [2, 2], "map": [36, 4], "doors": [
+   {"wall": "left", "close": true, "flags": 0, "at": [1, 6], "to": "948C", "peer": 1, "arrive": [46, 6], "arrive_screen": [2, 0]},
+   {"wall": "right", "close": true, "flags": 0, "at": [30, 6], "to": "93FE", "peer": 0, "arrive": [1, 70], "arrive_screen": [0, 4]}
+  ]},
+  {"id": "962A", "screens": [1, 1], "map": [34, 7], "doors": [
+   {"wall": "top", "close": true, "flags": 0, "at": [6, 2], "to": "948C", "peer": 2, "arrive": [22, 45], "arrive_screen": [1, 2]},
+   {"wall": "bottom", "close": false, "flags": 224, "at": null, "to": null, "peer": null, "arrive": [0, 0], "arrive_screen": [0, 0], "leaves": {"area": "Brinstar", "room": "A322"}}
+  ]},
+  {"id": "965B", "screens": [6, 1], "map": [12, 2], "doors": [
+   {"wall": "right", "close": true, "flags": 0, "at": [94, 6], "to": "92B3", "peer": 1, "arrive": [1, 6], "arrive_screen": [0, 0]},
+   {"wall": "left", "close": true, "flags": 0, "at": [1, 6], "to": "99BD", "peer": 3, "arrive": [14, 6], "arrive_screen": [0, 0]}
+  ]},
+  {"id": "968F", "screens": [1, 1], "map": [43, 2], "doors": [
+   {"wall": "left", "close": true, "flags": 0, "at": [1, 6], "to": "9461", "peer": 1, "arrive": [30, 6], "arrive_screen": [1, 0]},
+   {"wall": "right", "close": true, "flags": 64, "at": null, "to": null, "peer": null, "arrive": [1, 22], "arrive_screen": [0, 1], "leaves": {"area": "Wrecked Ship", "room": "C98E"}}
+  ]},
+  {"id": "96BA", "screens": [3, 9], "map": [18, 9], "doors": [
+   {"wall": "top", "close": true, "flags": 0, "at": [22, 2], "to": "92FD", "peer": 4, "arrive": [22, 77], "arrive_screen": [1, 4]},
+   {"wall": "right", "close": true, "flags": 0, "at": [46, 6], "to": "99F9", "peer": 0, "arrive": [1, 6], "arrive_screen": [0, 0]},
+   {"wall": "right", "close": true, "flags": 0, "at": [46, 118], "to": "99F9", "peer": 1, "arrive": [1, 118], "arrive_screen": [0, 7]},
+   {"wall": "right", "close": true, "flags": 0, "at": [30, 134], "to": "975C", "peer": 0, "arrive": [1, 6], "arrive_screen": [0, 0]},
+   {"wall": "left", "close": true, "flags": 0, "at": null, "to": null, "peer": null, "arrive": [46, 22], "arrive_screen": [2, 1], "leaves": {"area": "Tourian", "room": "DEDE"}}
+  ]},
+  {"id": "975C", "screens": [3, 2], "map": [20, 17], "doors": [
+   {"wall": "left", "close": true, "flags": 0, "at": [1, 6], "to": "96BA", "peer": 3, "arrive": [30, 134], "arrive_screen": [1, 8]},
+   {"wall": "right", "close": true, "flags": 0, "at": [46, 6], "to": "97B5", "peer": 0, "arrive": [1, 6], "arrive_screen": [0, 0]}
+  ]},
+  {"id": "97B5", "screens": [1, 1], "map": [23, 17], "doors": [
+   {"wall": "left", "close": true, "flags": 0, "at": [1, 6], "to": "975C", "peer": 1, "arrive": [46, 6], "arrive_screen": [2, 0]},
+   {"wall": "bottom", "close": false, "flags": 240, "at": null, "to": null, "peer": null, "arrive": [0, 0], "arrive_screen": [5, 0], "leaves": {"area": "Brinstar", "room": "9E9F"}}
+  ]},
+  {"id": "9804", "screens": [1, 1], "map": [25, 6], "doors": [
+   {"wall": "left", "close": true, "flags": 0, "at": [1, 6], "to": "9879", "peer": 1, "arrive": [46, 6], "arrive_screen": [2, 0]}
+  ]},
+  {"id": "9879", "screens": [3, 1], "map": [22, 6], "doors": [
+   {"wall": "left", "close": true, "flags": 0, "at": [1, 6], "to": "92FD", "peer": 3, "arrive": [62, 38], "arrive_screen": [3, 2]},
+   {"wall": "right", "close": true, "flags": 0, "at": [46, 6], "to": "9804", "peer": 0, "arrive": [1, 6], "arrive_screen": [0, 0]}
+  ]},
+  {"id": "98E2", "screens": [3, 1], "map": [20, 7], "doors": [
+   {"wall": "left", "close": true, "flags": 0, "at": [1, 6], "to": "92FD", "peer": 2, "arrive": [30, 54], "arrive_screen": [1, 3]},
+   {"wall": "right", "close": true, "flags": 0, "at": [46, 6], "to": "9994", "peer": 0, "arrive": [1, 6], "arrive_screen": [0, 0]}
+  ]},
+  {"id": "990D", "screens": [6, 3], "map": [12, 4], "doors": [
+   {"wall": "left", "close": true, "flags": 0, "at": [1, 38], "to": "99BD", "peer": 0, "arrive": [14, 70], "arrive_screen": [0, 4]},
+   {"wall": "right", "close": true, "flags": 0, "at": [94, 6], "to": "92FD", "peer": 0, "arrive": [1, 6], "arrive_screen": [0, 0]}
+  ]},
+  {"id": "9938", "screens": [1, 1], "map": [6, 8], "doors": [
+   {"wall": "right", "close": true, "flags": 0, "at": [14, 6], "to": "9969", "peer": 1, "arrive": [1, 6], "arrive_screen": [0, 0]},
+   {"wall": "bottom", "close": false, "flags": 192, "at": null, "to": null, "peer": null, "arrive": [0, 0], "arrive_screen": [0, 0], "leaves": {"area": "Brinstar", "room": "9AD9"}}
+  ]},
+  {"id": "9969", "screens": [4, 1], "map": [7, 8], "doors": [
+   {"wall": "right", "close": true, "flags": 0, "at": [62, 6], "to": "99BD", "peer": 1, "arrive": [1, 102], "arrive_screen": [0, 6]},
+   {"wall": "left", "close": true, "flags": 0, "at": [1, 6], "to": "9938", "peer": 0, "arrive": [14, 6], "arrive_screen": [0, 0]}
+  ]},
+  {"id": "9994", "screens": [1, 1], "map": [23, 7], "doors": [
+   {"wall": "left", "close": true, "flags": 0, "at": [1, 6], "to": "98E2", "peer": 1, "arrive": [46, 6], "arrive_screen": [2, 0]}
+  ]},
+  {"id": "99BD", "screens": [1, 7], "map": [11, 2], "doors": [
+   {"wall": "right", "close": true, "flags": 0, "at": [14, 70], "to": "990D", "peer": 0, "arrive": [1, 38], "arrive_screen": [0, 2]},
+   {"wall": "left", "close": true, "flags": 0, "at": [1, 102], "to": "9969", "peer": 0, "arrive": [62, 6], "arrive_screen": [3, 0]},
+   {"wall": "right", "close": true, "flags": 0, "at": [14, 102], "to": "A5ED", "peer": 0, "arrive": [1, 6], "arrive_screen": [0, 0]},
+   {"wall": "right", "close": true, "flags": 0, "at": [14, 6], "to": "965B", "peer": 1, "arrive": [1, 6], "arrive_screen": [0, 0]}
+  ]},
+  {"id": "99F9", "screens": [4, 8], "map": [21, 9], "doors": [
+   {"wall": "left", "close": true, "flags": 0, "at": [1, 6], "to": "96BA", "peer": 1, "arrive": [46, 6], "arrive_screen": [2, 0]},
+   {"wall": "left", "close": true, "flags": 0, "at": [1, 118], "to": "96BA", "peer": 2, "arrive": [46, 118], "arrive_screen": [2, 7]}
+  ]},
+  {"id": "9A44", "screens": [2, 1], "map": [17, 7], "doors": [
+   {"wall": "left", "close": true, "flags": 0, "at": [1, 6], "to": "9A90", "peer": 0, "arrive": [14, 6], "arrive_screen": [0, 0]},
+   {"wall": "right", "close": true, "flags": 0, "at": [30, 6], "to": "92FD", "peer": 6, "arrive": [17, 54], "arrive_screen": [1, 3]}
+  ]},
+  {"id": "9A90", "screens": [1, 1], "map": [16, 7], "doors": [
+   {"wall": "right", "close": true, "flags": 0, "at": [14, 6], "to": "9A44", "peer": 0, "arrive": [1, 6], "arrive_screen": [0, 0]}
+  ]},
+  {"id": "A5ED", "screens": [5, 1], "map": [12, 8], "doors": [
+   {"wall": "left", "close": true, "flags": 0, "at": [1, 6], "to": "99BD", "peer": 2, "arrive": [14, 102], "arrive_screen": [0, 6]},
+   {"wall": "right", "close": true, "flags": 0, "at": [78, 6], "to": "A66A", "peer": 0, "arrive": [1, 6], "arrive_screen": [0, 0]}
+  ]},
+  {"id": "A66A", "screens": [1, 2], "map": [17, 8], "doors": [
+   {"wall": "left", "close": true, "flags": 0, "at": [1, 6], "to": "A5ED", "peer": 1, "arrive": [78, 6], "arrive_screen": [4, 0]},
+   {"wall": "bottom", "close": false, "flags": 208, "at": null, "to": null, "peer": null, "arrive": [0, 0], "arrive_screen": [0, 0], "leaves": {"area": "Tourian", "room": "DAAE"}}
+  ]}
+ ]
+}

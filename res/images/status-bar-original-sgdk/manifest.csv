@@ -1,0 +1,10 @@
+resource,file,kind,frames,frame_width,frame_height,colors,sgdk_ready,frame_names,source_boxes
+status_bar_energy_text,status_bar_energy_text.png,block,1,32,8,3,yes,,"8,23,32x8"
+status_bar_item_icons_off,status_bar_item_icons_off.png,block,1,120,24,3,yes,,"80,61,120x17"
+status_bar_item_icons_on,status_bar_item_icons_on.png,block,1,120,24,3,yes,,"80,90,120x18"
+status_bar_auto_reserve,status_bar_auto_reserve.png,block,1,64,32,5,yes,,"8,109,59x25"
+status_bar_digits,status_bar_digits.png,block,1,96,16,2,yes,,"18,141,89x9"
+status_bar_map_empty,status_bar_map_empty.png,block,1,48,24,1,yes,,"130,171,41x24"
+status_bar_map_pink,status_bar_map_pink.png,block,1,88,72,2,yes,,"3,198,81x66"
+status_bar_map_blue,status_bar_map_blue.png,block,1,88,72,2,yes,,"87,198,82x66"
+status_bar_map_orange,status_bar_map_orange.png,block,1,88,72,2,yes,,"171,198,82x66"

@@ -1,3 +1,5 @@
+#include <genesis.h>
+
 #ifndef _RES_CRATERIA_2_H_
 #define _RES_CRATERIA_2_H_
 

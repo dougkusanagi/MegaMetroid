@@ -1,0 +1,13 @@
+resource,file,kind,frames,frame_width,frame_height,colors,sgdk_ready,frame_names,source_boxes
+starship_lights,starship_lights.png,image+palettes,8,192,80,15,yes,paletas starship_lights_pal_00..07,"16,24,188x80 16,112,188x80 16,200,188x80 16,288,188x80 16,376,188x80 16,464,188x80 16,552,188x80 16,640,188x80"
+starship_hatch_00,starship_hatch_00.png,image,1,192,80,15,yes,,"232,24,188x80"
+starship_hatch_01,starship_hatch_01.png,image,1,192,80,15,yes,,"232,112,188x80"
+starship_hatch_02,starship_hatch_02.png,image,1,192,80,15,yes,,"232,200,188x80"
+starship_hatch_03,starship_hatch_03.png,image,1,192,80,15,yes,,"232,288,188x80"
+starship_hatch_04,starship_hatch_04.png,image,1,192,80,15,yes,,"232,376,188x80"
+starship_hatch_05,starship_hatch_05.png,image,1,192,80,15,yes,,"232,464,188x80"
+starship_hatch_06,starship_hatch_06.png,image,1,192,80,15,yes,,"232,552,188x80"
+starship_hatch_07,starship_hatch_07.png,image,1,192,80,15,yes,,"232,640,188x80"
+starship_hatch_08,starship_hatch_08.png,image,1,192,80,16,no,,"232,728,188x80"
+starship_hatch_09,starship_hatch_09.png,image,1,192,80,16,no,,"232,816,188x80"
+starship_tiles_and_palettes,starship_tiles_and_palettes.png,block,1,192,192,22,no,,"20,725,185x187"

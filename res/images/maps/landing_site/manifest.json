@@ -1,0 +1,44 @@
+{
+  "source": "tests/reference/super_metroid/landing_site/manifest.json",
+  "ship": {
+    "source": "starship_hatch_00.png",
+    "x": 1057,
+    "y": 1101,
+    "width": 192,
+    "height": 80
+  },
+  "doors": [
+    {
+      "x": 0,
+      "y": 608,
+      "flip": false
+    },
+    {
+      "x": 0,
+      "y": 1120,
+      "flip": false
+    },
+    {
+      "x": 2272,
+      "y": 352,
+      "flip": true
+    },
+    {
+      "x": 2272,
+      "y": 1120,
+      "flip": true
+    }
+  ],
+  "palette_tile_counts": [
+    44699,
+    72,
+    48,
+    109
+  ],
+  "limits": [
+    "Door underlay preserved; full doors rendered by sprites. Ship is static.",
+    "Per-tile palette choice approximates object colors to four CRAM banks.",
+    "Original beam colors preserved at 3-bit VDP precision; neutral sky shades kept grey.",
+    "Existing collision grid retained; ship is decorative."
+  ]
+}
