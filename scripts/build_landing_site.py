@@ -62,12 +62,19 @@ def main():
     (ROOT / 'tests/out').mkdir(parents=True, exist_ok=True)
     art = Image.open(REF/'foreground.png').convert('RGB')
     sky = np.all(np.array(art)==[53,133,186], axis=2)
-    # Closed door art: a left wall door faces right; the opposite wall is mirrored.
-    door = Image.open(ROOT/'res/images/doors-original-sgdk/doors_door_r00.png').crop((0,0,32,64)).convert('RGBA')
+    # Keep the reference terrain and sky beneath the doors. Door frames/caps are
+    # transparent sprites; baking the closed cap here would leave it after opening.
     placements = [(0,608,False),(0,1120,False),(2272,352,True),(2272,1120,True)]
+    # The reference sheet itself also contains the closed blue caps. Remove only
+    # their exact source mask so opening reveals the sky, without erasing terrain.
+    closed = np.array(Image.open(ROOT/'res/images/doors-original-sgdk/doors_door_r00.png'))[:,:32]
+    cap_mask = np.isin(closed, [3,7,9])
+    pixels = np.array(art)
     for x,y,flip in placements:
-        image = ImageOps.mirror(door) if flip else door
-        art.paste(image,(x,y),image)
+        mask = cap_mask[:,::-1] if flip else cap_mask
+        pixels[y:y+64,x:x+32][mask] = [53,133,186]
+        sky[y:y+64,x:x+32][mask] = True
+    art = Image.fromarray(pixels)
     ship = Image.open(ROOT/'res/images/starship-original-sgdk/starship_hatch_00.png').convert('RGBA')
     art.paste(ship,(1057,1101),ship)
     # Any opaque object pixel must supersede the original sky placeholder.
@@ -130,7 +137,7 @@ def main():
         'ship':{'source':'starship_hatch_00.png','x':1057,'y':1101,'width':192,'height':80},
         'doors':[{'x':x,'y':y,'flip':flip} for x,y,flip in placements],
         'palette_tile_counts':np.bincount(chosen[inverse],minlength=4).tolist(),
-        'limits':['Static closed doors and ship; no transitions or destruction.',
+        'limits':['Door underlay preserved; full doors rendered by sprites. Ship is static.',
                   'Per-tile palette choice approximates object colors to four CRAM banks.',
                   'Original beam colors preserved at 3-bit VDP precision; neutral sky shades kept grey.',
                   'Existing collision grid retained; ship is decorative.']}
@@ -143,7 +150,7 @@ def main():
         for row in range(224):preview.paste(background.crop((0,(y+row)%512,256,(y+row)%512+1)),(0,row))
         part=view.crop((x,y,x+256,y+224));preview.paste(part,(0,0),part)
         preview.resize((768,672),Image.Resampling.NEAREST).save(ROOT/'tests/out'/f'landing-{label}.png')
-    print('Landing Site regenerated: terrain, sky, four closed doors, block tower and static ship.')
+    print('Landing Site regenerated: terrain, sky, preserved door underlays, block tower and static ship.')
 
 
 if __name__=='__main__': main()

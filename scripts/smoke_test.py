@@ -105,6 +105,7 @@ def main():
     parser.add_argument('--realtime', action='store_true', help='Run at 60 fps with audio instead of unthrottled')
     args = parser.parse_args()
     root = Path(__file__).resolve().parents[1]
+    args.blastem = str(Path(args.blastem).resolve())
     symbols = {}
     for line in (root / args.symbols).read_text().splitlines():
         parts = line.split()
@@ -130,8 +131,9 @@ def main():
         # BlastEm syncs emulation to audio output; SDL's disk driver with no delay removes the 60 fps
         # cap for this process only. Emulated timing (VInts, CPU/DMA budgets) is unchanged.
         env.update(SDL_AUDIODRIVER='disk', SDL_DISKAUDIOFILE=os.devnull, SDL_DISKAUDIODELAY='0')
+    emulator_log = (root/'tests/out/blastem.log').open('w')
     process = subprocess.Popen([args.blastem, '-D', str(root / args.rom)],
-        cwd=Path(args.blastem).parent, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL,
+        cwd=Path(args.blastem).parent, stdout=emulator_log, stderr=subprocess.STDOUT,
         creationflags=flags, startupinfo=startup, env=env)
     if monitor:
         threading.Thread(target=show_test_window, args=(process, monitor), daemon=True).start()
@@ -184,7 +186,9 @@ end
         output = completed.stdout + completed.stderr
         (root / 'tests/out/smoke-gdb.log').write_text(output)
         if completed.returncode or 'MM_SMOKE_RESULT=1' not in output:
-            raise SystemExit('Smoke test failed; see tests/out/smoke-gdb.log\n' + output)
+            emulator_log.flush()
+            detail = (root/'tests/out/blastem.log').read_text(errors='replace')[-2000:]
+            raise SystemExit('Smoke test failed; see tests/out/smoke-gdb.log and blastem.log\n' + output + f'\nBlastEm exit={process.poll()}: ' + detail)
         print(f'SMOKE PASS (BlastEm GDB API, {time.monotonic()-started:.1f}s, ' +
               ('realtime audio' if args.realtime else 'unthrottled, no audio') +
               (', headless)' if args.hidden else ', secondary monitor)'))
@@ -197,6 +201,7 @@ end
         if process.poll() is None:
             process.terminate()
         process.wait(timeout=5)
+        emulator_log.close()
 
 
 if __name__ == '__main__':

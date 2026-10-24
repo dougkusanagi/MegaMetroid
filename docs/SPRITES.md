@@ -294,31 +294,31 @@ e pouso. Os tempos à esquerda são espelhados do cenário à direita; a captura
 não demonstra todas as variantes de equipamento ou entrada. Limites físicos
 da saída estão em `FISICA.md`.
 
-### Tampa de porta animada (6.6.3)
+### Porta animada, transparência e prioridade (6.6.3/6.6.4)
 
-`python scripts/build_door_cap.py` gera `res/images/doors/door_cap.png` a partir dos quadros
-0–4 de `res/images/doors-original-sgdk/doors_door_r00.png`. A folha tem 5 quadros de 16×64 px
-(80×64), recortados da faixa x=16..31 de cada quadro: é a única parte que muda entre a porta
-fechada e o batente aberto. O quadro 0 é a porta fechada; 1–3 retraem a tampa em três formas
-de 6 ticks; 4 mostra o batente aberto, com os 4 px do lado da sala em preto.
+`python scripts/build_door_cap.py` gera cinco quadros completos de 32×64 px
+(160×64), mantendo índice 0 transparente. O quadro 0 é a porta fechada;
+1–3 retraem a tampa em passos de seis ticks; 4 conserva o batente aberto.
+O metal e a tampa pertencem ao mesmo sprite. A PAL1 mantém azuis 9/10/11,
+cinzas 3/6/8/12/13 e realce 14; o branco original aproxima para 14.
 
-O cenário mantém a porta fechada composta em BG_A; o sprite é sempre opaco e cobre a faixa.
-Como o índice 0 é transparente no Mega Drive, os pixels vazios usam o índice 1 (preto), e não
-0. A paleta é a PAL1 do Landing Site, porque é o único banco com os três azuis da porta:
-índices 9/10/11 (azuis), 3/6/8/12/13 (cinzas) e 14 (rosa/realce). O branco da folha original
-(índice 12) cai no 14, o slot mais próximo da PAL1. O gerador recusa qualquer índice fora
-desse mapa, para não converter por engano as portas vermelhas/rosas da mesma folha.
+`build_landing_site.py` remove a máscara exata dos pixels azuis da tampa já
+presente na referência e preserva o terreno restante. Esses pixels voltam à
+transparência de céu. Não grava outra porta fechada por cima. O sprite deixa
+aparecer o mapa e o céu nos pixels transparentes, sem preencher uma faixa preta.
+O preto pertencente ao desenho original do batente continua opaco.
 
-Custo: cada porta usa 2 sprites de hardware (16×64 = 2×16×32) e 16 tiles; oito portas reservam
-16 sprites e 128 tiles de VRAM. As tampas entram na lista antes de Samus e dos feixes, ficam
-com `SPR_setAlwaysAtBottom` e profundidades explícitas: portas em `SPR_MAX_DEPTH`, Samus em
-`SPR_MAX_DEPTH - 1`, feixes em `SPR_MAX_DEPTH - 2`. Portas verticais são ocultadas até existir
-sala construída com uma. A PAL1 da Crateria 2 não tem as cores de porta e sua área de porta é
-preta; a tampa reaproveita a paleta do Landing Site e não causa regressão visível ali.
+Portas usam `SPR_setAlwaysOnTop` (`SPR_MIN_DEPTH`), à frente de Samus e feixes.
+Cada porta reserva 32 tiles e dois sprites de hardware (2×32×32); oito portas
+reservam 256 tiles e 16 sprites, dentro dos 420 tiles da engine. Não há novos
+campos em Game. Portas verticais continuam ocultas até haver sala construída.
+A paleta de porta da Crateria 2 continua sendo uma aproximação da PAL1 local.
 
-Validação: o smoke no BlastEm confere visibilidade, quadro (`mm_lock_frame`), espelhamento,
-posição com a câmera e ordem de profundidade nos quadros 1–4, e que sprites de portas
-inexistentes permanecem ocultos.
+O host confere todos os pixels e máscaras dos cinco quadros, além da ausência
+da tampa azul no mapa. O smoke confere quadro, espelhamento, posição e ordem;
+o readback VDP verifica oito cenas, incluindo as duas portas inferiores abertas
+com Samus sob o batente. Compara a máscara transparente e prova, pelos pixels
+da SAT, que o metal cobre Samus nos dois sentidos, sem captura do desktop.
 
 ### Pouso atirando (3.3.4)
 

@@ -512,6 +512,17 @@ interrupções de VBlank durante a escrita no VDP. Restaurado `ROOM NOT BUILT YE
 na porta leste inferior sem destino. O smoke entra e sai da borda três vezes,
 confere o texto e sua remoção, o limite da sala e a ausência de troca de mapa.
 
+**6.6.4 Fundo e prioridade das portas** ✅ (2026-10-22). Substitui a faixa
+opaca de 16×64 pela porta completa de 32×64 com transparência real, remove a
+tampa azul gravada no mapa pela máscara original e põe o metal à frente de
+Samus na SAT. Corrige o retângulo preto que ocultava partes do cenário.
+Custo: 32 tiles/porta, 256 reservados para oito portas, mesmos 16 sprites de
+hardware e sem novos campos de RAM. Host verifica máscaras e fundo; smoke GDB
+verifica oito vistas e a sobreposição de metal/Samus nos dois sentidos.
+Corrige também a troca da PAL3 por DMA imediato, que corria com o VBlank e
+congelava o BlastEm; agora vai pela fila do VBlank.
+Blocos destrutíveis e demais limitações da 6.6 continuam pendentes.
+
 ### Fase 7 — Itens, progressão e HUD
 
 | # | Etapa | Entrega | Teste |

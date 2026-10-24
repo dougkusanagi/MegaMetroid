@@ -170,7 +170,9 @@ python scripts/smoke_test.py --capture-scenes
 
 `--capture-scenes` salva o readback da VRAM/CRAM e reconstrói a nave, as quatro
 portas e a base de blocos em `tests/out/blastem-*.png`. Os pixels dos planos,
-paletas e scroll são conferidos automaticamente. Não captura a área de trabalho.
+paletas e scroll são conferidos automaticamente. Há oito vistas: seis do cenário
+e duas das portas inferiores abertas com Samus sob o batente; nestas, a máscara
+transparente e a sobreposição da moldura são verificadas nos pixels da SAT. Não captura a área de trabalho.
 Headless é o padrão; use `--visible` somente para inspeção no monitor secundário. As leituras reservam um buffer de 8 KB na ROM de
 smoke, sem afetar a ROM padrão.
 

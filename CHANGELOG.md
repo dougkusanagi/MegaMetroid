@@ -10,6 +10,30 @@ O registro detalhado começa em 18/10/2026. A entrada anterior abaixo foi
 reconstituída do commit indicado; o histórico anterior completo permanece no Git
 (`git log`) e as entregas por etapa estão em [docs/PLANO.md](docs/PLANO.md).
 
+## 2026-10-23 21:58:24 −03:00 (America/Sao_Paulo) — Fundo e prioridade das portas (6.6.4)
+
+### Melhorado
+
+- Porta completa de 32×64 com transparência real no lugar da faixa opaca de
+  16×64; a tampa azul gravada no mapa foi removida pela máscara original e o
+  metal fica à frente da Samus. Some o retângulo preto que cobria o cenário.
+  Custo: 32 tiles por porta, mesmos 16 sprites de hardware, sem RAM nova.
+
+### Corrigido
+
+- Troca da paleta do tiro (PAL3) passa a entrar na fila de DMA do VBlank. O DMA
+  imediato no meio do quadro competia com o VBlank e corrompia o comando do VDP,
+  congelando o BlastEm logo após disparar um míssil.
+- Smoke: removido o modo benchmark (`-b`), que derrubava o BlastEm; a saída do
+  emulador vai para `tests/out/blastem.log`. Leituras de CRAM e textos do smoke
+  protegidos contra o VBlank.
+
+**Validação:** `scripts/test.ps1 -Compiler gcc`, `tests/check_assets.py`, build
+`-SmokeTest`, `python scripts/smoke_test.py`: `SMOKE PASS` em 12,1 s, acelerado,
+sem áudio, headless; zero VInts perdidos, heap estável. `--capture-scenes` e
+`scripts/check_room_video.py`: oito vistas, com 532 e 420 pixels da Samus cobertos
+pelo metal nas portas oeste e leste.
+
 ## 2026-10-22 22:02:24 −03:00 (America/Sao_Paulo) — Smoke acelerado e headless
 
 ### Corrigido

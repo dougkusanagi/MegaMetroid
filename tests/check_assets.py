@@ -38,3 +38,21 @@ for target, source in [('beam', 'weapons_power_beam.png'), ('beam_impact', 'weap
     assert np.array_equal((a//32)[visible], (b//32)[visible]), 'Changed beam hardware colors'
     assert np.array_equal(np.array(converted) != 0, visible), 'Changed beam transparency'
 print('PASS four palette banks and unchanged beam/impact hardware colors')
+
+# A door must not paint black outside its shape or leave a closed cap in the map.
+from sys import path as module_path
+module_path.insert(0, str(root/'scripts'))
+from build_door_cap import COLORS
+source = np.array(Image.open(root/'res/images/doors-original-sgdk/doors_door_r00.png'))[:,:160]
+converted = np.array(Image.open(root/'res/images/doors/door_cap.png'))
+assert converted.shape == (64,160)
+assert np.array_equal(converted, np.vectorize(COLORS.__getitem__)(source))
+assert np.array_equal(converted == 0, source == 0), 'Door transparency was replaced with opaque black'
+original = np.array(Image.open(root/'tests/reference/super_metroid/landing_site/foreground.png').convert('RGB'))
+for x,y in [(0,608),(0,1120),(2272,352),(2272,1120)]:
+    sky = np.all(original[y:y+64,x:x+32] == [53,133,186],axis=2)
+    assert sky.any() and np.all(fg[y:y+64,x:x+32][sky] == 0), 'Door baked into original sky underlay'
+    cap = np.isin(source[:,:32], [3,7,9])
+    if x: cap = cap[:,::-1]
+    assert np.all(fg[y:y+64,x:x+32][cap] == 0), 'Closed cap remains baked in map'
+print('PASS full door frames, transparent masks and preserved room underlay')

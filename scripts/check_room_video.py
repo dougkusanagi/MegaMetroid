@@ -6,7 +6,7 @@ from PIL import Image
 
 ROOT=Path(__file__).resolve().parents[1]
 OUT=ROOT/'tests/out'
-NAMES=['ship','west-lower-door','east-lower-door','west-upper-door','east-upper-door','blocks']
+NAMES=['ship','west-lower-door','east-lower-door','west-upper-door','east-upper-door','blocks','west-open-overlap','east-open-overlap']
 
 
 def word(data,address):
@@ -33,7 +33,7 @@ def plane(vram,base,width,height,hscroll,vscroll):
     return result,priority
 
 
-def sprites(vram,base):
+def sprites(vram,base,only_palette=None):
     result=np.zeros((224,256),dtype='uint8')
     priority=np.zeros((224,256),dtype=bool)
     index=0;seen=set()
@@ -43,7 +43,7 @@ def sprites(vram,base):
         size=word(vram,entry+2);attr=word(vram,entry+4)
         x=(word(vram,entry+6)&511)-128
         width=((size>>10)&3)+1;height=((size>>8)&3)+1
-        for sy in range(height*8):
+        for sy in range(height*8) if only_palette is None or ((attr >> 13) & 3) == only_palette else []:
             for sx in range(width*8):
                 xx=x+sx;yy=y+sy
                 if not(0<=xx<256 and 0<=yy<224) or result[yy,xx]:continue
@@ -61,7 +61,7 @@ def sprites(vram,base):
 def main():
     headers=(OUT/'scene-headers.bin').read_bytes()
     data=(OUT/'scene-vram.bin').read_bytes()
-    assert len(headers)==6*152 and len(data)==6*65536,'Missing VDP readback'
+    assert len(headers)==len(NAMES)*152 and len(data)==len(NAMES)*65536,'Missing VDP readback'
     fg=Image.open(ROOT/'res/images/maps/landing_site/foreground.png')
     bg=np.array(Image.open(ROOT/'res/images/maps/landing_site/background.png'))
     for i,name in enumerate(NAMES):
@@ -88,6 +88,22 @@ def main():
         for pixels,pri,want_high in [(b,bp,False),(a,ap,False),(s,sp,False),
                                      (b,bp,True),(a,ap,True),(s,sp,True)]:
             take=(pixels!=0)&(pri==want_high);composed[take]=pixels[take]
+        if i >= 6:
+            # Independently compare the open door sprite with its transparent source,
+            # and prove the SAT order occludes actual Samus pixels at the metal jamb.
+            door = np.array(Image.open(ROOT/'res/images/doors/door_cap.png'))[:,128:160]
+            if i == 7: door = door[:,::-1]
+            left = (0 if i == 6 else 2272) - h[68]
+            top = 1120 - h[69]
+            region = s[top:top+64,left:left+32]
+            solid = door != 0
+            assert np.array_equal(region[solid], (door+16)[solid]), name+': door must lead the SAT'
+            samus,_ = sprites(vram,h[70],only_palette=2)
+            overlap = solid & (samus[top:top+64,left:left+32] != 0)
+            assert np.count_nonzero(overlap) > 0, name+': fixture does not overlap Samus'
+            assert np.array_equal(composed[top:top+64,left:left+32][overlap], (door+16)[overlap]), name+': metal must occlude Samus'
+            assert not np.any((region[~solid] >= 16) & (region[~solid] < 32)), name+': opaque fill outside door shape'
+            print(f'PASS VDP {name}: transparent underlay and {np.count_nonzero(overlap)} Samus pixels occluded by metal')
         Image.fromarray(colors[composed]).resize((768,672),Image.Resampling.NEAREST).save(OUT/f'blastem-{name}.png')
         print(f'PASS VDP {name}: foreground, palette and sky at {h[68]},{h[69]}')
 

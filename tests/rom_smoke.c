@@ -171,12 +171,12 @@ static void idle(Game *g, int frames)
 }
 
 /* Etapa 6.6.3: the cap sprite is visible, shows the lock's frame and covers the room's
-   16x64 cap strip, mirrored for a door in the right wall. */
+   32x64 door, mirrored for a door in the right wall. */
 static int door_art(const Game *g, int door)
 {
     const Sprite *sprite = g->door_sprites[door];
     const RoomDoorDef *def = &g->room->doors[door];
-    int left = def->position.x + (def->facing == ROOM_DOOR_FACING_RIGHT ? MM_DOOR_DEPTH / 2 : 0);
+    int left = def->position.x;
     /* Sprite coordinates carry the engine's +0x80 offset for negative screen positions. */
     if (!sprite || SPR_getVisibility((Sprite *)sprite) != AUTO_FAST ||
         sprite->frameInd != mm_lock_frame(&g->door_locks[door]) ||
@@ -223,8 +223,8 @@ static int room_transitions(Game *g)
         mm_pixel(g->player.x) + g->player.hitbox.left != cap.right) failed |= 1;
     if (shoot_door(g, 0) < 0) failed |= 1;
     /* Frame 1 as soon as the shot lands, then one shape every six ticks, then the open jamb.
-       Depth grows towards the back, so Samus draws over the cap. */
-    if (!door_art(g, 0) || g->door_sprites[0]->depth <= g->sprite->depth) failed |= 1024;
+       Depth grows towards the back, so the metal frame draws over Samus. */
+    if (!door_art(g, 0) || g->door_sprites[0]->depth >= g->sprite->depth) failed |= 1024;
     idle(g, MM_DOOR_STEP_TICKS);
     if (g->door_locks[0].state != MM_DOOR_OPENING || !door_art(g, 0)) failed |= 1024;
     idle(g, MM_DOOR_STEP_TICKS);
@@ -310,12 +310,21 @@ __attribute__((noinline, used, externally_visible)) void mm_smoke_video_ready(vo
 static void room_video(Game *g)
 {
     static const s16 views[][2] = {{1024, 976}, {0, 1024}, {2048, 1024},
-                                  {0, 512}, {2048, 256}, {1664, 1024}};
+                                  {0, 512}, {2048, 256}, {1664, 1024},
+                                  {0, 1024}, {2048, 1024}};
     vu32 *control = (vu32 *)VDP_CTRL_PORT;
     vu16 *data = (vu16 *)VDP_DATA_PORT;
     int scene, i, chunk;
-    for (scene = 0; scene < 6; ++scene) {
+    MmDoorLock saved_locks[MM_ROOM_MAX_DOORS];
+    memcpy(saved_locks, g->door_locks, sizeof saved_locks);
+    for (scene = 0; scene < 8; ++scene) {
         mm_samus_init(&g->player, views[scene][0] + 108, views[scene][1] + 84);
+        if (scene >= 6) {
+            int door = scene == 6 ? 1 : 3;
+            g->door_locks[door].state = MM_DOOR_OPEN;
+            g->door_locks[door].ticks = 0;
+            mm_samus_init(&g->player, scene == 6 ? -8 : 2276, 1136);
+        }
         mm_weapon_init(&g->weapon);
         /* Load all newly visible rows/columns, then finish sprite DMA. */
         game_update(g, (MmInput){0});
@@ -347,6 +356,7 @@ static void room_video(Game *g)
         }
         SYS_enableInts();
     }
+    memcpy(g->door_locks, saved_locks, sizeof saved_locks);
 }
 __attribute__((noinline, used, externally_visible)) void mm_smoke_finish(void)
 {
@@ -530,6 +540,16 @@ static int turns(Game *g)
    empty super bin), the missile sheet replaces the beam PAL3 while it is selected or in flight,
    the 16x16 frame follows the direction, ammo drops on a press, a missile opens a blue door,
    and ammo plus selection survive the room change. */
+/* CRAM reads also touch the VDP control latch and must not race VBlank DMA. */
+static u16 smoke_color(u16 index)
+{
+    u16 color;
+    SYS_disableInts();
+    color = PAL_getColor(index);
+    SYS_enableInts();
+    return color;
+}
+
 static int missile_weapon(Game *g)
 {
     int failed = 0, i;
@@ -546,7 +566,7 @@ static int missile_weapon(Game *g)
     game_update(g, (MmInput){.weapon_pressed = 1});
     SYS_doVBlankProcess();
     if (g->weapon.selected != MM_WEAPON_MISSILE || g->weapon.missiles != MM_START_MISSILES ||
-        PAL_getColor(49) != missile_sprite.palette->data[1]) failed = 1;
+        smoke_color(49) != missile_sprite.palette->data[1]) failed = 1;
     /* One press fires one missile, without advancing on its spawn tick. */
     game_update(g, (MmInput){.shoot_pressed = 1, .shoot_held = 1});
     SYS_doVBlankProcess();
@@ -581,9 +601,9 @@ static int missile_weapon(Game *g)
         g->beam_sprites[0]->definition != &missile_sprite || g->beam_sprites[0]->frameInd != 11 ||
         /* The empty bin auto-deselects, but the shot on screen keeps the missile palette. */
         g->weapon.selected != MM_WEAPON_BEAM ||
-        PAL_getColor(49) != missile_sprite.palette->data[1]) failed = 1;
+        smoke_color(49) != missile_sprite.palette->data[1]) failed = 1;
     idle(g, 60);
-    if (shot->active || PAL_getColor(49) != beam_sprite.palette->data[1]) failed = 1;
+    if (shot->active || smoke_color(49) != beam_sprite.palette->data[1]) failed = 1;
     /* Select missiles again and carry the remaining four through a room change. */
     game_update(g, (MmInput){.weapon_pressed = 1});
     SYS_doVBlankProcess();
@@ -592,7 +612,7 @@ static int missile_weapon(Game *g)
     SYS_doVBlankProcess();
     if (g->weapon.missiles != MM_START_MISSILES - 1 || g->weapon.selected != MM_WEAPON_MISSILE ||
         g->weapon.beams[0].active || g->weapon.beams[0].impact_ticks ||
-        PAL_getColor(49) != missile_sprite.palette->data[1]) failed = 1;
+        smoke_color(49) != missile_sprite.palette->data[1]) failed = 1;
     return failed;
 }
 
@@ -786,11 +806,14 @@ int main(bool hardReset)
     failed |= room_transitions(&g) << 17; /* Bits 17-30: which room/door check failed. */
     room_video(&g);
     if (missile_weapon(&g)) failed |= 1UL << 27;
+    /* CPU text writes must not race the sprite/scroll DMA in VBlank. */
+    SYS_disableInts();
     /* Window plane keeps the result on screen; plane A scrolls with the camera. */
     VDP_setWindowVPos(FALSE, 2);
     VDP_setTextPlane(WINDOW);
     VDP_drawText(failed ? "SMOKE FAIL" : "SMOKE PASS", 1, 0);
     VDP_drawText("MOVE L/R JUMP CAMERA", 1, 1);
+    SYS_enableInts();
     mm_smoke_failure = failed;
     mm_smoke_result = failed ? 2 : 1;
     mm_smoke_finish();

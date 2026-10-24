@@ -14,7 +14,7 @@ SPRITE beam_impact_sprite "images/player/beam_impact.png" 2 2 FAST 0 NONE
 SPRITE missile_sprite "images/player/missile.png" 2 2 FAST 0 NONE
 # Door caps: frames 0 shut, 1-3 opening, 4 open jamb. Built by scripts/build_door_cap.py
 # from doors_door_r00 frames 0-4, columns 16..31, in the Landing Site PAL1 door colors.
-SPRITE door_cap "images/doors/door_cap.png" 2 8 FAST 0 NONE
+SPRITE door_cap "images/doors/door_cap.png" 4 8 FAST 0 NONE
 WAV				beam_sfx				"sound/Sound-Effects/beam_shot.wav"							XGM2
 WAV				missile_sfx				"sound/Sound-Effects/ammo_missile_shot.wav"					XGM2
 WAV				super_sfx				"sound/Sound-Effects/ammo_supermissile_shot.wav"			XGM2

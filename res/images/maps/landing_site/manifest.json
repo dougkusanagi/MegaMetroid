@@ -30,13 +30,13 @@
     }
   ],
   "palette_tile_counts": [
-    44667,
-    104,
+    44699,
+    72,
     48,
     109
   ],
   "limits": [
-    "Static closed doors and ship; no transitions or destruction.",
+    "Door underlay preserved; full doors rendered by sprites. Ship is static.",
     "Per-tile palette choice approximates object colors to four CRAM banks.",
     "Original beam colors preserved at 3-bit VDP precision; neutral sky shades kept grey.",
     "Existing collision grid retained; ship is decorative."

@@ -152,7 +152,7 @@ static void sync_shot_palette(Game *g)
     bool missiles = missile_palette(g);
     if (missiles == g->missile_palette) return;
     g->missile_palette = missiles;
-    PAL_setPalette(PAL3, missiles ? missile_sprite.palette->data : beam_sprite.palette->data, DMA);
+    PAL_setPalette(PAL3, missiles ? missile_sprite.palette->data : beam_sprite.palette->data, DMA_QUEUE);
 }
 
 static void render(Game *g)
@@ -212,8 +212,8 @@ static void render(Game *g)
     /* Shorten the walk cycle as dash momentum builds. */
     if (walk_row(animation) && g->player.run_extra && g->sprite->timer > 3)
         g->sprite->timer = 3;
-    /* The cap is a sprite so only the 16 px strip that changes has to be drawn; the room
-       art keeps the closed door underneath. Vertical doors are not in any built room yet. */
+    /* Full transparent door sprites preserve the room underlay and occlude Samus
+       at the metal jamb. Vertical doors are not in any built room yet. */
     for (i = 0; i < MM_ROOM_MAX_DOORS; ++i) {
         Sprite *sprite = g->door_sprites[i];
         const RoomDoorDef *door;
@@ -228,7 +228,7 @@ static void render(Game *g)
         SPR_setAutoAnimation(sprite, FALSE);
         SPR_setFrame(sprite, mm_lock_frame(&g->door_locks[i]));
         SPR_setHFlip(sprite, door->facing == ROOM_DOOR_FACING_LEFT);
-        cap_x = door->position.x + (door->facing == ROOM_DOOR_FACING_RIGHT ? MM_DOOR_DEPTH / 2 : 0);
+        cap_x = door->position.x;
         SPR_setPosition(sprite, cap_x - g->camera.x, door->position.y - g->camera.y);
     }
     {
@@ -358,13 +358,13 @@ bool game_init(Game *g, u16 room_index)
     PAL_setPalette(PAL1, g->room->palette_bg->data, CPU);
     load_room_maps(g);
     PAL_setPalette(PAL2, pal_samus_power_suit.data, CPU);
-    /* Adding the doors before Samus and the beams puts them behind both in the sprite list. */
+    /* Explicit depths keep the complete door frame in front of Samus and shots. */
     g->sprite = NULL;
     for (i = 0; i < MM_ROOM_MAX_DOORS; ++i) {
         g->door_sprites[i] = SPR_addSprite(&door_cap, 0, 0, TILE_ATTR(PAL1, TRUE, FALSE, FALSE));
         if (!g->door_sprites[i]) break;
-        /* Caps stay behind Samus even when she stands in the doorway. */
-        SPR_setAlwaysAtBottom(g->door_sprites[i]);
+        /* The non-destructible metal frame occludes Samus in the doorway. */
+        SPR_setAlwaysOnTop(g->door_sprites[i]);
         SPR_setVisibility(g->door_sprites[i], HIDDEN);
     }
     if (i < MM_ROOM_MAX_DOORS) {
