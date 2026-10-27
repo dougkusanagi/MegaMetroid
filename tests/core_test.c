@@ -231,7 +231,7 @@ static void slope_spin_takeoff(void) {
             tiles[row * 64 + x] = col >= 12 && col < 20 ? (side > 0 ? 2 : 3) : 0;
         }
         for (phase = 0; phase < 8 * MM_UNIT; phase += 32) for (bonus = 0; bonus <= MM_RUN_EXTRA_MAX; bonus += MM_RUN_EXTRA_MAX) {
-            MmBody b;
+            MmBody b = {0};
             MmInput held = {.axis = side, .jump_held = 1, .run_held = bonus != 0};
             int origin;
             mm_body_init(&b, side > 0 ? 104 : 384, 60, (MmRect){8, 8, 32, 48});
@@ -612,7 +612,7 @@ static void slope_sweep(void) {
             if ((real_map_1[r][c] == 2 || real_map_1[r][c] == 3) && real_map_1[r - 1][c] == 1) top = r;
         if (top < 0) continue;
         {
-            MmBody b;
+            MmBody b = {0};
             int x = c * MM_TILE - 12, y, t, placed = 0;
             /* Start in the air pocket above the slope, then drop onto it. */
             for (y = top * MM_TILE - 48; y >= 0 && !placed; y -= 4) {
@@ -640,7 +640,7 @@ static void samus_slope_sweep(void) {
         for (r = 1; r < crateria.rows && top < 0; ++r)
             if ((real_map_1[r][c] == 2 || real_map_1[r][c] == 3) && real_map_1[r - 1][c] == 1) top = r;
         if (top >= 0) {
-            MmBody b;
+            MmBody b = {0};
             int x = c * MM_TILE - 16, y, t, placed = 0;
             for (y = top * MM_TILE - 48; y >= 0 && !placed; y -= 4) {
                 mm_samus_init(&b, x, y);

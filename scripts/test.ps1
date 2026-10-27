@@ -24,7 +24,7 @@ try {
     }
     $sources = @('tests/core_test.c','src/core/world.c','src/core/weapon.c','src/core/input.c','src/core/camera.c','src/core/door.c','src/core/worldmap.c','src/core/doorlock.c','src/world_map.c')
     if ((Split-Path $Compiler -Leaf) -eq 'cl.exe') {
-        & $Compiler /nologo /W4 /WX /TC /Iinc @sources /Fe:tests/out/core_test.exe /Fo:tests/out/
+        & $Compiler /nologo /W4 /WX /TC /D_CRT_SECURE_NO_WARNINGS /Iinc @sources /Fe:tests/out/core_test.exe /Fo:tests/out/
     } else {
         & $Compiler -std=c99 -Wall -Wextra -Werror -Iinc @sources -o tests/out/core_test.exe
     }
