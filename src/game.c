@@ -501,9 +501,9 @@ static void door_shots(Game *g)
     }
 }
 
-/* PCM sound effects from res/sound/Sound-Effects. Channel 1 stays free for the music, channel 3
-   carries every shot, and channel 4 the weapon click. The spin loop and the landing share
-   channel 2, since a landing ends the spin. */
+/* PCM sound effects from res/sound/Sound-Effects. XGM2 has three PCM channels: channel 1 stays
+   free for the music, channel 3 carries every shot and the weapon click, and the spin loop and the
+   landing share channel 2, since a landing ends the spin. */
 static void play_sounds(const Game *g, MmPose pose_before)
 {
     MmPose pose = g->player.pose;
@@ -552,7 +552,7 @@ void game_update(Game *g, MmInput input)
         mm_weapon_tick(&g->weapon, &g->world, &g->player, input, g->camera,
                        player_muzzle[row][0], player_muzzle[row][1]);
         if (g->weapon.selected != selected_before)
-            XGM2_playPCMEx(select_sfx, sizeof(select_sfx), SOUND_PCM_CH4, 15, FALSE, FALSE);
+            XGM2_playPCMEx(select_sfx, sizeof(select_sfx), SOUND_PCM_CH3, 15, FALSE, FALSE);
         /* A beam that stopped on a door cap is that door's shot. */
         door_shots(g);
         play_sounds(g, pose_before);

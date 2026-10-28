@@ -7,6 +7,7 @@ import os
 from pathlib import Path
 import socket
 import subprocess
+import sys
 import threading
 import time
 
@@ -189,6 +190,11 @@ end
             emulator_log.flush()
             detail = (root/'tests/out/blastem.log').read_text(errors='replace')[-2000:]
             raise SystemExit('Smoke test failed; see tests/out/smoke-gdb.log and blastem.log\n' + output + f'\nBlastEm exit={process.poll()}: ' + detail)
+        # The XGM2 driver only reads ROM through the Z80 bank. Writes there mean its memory was
+        # corrupted (e.g. a PCM channel XGM2 does not have), which later froze BlastEm.
+        emulator_log.flush()
+        if 'Unhandled write by Z80' in (root/'tests/out/blastem.log').read_text(errors='replace'):
+            raise SystemExit('Smoke test failed: the Z80 sound driver wrote through its ROM bank; see tests/out/blastem.log')
         print(f'SMOKE PASS (BlastEm GDB API, {time.monotonic()-started:.1f}s, ' +
               ('realtime audio' if args.realtime else 'unthrottled, no audio') +
               (', headless)' if args.hidden else ', secondary monitor)'))
@@ -196,7 +202,7 @@ end
         if any(int(line.split('=', 1)[1]) for line in metrics):
             for line in metrics: print(line)
         if args.capture_scenes:
-            subprocess.run(['python', str(root/'scripts/check_room_video.py')], cwd=root, check=True)
+            subprocess.run([sys.executable, str(root/'scripts/check_room_video.py')], cwd=root, check=True)
     finally:
         if process.poll() is None:
             process.terminate()

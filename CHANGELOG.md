@@ -10,6 +10,23 @@ O registro detalhado começa em 18/10/2026. A entrada anterior abaixo foi
 reconstituída do commit indicado; o histórico anterior completo permanece no Git
 (`git log`) e as entregas por etapa estão em [docs/PLANO.md](docs/PLANO.md).
 
+## 2026-10-28 00:49:48 −03:00 (America/Sao_Paulo) — Canal de som inexistente travava o emulador
+
+### Corrigido
+
+- O clique de troca de arma tocava no canal PCM 4, que o XGM2 não tem. A escrita
+  caía fora da tabela do driver de som do Z80, que passava a escrever na ROM e,
+  dependendo do tempo de cada quadro, congelava o BlastEm. O clique agora usa o
+  canal 3, o mesmo dos tiros.
+- O smoke falha se o BlastEm registrar escritas do Z80 na área de banco, sinal
+  de driver corrompido. A verificação das vistas usa o mesmo Python do smoke.
+
+**Validação:** `scripts/test.ps1`, build `-SmokeTest` e
+`python scripts/smoke_test.py --capture-scenes`: `SMOKE PASS` em 10,1 s, acelerado,
+sem áudio, headless, oito vistas conferidas. Antes da correção, um atraso artificial
+de 10, 40 ou 300 iterações por quadro travava o smoke; depois, todos passam, e as
+~20 mil escritas indevidas do Z80 no log caem para zero.
+
 ## 2026-10-23 21:58:24 −03:00 (America/Sao_Paulo) — Fundo e prioridade das portas (6.6.4)
 
 ### Melhorado
