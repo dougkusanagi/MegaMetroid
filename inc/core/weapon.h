@@ -42,6 +42,7 @@ typedef struct {
     MmBeam beams[MM_BEAM_COUNT];
     int selected; /* MM_WEAPON_* */
     int missiles, supers;
+    int missiles_max, supers_max; /* Capacity; the HUD shows an icon once its capacity is above 0. */
     int cooldown, repeating, fired, fired_kind; /* fired_kind: MM_WEAPON_* */
     int cycle_pending; /* A weapon change waits until no shot is on screen. */
 } MmWeapon;

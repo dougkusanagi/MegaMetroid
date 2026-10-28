@@ -15,6 +15,7 @@
 /* Read by scripts/smoke_test.py through BlastEm's GDB protocol: 0 running, 1 pass, 2 fail. */
 volatile u16 mm_smoke_result;
 volatile u32 mm_smoke_failure; /* Failure bitmask, printed through the GDB API. */
+volatile u16 mm_smoke_hud_failure; /* Status bar checks (7.1); the main mask has no bit left. */
 /* Chunked VDP readback stays within RAM. The GDB runner optionally saves these
    checkpoints to reconstruct video from the emulator's VRAM, CRAM and SAT. */
 volatile u16 mm_smoke_video[4096];
@@ -211,7 +212,7 @@ static int room_transitions(Game *g)
     MmRect cap;
     for (i = 0; i < ROOM_COUNT; ++i)
         mm_smoke_memory[1 + i] = room_get(i)->tileset_fg->numTile + room_get(i)->tileset_bg->numTile;
-    mm_smoke_memory[0] = TILE_USER_LENGTH;
+    mm_smoke_memory[0] = TILE_USER_LENGTH - MM_HUD_TILE_COUNT;
     for (i = 0; i < ROOM_COUNT; ++i) if (!game_room_fits_vram(room_get(i))) failed |= 32;
     /* The west door of the Landing Site has no route: shut, its cap stops Samus before the
        strip; one beam opens it, but the open door still leads nowhere and she stays. */
@@ -347,7 +348,8 @@ static void room_video(Game *g)
         *control = VDP_READ_VSRAM_ADDR(0);
         mm_smoke_video_header[73] = *data;
         mm_smoke_video_header[74] = *data;
-        mm_smoke_video_header[75] = 0;
+        /* Window table (a multiple of 0x800 in H32) with its row count in the low bits. */
+        mm_smoke_video_header[75] = VDP_getWindowAddress() | MM_HUD_ROWS;
         for (chunk = 0; chunk < 8; ++chunk) {
             *control = VDP_READ_VRAM_ADDR((u32)chunk * 8192);
             for (i = 0; i < 4096; ++i) mm_smoke_video[i] = *data;
@@ -536,6 +538,59 @@ static int turns(Game *g)
     return failed;
 }
 
+/* Window plane entry at cell (x, y), read back through the VDP. */
+static u16 window_cell(u16 x, u16 y)
+{
+    vu32 *control = (vu32 *)VDP_CTRL_PORT;
+    vu16 *data = (vu16 *)VDP_DATA_PORT;
+    u16 value;
+    SYS_disableInts();
+    VDP_setAutoInc(2);
+    *control = VDP_READ_VRAM_ADDR((u32)VDP_getWindowAddress() + ((y << windowWidthSft) + x) * 2);
+    value = *data;
+    SYS_enableInts();
+    return value;
+}
+
+/* Etapa 7.1: the window shows the status bar the core lays out, over the sprites, in PAL2. */
+static int hud_on_screen(const Game *g)
+{
+    u8 cells[MM_HUD_ICON_ROWS][MM_HUD_COLUMNS];
+    MmHudState state = {g->energy, g->energy_max, g->weapon.missiles, g->weapon.missiles_max,
+                        g->weapon.supers, g->weapon.supers_max, g->weapon.selected};
+    u16 x, y;
+    mm_hud_cells(&state, cells);
+    for (y = 0; y < MM_HUD_ICON_ROWS; ++y)
+        for (x = 0; x < MM_HUD_COLUMNS; ++x)
+            if (window_cell(x, y) != TILE_ATTR_FULL(PAL2, TRUE, FALSE, FALSE, g->hud_tile + cells[y][x]))
+                return 0;
+    return 1;
+}
+
+static u16 smoke_color(u16 index);
+
+/* The bar's tiles, colors and first frame; then its message row carries the door prompt. */
+static int hud_status(const Game *g)
+{
+    int failed = 0, i;
+    if (!vram_holds(&hud_tiles, g->hud_tile) || g->hud_tile + MM_HUD_TILE_COUNT != TILE_USER_MAX_INDEX + 1 ||
+        !game_room_fits_vram(g->room)) failed |= 1;
+    /* The bar borrows the suit's colors; the shots' PAL3 keeps all 16 (the ship's tones too). */
+    for (i = 0; i < 16; ++i)
+        if (smoke_color(32 + i) != pal_samus_power_suit.data[i] || smoke_color(48 + i) != beam_sprite.palette->data[i])
+            failed |= 2;
+    if (!hud_on_screen(g) || window_cell(MM_HUD_ENERGY_DIGITS_COLUMN, 1) !=
+        TILE_ATTR_FULL(PAL2, TRUE, FALSE, FALSE, g->hud_tile + MM_HUD_DIGIT0 + 9) ||
+        window_cell(MM_HUD_MISSILE_COLUMN, 0) != TILE_ATTR_FULL(PAL2, TRUE, FALSE, FALSE, g->hud_tile + MM_HUD_MISSILE_OFF) ||
+        window_cell(MM_HUD_SUPER_COLUMN, 0) != TILE_ATTR_FULL(PAL2, TRUE, FALSE, FALSE, g->hud_tile + MM_HUD_BLANK))
+        failed |= 4;
+    /* Opaque message row, and the sprites stay under the high-priority bar. */
+    if (window_cell(0, MM_HUD_MESSAGE_ROW) != TILE_ATTR_FULL(PAL2, TRUE, FALSE, FALSE, g->hud_tile + MM_HUD_BLANK) ||
+        (g->sprite->attribut & TILE_ATTR_PRIORITY_MASK) || (g->door_sprites[0]->attribut & TILE_ATTR_PRIORITY_MASK) ||
+        (g->beam_sprites[0]->attribut & TILE_ATTR_PRIORITY_MASK)) failed |= 8;
+    return failed;
+}
+
 /* Etapa 4.3.2: the ROM wiring of missiles and supers. START cycles the weapon (skipping the
    empty super bin), the missile sheet replaces the beam PAL3 while it is selected or in flight,
    the 16x16 frame follows the direction, ammo drops on a press, a missile opens a blue door,
@@ -567,6 +622,9 @@ static int missile_weapon(Game *g)
     SYS_doVBlankProcess();
     if (g->weapon.selected != MM_WEAPON_MISSILE || g->weapon.missiles != MM_START_MISSILES ||
         smoke_color(49) != missile_sprite.palette->data[1]) failed = 1;
+    /* 7.1: the lit missile icon. */
+    if (!hud_on_screen(g) || g->hud_cells[0][MM_HUD_MISSILE_COLUMN] != MM_HUD_MISSILE_ON)
+        mm_smoke_hud_failure |= 16;
     /* One press fires one missile, without advancing on its spawn tick. */
     game_update(g, (MmInput){.shoot_pressed = 1, .shoot_held = 1});
     SYS_doVBlankProcess();
@@ -593,6 +651,9 @@ static int missile_weapon(Game *g)
     game_update(g, (MmInput){.weapon_pressed = 1});
     SYS_doVBlankProcess();
     if (g->weapon.selected != MM_WEAPON_SUPER) failed = 1;
+    if (!hud_on_screen(g) || g->hud_cells[0][MM_HUD_SUPER_COLUMN] != MM_HUD_SUPER_ON ||
+        g->hud_cells[1][MM_HUD_MISSILE_COUNT_COLUMN + 2] != MM_HUD_DIGIT0 + MM_START_MISSILES - 1)
+        mm_smoke_hud_failure |= 16;
     game_update(g, (MmInput){.shoot_pressed = 1, .shoot_held = 1});
     SYS_doVBlankProcess();
     shot = &g->weapon.beams[0];
@@ -613,6 +674,8 @@ static int missile_weapon(Game *g)
     if (g->weapon.missiles != MM_START_MISSILES - 1 || g->weapon.selected != MM_WEAPON_MISSILE ||
         g->weapon.beams[0].active || g->weapon.beams[0].impact_ticks ||
         smoke_color(49) != missile_sprite.palette->data[1]) failed = 1;
+    /* After the fade-in of the new room: same bar, same colors. */
+    if (!hud_on_screen(g) || smoke_color(32 + 6) != pal_samus_power_suit.data[6]) mm_smoke_hud_failure |= 32;
     return failed;
 }
 
@@ -655,6 +718,7 @@ int main(bool hardReset)
     mm_smoke_result = failed ? 2 : 1;
     mm_smoke_finish();
 #endif
+    mm_smoke_hud_failure = hud_status(&g);
     start = g.player.x;
     for (frame = 0; frame < 760; ++frame) {
         MmInput input = {0};
@@ -815,7 +879,7 @@ int main(bool hardReset)
     VDP_drawText("MOVE L/R JUMP CAMERA", 1, 1);
     SYS_enableInts();
     mm_smoke_failure = failed;
-    mm_smoke_result = failed ? 2 : 1;
+    mm_smoke_result = failed || mm_smoke_hud_failure ? 2 : 1;
     mm_smoke_finish();
     return 0;
 }

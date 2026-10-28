@@ -3,6 +3,7 @@
 #include "map.h"
 #include "core/doorlock.h"
 #include "core/weapon.h"
+#include "core/hud.h"
 
 /* More than any current room; the exporter refuses rooms that would overflow these tables. */
 #define MM_ROOM_MAX_DOORS 8
@@ -19,7 +20,10 @@ typedef struct {
     MmWeapon weapon;
     Sprite *beam_sprites[MM_BEAM_COUNT];
     bool missile_palette; /* PAL3 holds missile_sprite's palette instead of the beam's. */
-    const char *door_prompt; /* Text on the window's first row while Samus is at a door; NULL otherwise. */
+    const char *door_prompt; /* Text on the HUD message row while Samus is at a door; NULL otherwise. */
+    int energy, energy_max; /* Damage and energy tanks come with 5.3 and 7.2. */
+    u8 hud_cells[MM_HUD_ICON_ROWS][MM_HUD_COLUMNS]; /* Status bar tiles on the window, redrawn when they change. */
+    u16 hud_tile; /* VRAM index of the first status bar tile, just below the sprite tiles. */
     Sprite *door_sprites[MM_ROOM_MAX_DOORS]; /* Full transparent door art; hidden for doors the room does not have. */
     MmDoorLock door_locks[MM_ROOM_MAX_DOORS];
     MmRect door_caps[MM_ROOM_MAX_DOORS]; /* Cap of every door, open or not; for beam hits. */
@@ -32,7 +36,7 @@ typedef struct {
 } Game;
 
 bool game_init(Game *game, u16 room_index);
-/* The room's two tilesets fit in the user VRAM, below the sprite tiles and the font. */
+/* The room's two tilesets fit in the user VRAM, below the status bar, sprite tiles and font. */
 bool game_room_fits_vram(const room_def *room);
 /* Fades out, swaps the room's tiles, maps, palettes and collision, puts Samus at spawn (the
    room's pixel coordinates, as for room_def.player_initial_pos) and fades in. Samus keeps her

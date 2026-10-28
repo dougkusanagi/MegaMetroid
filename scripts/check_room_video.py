@@ -83,6 +83,15 @@ def main():
         source_palette=np.array(fg.getpalette()[:192],dtype='uint8').reshape(64,3)
         for pixel in np.unique(np.concatenate((a.ravel(),b.ravel()))):
             if pixel:assert np.array_equal(colors[pixel],source_palette[pixel]),f'{name}: CRAM {pixel}'
+        # Etapa 7.1: the window replaces plane A over the status bar rows; the bar is opaque,
+        # high priority (over the sprites) and drawn in the Power Suit palette (PAL2).
+        rows=h[75]&0x7ff
+        if rows:
+            w,wp=plane(vram,h[75]&0xf800,32,32,0,0)
+            hud=slice(0,rows*8)
+            assert np.all(w[hud]!=0) and np.all(wp[hud]),name+': status bar must be opaque and over the sprites'
+            assert np.all((w[hud]>=32)&(w[hud]<48)),name+': status bar must use PAL2'
+            a=a.copy();ap=ap.copy();a[hud]=w[hud];ap[hud]=wp[hud]
         s,sp=sprites(vram,h[70])
         composed=np.zeros((224,256),dtype='uint8')
         for pixels,pri,want_high in [(b,bp,False),(a,ap,False),(s,sp,False),

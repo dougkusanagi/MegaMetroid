@@ -25,3 +25,7 @@ WAV				land_sfx				"sound/Sound-Effects/samus_land.wav"						XGM2
 # Converted from res/sound/musics/*.mp3 by scripts/convert_music.py.
 WAV				music_crateria_arrival_intro	"sound/music/music_crateria_arrival_intro.wav"	XGM2
 WAV				music_crateria_arrival_loop		"sound/music/music_crateria_arrival_loop.wav"	XGM2
+# Status bar (7.1): tiles in the Power Suit palette (PAL2) and SGDK's font with an opaque
+# background, built by scripts/build_hud.py. NONE keeps every tile in order (inc/core/hud.h).
+TILESET hud_tiles "images/hud/hud_tiles.png" NONE NONE
+TILESET hud_font "images/hud/hud_font.png" NONE NONE

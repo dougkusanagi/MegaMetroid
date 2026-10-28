@@ -17,5 +17,7 @@ extern const SpriteDefinition beam_sprite;
 extern const SpriteDefinition beam_impact_sprite;
 extern const SpriteDefinition missile_sprite;
 extern const SpriteDefinition door_cap;
+extern const TileSet hud_tiles;
+extern const TileSet hud_font;
 
 #endif // _RES_RESOURCES_H_

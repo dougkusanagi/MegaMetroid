@@ -10,6 +10,26 @@ O registro detalhado começa em 18/10/2026. A entrada anterior abaixo foi
 reconstituída do commit indicado; o histórico anterior completo permanece no Git
 (`git log`) e as entregas por etapa estão em [docs/PLANO.md](docs/PLANO.md).
 
+## 2026-10-28 01:05:00 −03:00 (America/Sao_Paulo) — Barra de status (7.1.1)
+
+### Adicionado
+
+- Barra de status no alto da tela, como no Super Metroid: tanques, `ENERGY 99`,
+  ícones de míssil e super com contadores e ícone verde para a arma selecionada.
+  Os avisos das portas passam para a terceira linha da barra.
+- A barra fica na frente dos sprites, usa só cores da Power Suit (PAL2) e uma
+  fonte opaca. Custo: 37 tiles de VRAM e 82 bytes de RAM.
+
+### Melhorado
+
+- O smoke confere a barra pela VRAM e pela CRAM, e a reconstrução das vistas
+  compõe o plano WINDOW.
+
+**Validação:** `scripts/test.ps1` (inclui `hud_cells` e os recursos da barra),
+build `-SmokeTest` e `python scripts/smoke_test.py --capture-scenes`: `SMOKE PASS`,
+acelerado, sem áudio, headless; oito vistas com a barra opaca. O smoke também passou
+com atrasos artificiais de 10, 40, 120 e 300 iterações por quadro.
+
 ## 2026-10-28 00:49:48 −03:00 (America/Sao_Paulo) — Canal de som inexistente travava o emulador
 
 ### Corrigido

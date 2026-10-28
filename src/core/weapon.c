@@ -90,6 +90,8 @@ void mm_weapon_init(MmWeapon *w)
     w->selected = MM_WEAPON_BEAM;
     w->missiles = MM_START_MISSILES;
     w->supers = MM_START_SUPERS;
+    w->missiles_max = MM_START_MISSILES;
+    w->supers_max = MM_START_SUPERS;
     mm_weapon_clear_shots(w);
 }
 

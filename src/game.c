@@ -155,6 +155,43 @@ static void sync_shot_palette(Game *g)
     PAL_setPalette(PAL3, missiles ? missile_sprite.palette->data : beam_sprite.palette->data, DMA_QUEUE);
 }
 
+/* The bar is drawn in the Power Suit palette (PAL2), the only one that is the same in every room.
+   High priority puts it over the sprites, as in the original; the sprites stay low so they still
+   draw over both (low priority) room planes. */
+static u16 hud_attr(const Game *g, u16 cell)
+{
+    return TILE_ATTR_FULL(PAL2, TRUE, FALSE, FALSE, g->hud_tile + cell);
+}
+
+/* Rows 0-1 follow energy, ammo and the selected weapon; only changed cells are written. */
+static void draw_hud(Game *g, bool all)
+{
+    u8 cells[MM_HUD_ICON_ROWS][MM_HUD_COLUMNS];
+    MmHudState state = {g->energy, g->energy_max, g->weapon.missiles, g->weapon.missiles_max,
+                        g->weapon.supers, g->weapon.supers_max, g->weapon.selected};
+    u16 x, y;
+    if (MM_DEBUG_OVERLAY) return; /* The overlay uses these rows. */
+    mm_hud_cells(&state, cells);
+    /* CPU writes to the VDP must not be interrupted by VBlank scroll/DMA commands. */
+    for (y = 0; y < MM_HUD_ICON_ROWS; ++y)
+        for (x = 0; x < MM_HUD_COLUMNS; ++x)
+            if (all || cells[y][x] != g->hud_cells[y][x]) {
+                SYS_disableInts();
+                VDP_setTileMapXY(WINDOW, hud_attr(g, cells[y][x]), x, y);
+                SYS_enableInts();
+                g->hud_cells[y][x] = cells[y][x];
+            }
+}
+
+/* The message row under the bar: blank status bar tiles, then the text in the opaque font. */
+static void draw_message(Game *g, const char *text)
+{
+    SYS_disableInts();
+    VDP_fillTileMapRect(WINDOW, hud_attr(g, MM_HUD_BLANK), 0, MM_HUD_MESSAGE_ROW, MM_HUD_COLUMNS, 1);
+    if (text) VDP_drawText(text, 1, MM_HUD_MESSAGE_ROW);
+    SYS_enableInts();
+}
+
 static void render(Game *g)
 {
     int i;
@@ -253,13 +290,8 @@ static void render(Game *g)
                 body.top < opening.bottom && body.bottom > opening.top) prompt = DOOR_SHOOT_TEXT;
         }
         if (prompt != g->door_prompt) {
-            /* CPU text writes must not be interrupted by VBlank VDP scroll/DMA commands. */
-            SYS_disableInts();
-            VDP_setTextPlane(WINDOW);
-            VDP_clearTextLine(0);
-            if (prompt) VDP_drawText(prompt, 1, 0);
+            draw_message(g, prompt);
             g->door_prompt = prompt;
-            SYS_enableInts();
         }
     }
     for (i = 0; i < MM_BEAM_COUNT; ++i) {
@@ -282,6 +314,7 @@ static void render(Game *g)
                             (hit ? beam->impact_y : mm_pixel(beam->y)) - g->camera.y - offset);
         }
     }
+    draw_hud(g, FALSE);
     SPR_update();
 #if MM_DEBUG_OVERLAY
     draw_debug_overlay(g);
@@ -321,7 +354,7 @@ static void enter_room(Game *g, const room_def *room, u16 room_index, int x, int
    setup from queuing data across buffer resizing; interrupts are off around the call. */
 bool game_room_fits_vram(const room_def *room)
 {
-    return room->tileset_fg->numTile + room->tileset_bg->numTile <= TILE_USER_LENGTH;
+    return room->tileset_fg->numTile + room->tileset_bg->numTile <= TILE_USER_LENGTH - MM_HUD_TILE_COUNT;
 }
 
 static bool load_room_maps(Game *g)
@@ -344,16 +377,22 @@ bool game_init(Game *g, u16 room_index)
     g->input.previous = 0; g->pal_phase = 0; g->frame = 0;
     g->door_prompt = NULL;
     g->music_looping = FALSE;
+    g->energy = g->energy_max = MM_START_ENERGY;
     mm_weapon_init(&g->weapon);
     enter_room(g, room, room_index, room->player_initial_pos.x, room->player_initial_pos.y, -1);
     SYS_disableInts();
     VDP_setScreenWidth256();
     VDP_setScreenHeight224();
-    VDP_setWindowVPos(FALSE, 2);
+    VDP_setWindowVPos(FALSE, MM_HUD_ROWS);
     VDP_setTextPlane(WINDOW);
-    VDP_clearTextLine(0);
+    VDP_setTextPalette(PAL2);
+    VDP_setTextPriority(TRUE);
     JOY_init();
     SPR_init();
+    /* The status bar's tiles sit just below the sprite tiles; rooms load from the bottom up. */
+    g->hud_tile = TILE_USER_MAX_INDEX + 1 - MM_HUD_TILE_COUNT;
+    VDP_loadTileSet(&hud_tiles, g->hud_tile, CPU);
+    VDP_loadFont(&hud_font, CPU);
     PAL_setPalette(PAL0, g->room->palette_fg->data, CPU);
     PAL_setPalette(PAL1, g->room->palette_bg->data, CPU);
     load_room_maps(g);
@@ -361,7 +400,7 @@ bool game_init(Game *g, u16 room_index)
     /* Explicit depths keep the complete door frame in front of Samus and shots. */
     g->sprite = NULL;
     for (i = 0; i < MM_ROOM_MAX_DOORS; ++i) {
-        g->door_sprites[i] = SPR_addSprite(&door_cap, 0, 0, TILE_ATTR(PAL1, TRUE, FALSE, FALSE));
+        g->door_sprites[i] = SPR_addSprite(&door_cap, 0, 0, TILE_ATTR(PAL1, FALSE, FALSE, FALSE));
         if (!g->door_sprites[i]) break;
         /* The non-destructible metal frame occludes Samus in the doorway. */
         SPR_setAlwaysOnTop(g->door_sprites[i]);
@@ -374,7 +413,7 @@ bool game_init(Game *g, u16 room_index)
         SYS_enableInts();
         return FALSE;
     }
-    g->sprite = SPR_addSprite(&player_sprite, 0, 0, TILE_ATTR(PAL2, TRUE, FALSE, FALSE));
+    g->sprite = SPR_addSprite(&player_sprite, 0, 0, TILE_ATTR(PAL2, FALSE, FALSE, FALSE));
     if (g->sprite) SPR_setDepth(g->sprite, SPR_MAX_DEPTH - 1);
     if (!g->foreground || !g->background || !g->sprite) {
         for (i = 0; i < MM_ROOM_MAX_DOORS; ++i) SPR_releaseSprite(g->door_sprites[i]);
@@ -390,7 +429,7 @@ bool game_init(Game *g, u16 room_index)
     beam_definition.maxNumTile = beam_impact_sprite.maxNumTile;
     for (i = 0; i < MM_BEAM_COUNT; ++i) {
         /* Reserve the larger impact up front; changing definition then needs no larger block. */
-        g->beam_sprites[i] = SPR_addSprite(&beam_impact_sprite, 0, 0, TILE_ATTR(PAL3, TRUE, FALSE, FALSE));
+        g->beam_sprites[i] = SPR_addSprite(&beam_impact_sprite, 0, 0, TILE_ATTR(PAL3, FALSE, FALSE, FALSE));
         if (!g->beam_sprites[i]) {
             while (i > 0) SPR_releaseSprite(g->beam_sprites[--i]);
             SPR_releaseSprite(g->sprite);
@@ -403,6 +442,8 @@ bool game_init(Game *g, u16 room_index)
         SPR_setVisibility(g->beam_sprites[i], HIDDEN);
     }
     SYS_enableInts();
+    draw_hud(g, TRUE);
+    draw_message(g, NULL);
 #if MM_DEBUG_OVERLAY
     /* Window plane stays put while plane A scrolls, so the overlay does not move. */
     VDP_setWindowVPos(FALSE, OVERLAY_ROWS);

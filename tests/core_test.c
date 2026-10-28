@@ -5,6 +5,7 @@
 #include "core/weapon.h"
 #include "core/worldmap.h"
 #include "core/doorlock.h"
+#include "core/hud.h"
 #include "world_map.h"
 #include "out/maps.h"
 #include "out/sm_hitboxes.h"
@@ -1613,6 +1614,60 @@ static void diagonal_controls(void)
     puts("PASS six-button diagonal aim: both facings, stand/crouch, release without movement");
 }
 
+/* Etapa 7.1: status bar cells. A new game shows ENERGY 99 without tanks and the missile icon
+   with its count; the super icon stays hidden until supers exist. */
+static void hud_cells(void) {
+    unsigned char cells[MM_HUD_ICON_ROWS][MM_HUD_COLUMNS];
+    MmHudState s = {MM_START_ENERGY, MM_START_ENERGY, MM_START_MISSILES, MM_START_MISSILES, 0, 0, MM_WEAPON_BEAM};
+    int i;
+    mm_hud_cells(&s, cells);
+    for (i = 0; i < 4; ++i) assert(cells[1][MM_HUD_ENERGY_COLUMN + i] == MM_HUD_ENERGY + i);
+    assert(cells[1][MM_HUD_ENERGY_DIGITS_COLUMN] == MM_HUD_DIGIT0 + 9 &&
+           cells[1][MM_HUD_ENERGY_DIGITS_COLUMN + 1] == MM_HUD_DIGIT0 + 9);
+    for (i = 0; i < MM_HUD_MAX_TANKS; ++i) assert(cells[0][MM_HUD_TANK_COLUMN + i] == MM_HUD_BLANK);
+    assert(cells[0][MM_HUD_MISSILE_COLUMN] == MM_HUD_MISSILE_OFF &&
+           cells[0][MM_HUD_MISSILE_COLUMN + 2] == MM_HUD_MISSILE_OFF + 2 &&
+           cells[1][MM_HUD_MISSILE_COLUMN + 2] == MM_HUD_MISSILE_OFF + 5);
+    assert(cells[1][MM_HUD_MISSILE_COUNT_COLUMN] == MM_HUD_DIGIT0 &&
+           cells[1][MM_HUD_MISSILE_COUNT_COLUMN + 1] == MM_HUD_DIGIT0 &&
+           cells[1][MM_HUD_MISSILE_COUNT_COLUMN + 2] == MM_HUD_DIGIT0 + 5);
+    for (i = 0; i < 4; ++i) assert(cells[0][MM_HUD_SUPER_COLUMN + i] == MM_HUD_BLANK &&
+                                   cells[1][MM_HUD_SUPER_COLUMN + i] == MM_HUD_BLANK);
+    /* Selected missiles light up; a granted super shows its icon and two digits. */
+    s.selected = MM_WEAPON_MISSILE; s.supers = 1;
+    mm_hud_cells(&s, cells);
+    assert(cells[0][MM_HUD_MISSILE_COLUMN] == MM_HUD_MISSILE_ON &&
+           cells[0][MM_HUD_SUPER_COLUMN] == MM_HUD_SUPER_OFF &&
+           cells[1][MM_HUD_SUPER_COLUMN + 1] == MM_HUD_SUPER_OFF + 3 &&
+           cells[1][MM_HUD_SUPER_COUNT_COLUMN] == MM_HUD_DIGIT0 &&
+           cells[1][MM_HUD_SUPER_COUNT_COLUMN + 1] == MM_HUD_DIGIT0 + 1);
+    s.selected = MM_WEAPON_SUPER;
+    mm_hud_cells(&s, cells);
+    assert(cells[0][MM_HUD_MISSILE_COLUMN] == MM_HUD_MISSILE_OFF && cells[0][MM_HUD_SUPER_COLUMN] == MM_HUD_SUPER_ON);
+    /* 2 tanks + 99: 250 energy fills two squares and shows 50; 150 fills one. */
+    s.energy_max = 299; s.energy = 250;
+    mm_hud_cells(&s, cells);
+    assert(cells[0][MM_HUD_TANK_COLUMN] == MM_HUD_TANK_FULL && cells[0][MM_HUD_TANK_COLUMN + 1] == MM_HUD_TANK_FULL &&
+           cells[0][MM_HUD_TANK_COLUMN + 2] == MM_HUD_BLANK &&
+           cells[1][MM_HUD_ENERGY_DIGITS_COLUMN] == MM_HUD_DIGIT0 + 5 &&
+           cells[1][MM_HUD_ENERGY_DIGITS_COLUMN + 1] == MM_HUD_DIGIT0);
+    s.energy = 150;
+    mm_hud_cells(&s, cells);
+    assert(cells[0][MM_HUD_TANK_COLUMN] == MM_HUD_TANK_FULL && cells[0][MM_HUD_TANK_COLUMN + 1] == MM_HUD_TANK_EMPTY);
+    /* Tanks stop at one row; negative energy reads 00; the layout never overlaps. */
+    s.energy_max = 1499; s.energy = -5;
+    mm_hud_cells(&s, cells);
+    assert(cells[0][MM_HUD_TANK_COLUMN + MM_HUD_MAX_TANKS - 1] == MM_HUD_TANK_EMPTY &&
+           cells[0][MM_HUD_TANK_COLUMN + MM_HUD_MAX_TANKS] == MM_HUD_BLANK &&
+           cells[1][MM_HUD_ENERGY_DIGITS_COLUMN] == MM_HUD_DIGIT0 &&
+           cells[1][MM_HUD_ENERGY_DIGITS_COLUMN + 1] == MM_HUD_DIGIT0);
+    assert(MM_HUD_TANK_COLUMN + MM_HUD_MAX_TANKS <= MM_HUD_MISSILE_COLUMN &&
+           MM_HUD_ENERGY_DIGITS_COLUMN + 2 <= MM_HUD_MISSILE_COLUMN &&
+           MM_HUD_MISSILE_COUNT_COLUMN + 3 <= MM_HUD_SUPER_COLUMN &&
+           MM_HUD_SUPER_COUNT_COLUMN + 2 <= MM_HUD_COLUMNS && MM_HUD_TILE_COUNT == 37);
+    puts("PASS HUD: energy digits and tanks, ammo icons lit by selection, counts, hidden empty bins");
+}
+
 int main(void) {
     diagonal_controls();
     samus_jump_measure();
@@ -1628,6 +1683,6 @@ int main(void) {
     missile_loadout();
     movement(); air_steering(); collisions(); jump_and_ledge(); states(); physics(); variable_jump(); ledge_jump();
     slopes(); slope_sweep(); tunnels(); wall_climb(); wall_jump_rules(); wall_jump_animation(); moonwalk(); poses(); crouch_poses(); crouch_tap(); double_tap(); ball_poses(); aiming(); beam_from_muzzle(); morph_rules(); ball_stands_on_slope();
-    ball_stand_real(); camera_and_input(); doors(); world_map(); door_locks(); real_levels();
+    ball_stand_real(); camera_and_input(); doors(); world_map(); door_locks(); hud_cells(); real_levels();
     puts("All core regression tests passed."); return 0;
 }

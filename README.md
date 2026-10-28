@@ -26,6 +26,12 @@ A porta leste superior do Landing Site leva à Crateria 2. A leste inferior aind
 não tem sala de destino: depois de abri-la e chegar à borda, o jogo mostra
 `ROOM NOT BUILT YET`; afastar-se da porta remove o aviso.
 
+A barra de status fica no alto da tela, como no Super Metroid: tanques de energia,
+`ENERGY 99`, o ícone do míssil com o contador e, quando houver supers, o ícone deles. O ícone
+da arma escolhida fica verde. A barra cobre os 24 px do topo e fica na frente dos sprites; a
+terceira linha mostra os avisos das portas. Energia e dano entram na 5.3, e o mini-mapa ainda
+não existe.
+
 A Samus usa animações originais de movimento, pulo, agachar, bola, mira e virada.
 A virada tem três quadros, tanto no chão quanto no ar, preservando a física do movimento.
 O pulo de parede mantém a sequência de chute e giro até pousar ou interromper
@@ -80,8 +86,7 @@ diagonal, acelerando 1/16 por eixo ativo a cada tick, como nas tabelas originais
 Há colisão com paredes e rampas, descarte ao sair da tela e o som de tiro original.
 Mísseis e super mísseis entram como armas selecionáveis por START, com a arte original de 16×16
 nas oito direções e paleta própria (a PAL3 do beam é trocada enquanto a arma está ativa). A ROM
-começa com 5 mísseis e nenhum super, provisoriamente até os itens coletáveis; o contador na HUD
-entra na 7.1. Um míssil abre porta azul, cinco (ou um super) abrem vermelha, e verde só aceita super.
+começa com 5 mísseis e nenhum super, provisoriamente até os itens coletáveis. Um míssil abre porta azul, cinco (ou um super) abrem vermelha, e verde só aceita super.
 A troca de arma espera o projétil e o impacto saírem da tela para não misturar as paletas, e o
 impacto do míssil ainda usa o quadro do beam, sem arte própria nesta etapa.
 Os efeitos sonoros do Super Metroid ficam em `res/sound/Sound-Effects/`; o tiro, o giro (em loop

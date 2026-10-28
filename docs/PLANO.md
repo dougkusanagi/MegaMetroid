@@ -527,10 +527,37 @@ Blocos destrutíveis e demais limitações da 6.6 continuam pendentes.
 
 | # | Etapa | Entrega | Teste |
 |---|-------|---------|-------|
-| 7.1 | HUD | Energia, mísseis, mini-mapa mínimo (plano WINDOW) | HUD estável durante o scroll |
+| 7.1 | HUD (7.1.1 barra ✅; mini-mapa pendente) | Energia, mísseis, mini-mapa mínimo (plano WINDOW) | HUD estável durante o scroll |
 | 7.2 | Itens coletáveis | Tanques de energia/míssil | Coletar persiste na sala |
 | 7.3 | Upgrades | Morph Ball, Bombas, Varia, High Jump | Habilidades liberam trechos do mapa |
 | 7.4 | Save em SRAM | Itens, posição e flags | Salvar, resetar, continuar |
+
+**7.1.1 Barra de status** ✅ (2026-10-28). O plano WINDOW cobre as três primeiras
+linhas (24 px). Linha 0: tanques de energia (até 7); linha 1: `ENERGY` e os dois dígitos
+de energia; ícones de míssil (3×2) e super (2×2) nas linhas 0–1, com os contadores ao lado
+(3 e 2 dígitos); linha 2: avisos das portas. O ícone aparece quando a capacidade (ou o
+contador) passa de zero e fica verde quando a arma está selecionada. `src/core/hud.c` monta
+as células sem SGDK; `src/game.c` reescreve só as células que mudam. A barra é opaca e de alta
+prioridade, e os sprites passam para baixa prioridade: ficam atrás da barra, como no
+original, e na frente dos planos da sala.
+**Paleta:** não há entrada livre (PAL3 guarda o tiro e os tons da nave), então a barra usa só
+cores da Power Suit (PAL2), igual em todas as salas. O azul dos dígitos vira verde escuro.
+Limite: efeitos que trocarem a PAL2 (3.6: trajes, dano, carga) também tingem a barra; a 3.6
+deve separar isso, por exemplo com troca de cor por interrupção horizontal.
+**Custo:** 37 tiles (1.184 bytes de VRAM) logo abaixo dos tiles de sprite, que saem do
+orçamento das salas; a fonte opaca substitui a do SGDK no mesmo lugar; 74 bytes na struct do
+jogo e 8 no `MmWeapon`.
+**Validação:** `hud_cells` no host; no BlastEm, o smoke lê a tabela da janela, os tiles e a
+CRAM pela API GDB, acompanha a troca de arma e a munição, e passa pela troca de sala.
+`scripts/check_room_video.py` compõe a janela nas oito vistas e exige barra opaca, em PAL2
+e acima dos sprites.
+**Correção encontrada no caminho:** o clique de troca de arma usava o canal PCM 4, que o
+XGM2 não tem, e corrompia o driver do Z80. Isso travava o BlastEm conforme o tempo de cada
+quadro. Agora usa o canal 3.
+**Pendências da 7.1:** mini-mapa; energia real e tanques vêm com a 5.3 e a 7.2.
+**Bug antigo anotado:** com o míssil selecionado, a paleta dele sobrescreve os tons da nave
+nos índices 10–15 da PAL3. Para corrigir, a folha do míssil deve usar só os índices 0–9 e
+os verdes que já coincidem com a nave.
 
 ### Fase 8 — Áudio e polimento
 
