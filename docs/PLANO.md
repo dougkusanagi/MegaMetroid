@@ -324,6 +324,12 @@ roda um tick por inimigo. Custo: cerca de 1 KB de RAM no `Game`. Sem arte, palet
 isso entra na 5.2. Validação: `enemy_walker` no host (queda, caminhada, parede, beirada e pool
 cheio) e no smoke do BlastEm através de `game_update`.
 
+**5.2 Inimigos de Crateria** (em andamento, 2026-11-01). O núcleo já define `MM_ENEMY_ZOOMER`
+com 15 HP, 5 de dano, corpo 16x16 e velocidade provisória de 0,5 px/tick, reusando o
+comportamento de solo que cai, anda e vira em paredes e beiradas. Sprite, paleta, animação e os
+spawns nas salas entram ainda nesta etapa; a alocação de paleta para os inimigos precisa ser
+decidida antes da arte. Validação: `enemy_zoomer` no host e smoke no BlastEm via GDB.
+
 ### Fase 6 — Salas, portas e mundo
 
 | # | Etapa | Entrega | Teste |

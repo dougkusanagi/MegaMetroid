@@ -10,6 +10,17 @@ O registro detalhado começa em 18/10/2026. A entrada anterior abaixo foi
 reconstituída do commit indicado; o histórico anterior completo permanece no Git
 (`git log`) e as entregas por etapa estão em [docs/PLANO.md](docs/PLANO.md).
 
+## 2026-11-01 19:55:00 −03:00 (America/Sao_Paulo) — Zoomer, núcleo (5.2, primeira parte)
+
+### Adicionado
+
+- `MM_ENEMY_ZOOMER` no núcleo de inimigos: 15 HP, 5 de dano, corpo 16x16 e velocidade provisória
+  de 0,5 px/tick, reusando o comportamento de solo que cai, anda e vira em paredes e beiradas.
+  Ainda não há sprite, paleta, animação nem spawn nas salas.
+
+**Validação:** `enemy_zoomer` no host; suíte completa e smoke no BlastEm via GDB sem falhas;
+ROM de teste reconstruída.
+
 ## 2026-11-01 16:40:00 −03:00 (America/Sao_Paulo) — Entidade de inimigo, núcleo (5.1)
 
 ### Adicionado

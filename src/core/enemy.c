@@ -44,7 +44,9 @@ static void walker(const MmWorld *w, MmEnemy *e)
 }
 
 const MmEnemyDef mm_enemy_defs[MM_ENEMY_KIND_COUNT] = {
-    {walker, 10, 10, {0, 0, 16, 16}, MM_ENEMY_WALK_SPEED}
+    {walker, 10, 10, {0, 0, 16, 16}, MM_ENEMY_WALK_SPEED},
+    /* Zoomer keeps the shared ground behavior; 5.2 adds its sprite and animation. */
+    {walker, 15, 5, {0, 0, 16, 16}, MM_ENEMY_ZOOMER_SPEED}
 };
 
 void mm_enemy_pool_init(MmEnemyPool *pool)

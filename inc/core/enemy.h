@@ -7,11 +7,14 @@
 /* Pool size for one room; enter_room spawns up to this many and ignores extra room spawns. */
 #define MM_ENEMY_MAX 16
 
-/* Kinds index mm_enemy_defs. Zoomer, Skree, Ripper and Geemer replace the placeholder in 5.2. */
-enum { MM_ENEMY_WALKER, MM_ENEMY_KIND_COUNT };
+/* Kinds index mm_enemy_defs. Skree, Ripper and Geemer join Zoomer in 5.2. */
+enum { MM_ENEMY_WALKER, MM_ENEMY_ZOOMER, MM_ENEMY_KIND_COUNT };
 
 /* Placeholder until 5.2 measures each original enemy: 0.5 px/tick, slow enough to read on screen. */
 #define MM_ENEMY_WALK_SPEED 128
+/* Zoomer crawls at the same provisional 0.5 px/tick; its 16x16 box is the body inside the
+   22x17 visible pixels of the original sprite. */
+#define MM_ENEMY_ZOOMER_SPEED 128
 
 typedef struct {
     int x, y; /* Q24.8 world position of the hitbox origin (its left/top pixel). */
