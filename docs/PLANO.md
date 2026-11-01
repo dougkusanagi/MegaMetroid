@@ -309,7 +309,7 @@ super e persistência na troca de sala) e `measured_missiles`/`missile_loadout` 
 |---|-------|---------|-------|
 | 5.1 | Entidade de inimigo | Struct + tabela de comportamentos (ponteiro de função) | Inimigo andando e colidindo com o chão |
 | 5.2 | Inimigos de Crateria | Zoomer, Skree, Ripper, Geemer (nesta ordem) | Cada um com IA e animação |
-| 5.3 | Dano e vida | HP, invencibilidade, knockback, energia da Samus | Morrer e reiniciar a sala |
+| 5.3 (núcleo ✅; falta fonte de dano, morte e reinício) | Dano e vida | HP, invencibilidade, knockback, energia da Samus | Morrer e reiniciar a sala |
 | 5.4 | Drops | Energia/míssil pequenos | Pegar aumenta contadores |
 | 5.5 | Limite de sprites | Culling fora da tela; ≤80 sprites e ≤20 por scanline | Sala cheia sem flicker excessivo |
 

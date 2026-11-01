@@ -10,6 +10,17 @@ O registro detalhado começa em 18/10/2026. A entrada anterior abaixo foi
 reconstituída do commit indicado; o histórico anterior completo permanece no Git
 (`git log`) e as entregas por etapa estão em [docs/PLANO.md](docs/PLANO.md).
 
+## 2026-11-01 12:00:00 −03:00 (America/Sao_Paulo) — Energia e dano, primeira parte (5.3)
+
+### Adicionado
+
+- Módulo `core/health.c`: energia, tanques, dano com 96 ticks de invulnerabilidade, empurrão
+  (knockback), recuperação limitada ao máximo e morte. A HUD passa a ler esse estado.
+  Ainda não há fonte de dano no jogo; ela vem com os inimigos (5.1/5.2).
+
+**Validação:** `health_rules` no host (todos os testes passaram); smoke no BlastEm via GDB
+sem falhas; ROM padrão reconstruída.
+
 ## 2026-10-28 01:05:00 −03:00 (America/Sao_Paulo) — Barra de status (7.1.1)
 
 ### Adicionado

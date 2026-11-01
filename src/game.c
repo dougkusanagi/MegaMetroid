@@ -167,7 +167,7 @@ static u16 hud_attr(const Game *g, u16 cell)
 static void draw_hud(Game *g, bool all)
 {
     u8 cells[MM_HUD_ICON_ROWS][MM_HUD_COLUMNS];
-    MmHudState state = {g->energy, g->energy_max, g->weapon.missiles, g->weapon.missiles_max,
+    MmHudState state = {g->health.energy, g->health.energy_max, g->weapon.missiles, g->weapon.missiles_max,
                         g->weapon.supers, g->weapon.supers_max, g->weapon.selected};
     u16 x, y;
     if (MM_DEBUG_OVERLAY) return; /* The overlay uses these rows. */
@@ -377,7 +377,7 @@ bool game_init(Game *g, u16 room_index)
     g->input.previous = 0; g->pal_phase = 0; g->frame = 0;
     g->door_prompt = NULL;
     g->music_looping = FALSE;
-    g->energy = g->energy_max = MM_START_ENERGY;
+    mm_health_init(&g->health);
     mm_weapon_init(&g->weapon);
     enter_room(g, room, room_index, room->player_initial_pos.x, room->player_initial_pos.y, -1);
     SYS_disableInts();
@@ -584,6 +584,7 @@ void game_update(Game *g, MmInput input)
         MmPose pose_before = g->player.pose;
         int selected_before = g->weapon.selected;
         ++g->frame;
+        mm_health_tick(&g->health);
         for (i = 0; i < g->door_lock_count; ++i) mm_lock_tick(&g->door_locks[i]);
         sync_door_solids(g);
         mm_tick(&g->world, &g->player, input);

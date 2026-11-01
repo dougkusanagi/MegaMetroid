@@ -6,6 +6,7 @@
 #include "core/worldmap.h"
 #include "core/doorlock.h"
 #include "core/hud.h"
+#include "core/health.h"
 #include "world_map.h"
 #include "out/maps.h"
 #include "out/sm_hitboxes.h"
@@ -1668,6 +1669,25 @@ static void hud_cells(void) {
     puts("PASS HUD: energy digits and tanks, ammo icons lit by selection, counts, hidden empty bins");
 }
 
+static void health_rules(void) {
+    MmHealth h; MmBody b; int i;
+    mm_body_init(&b, 0, 0, box);
+    mm_health_init(&h);
+    assert(h.energy == 99 && h.energy_max == 99);
+    assert(mm_health_hit(&h, &b, 30, 1) == 1 && h.energy == 69);
+    assert(b.vx > 0 && b.vy < 0 && !b.grounded);
+    assert(mm_health_hit(&h, &b, 30, 1) == 0 && h.energy == 69);
+    for (i = 0; i < MM_HIT_INVULNERABLE_TICKS - 1; ++i) mm_health_tick(&h);
+    assert(mm_health_hit(&h, &b, 10, 0) == 0);
+    mm_health_tick(&h);
+    assert(h.stun == 0 && mm_health_hit(&h, &b, 10, 0) == 1 && b.vx < 0 && h.energy == 59);
+    assert(mm_health_heal(&h, 1000) == 40 && h.energy == 99);
+    mm_health_add_tank(&h);
+    assert(h.energy_max == 199 && h.energy == 199);
+    h.invulnerable = 0;
+    assert(mm_health_hit(&h, &b, 500, 0) == 1 && h.dead && h.energy == 0);
+    assert(mm_health_hit(&h, &b, 5, 0) == 0 && mm_health_heal(&h, 5) == 0);
+}
 int main(void) {
     diagonal_controls();
     samus_jump_measure();
@@ -1683,6 +1703,6 @@ int main(void) {
     missile_loadout();
     movement(); air_steering(); collisions(); jump_and_ledge(); states(); physics(); variable_jump(); ledge_jump();
     slopes(); slope_sweep(); tunnels(); wall_climb(); wall_jump_rules(); wall_jump_animation(); moonwalk(); poses(); crouch_poses(); crouch_tap(); double_tap(); ball_poses(); aiming(); beam_from_muzzle(); morph_rules(); ball_stands_on_slope();
-    ball_stand_real(); camera_and_input(); doors(); world_map(); door_locks(); hud_cells(); real_levels();
+    ball_stand_real(); camera_and_input(); doors(); world_map(); door_locks(); hud_cells(); health_rules(); real_levels();
     puts("All core regression tests passed."); return 0;
 }

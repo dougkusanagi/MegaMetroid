@@ -556,7 +556,7 @@ static u16 window_cell(u16 x, u16 y)
 static int hud_on_screen(const Game *g)
 {
     u8 cells[MM_HUD_ICON_ROWS][MM_HUD_COLUMNS];
-    MmHudState state = {g->energy, g->energy_max, g->weapon.missiles, g->weapon.missiles_max,
+    MmHudState state = {g->health.energy, g->health.energy_max, g->weapon.missiles, g->weapon.missiles_max,
                         g->weapon.supers, g->weapon.supers_max, g->weapon.selected};
     u16 x, y;
     mm_hud_cells(&state, cells);
