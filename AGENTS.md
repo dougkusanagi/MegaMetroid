@@ -32,3 +32,20 @@ O plano de trabalho está em [`docs/PLANO.md`](docs/PLANO.md) — siga as etapas
 - Linguagem do código: C (SGDK), no estilo do arquivo editado.
 - Evite alocação dinâmica em tempo de execução; prefira arrays estáticos e dados em ROM (`const`).
 - Respeite os limites do hardware (VRAM, 80 sprites, 20 por scanline, 64 KB de RAM).
+
+## Agentes e modelos (recomendação, não obrigatória)
+
+Divisão usual por papel. O modelo entre parênteses é o atual; se ele deixar de existir, use outro equivalente para o mesmo papel.
+
+| Papel | Modelo atual | Uso |
+|---|---|---|
+| Implementação | `deepseek4.1-flash-free` (barato) | Etapas do `docs/PLANO.md` já detalhadas e tarefas bem definidas. |
+| Dúvidas | Opus 5.5, esforço baixo | Perguntas sobre código, SGDK, hardware e o original, sem alterar arquivos. |
+| Problemas | Sonnet 5.5, esforço alto | Depuração, falhas recorrentes e revisão do trabalho de implementação. |
+
+- O agente de implementação consulta `tests/reference/super_metroid/`, `docs/FISICA.md` e `docs/SPRITES.md` antes de definir valores de física ou de sprites. Não invente valores.
+- Passe a tarefa ao agente de problemas quando:
+  - o smoke test falhar 2 vezes pela mesma causa;
+  - o problema envolver timing do VDP, DMA, limites de VRAM ou sprites, áudio (XGM2) ou divergência de fidelidade com as medições de referência;
+  - a etapa exigir decisões de arquitetura não descritas no plano.
+- Antes de marcar uma etapa como concluída, o agente de problemas revisa o diff feito pelo agente de implementação.
