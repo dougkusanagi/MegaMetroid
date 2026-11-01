@@ -7,6 +7,7 @@
 #include "core/doorlock.h"
 #include "core/hud.h"
 #include "core/health.h"
+#include "core/enemy.h"
 #include "world_map.h"
 #include "out/maps.h"
 #include "out/sm_hitboxes.h"
@@ -1688,6 +1689,42 @@ static void health_rules(void) {
     assert(mm_health_hit(&h, &b, 500, 0) == 1 && h.dead && h.energy == 0);
     assert(mm_health_hit(&h, &b, 5, 0) == 0 && mm_health_heal(&h, 5) == 0);
 }
+/* Etapa 5.1: the enemy core reuses the swept collision. A placeholder walker falls to the floor,
+   walks into a wall, turns around and stops before a ledge. */
+static void enemy_walker(void) {
+    MmEnemyPool pool;
+    MmEnemy *e;
+    int i;
+    reset(); floor_at(30);
+    for (i = 27; i < 30; ++i) tiles[i * 64 + 24] = 0;
+    mm_enemy_pool_init(&pool);
+    assert(mm_enemy_spawn(&pool, MM_ENEMY_WALKER, 40, 200) == 0);
+    e = &pool.enemies[0];
+    assert(mm_enemy_rect(e).left == 40 && mm_enemy_rect(e).right == 56 &&
+           mm_enemy_rect(e).top == 200 && mm_enemy_rect(e).bottom == 216);
+    for (i = 0; i < 60; ++i) mm_enemy_tick(&world, &pool);
+    assert(e->grounded && mm_pixel(e->y) == 224 && e->age == 60);
+    for (i = 0; i < 320; ++i) mm_enemy_tick(&world, &pool);
+    assert(e->grounded && mm_pixel(e->y) == 224 && e->facing_left && mm_pixel(e->x) < 176);
+    /* A gap in the floor turns the walker before the front foot leaves the ground. */
+    reset(); floor_at(30);
+    for (i = 10; i <= 12; ++i) { tiles[30 * 64 + i] = 1; tiles[31 * 64 + i] = 1; }
+    mm_enemy_pool_init(&pool);
+    assert(mm_enemy_spawn(&pool, MM_ENEMY_WALKER, 48, 224) == 0);
+    e = &pool.enemies[0];
+    for (i = 0; i < 40; ++i) mm_enemy_tick(&world, &pool);
+    assert(e->grounded && mm_pixel(e->y) == 224 && e->facing_left && mm_pixel(e->x) <= 64);
+    /* The pool fills up and rejects unknown kinds without writing past the array. */
+    reset(); floor_at(30);
+    mm_enemy_pool_init(&pool);
+    for (i = 0; i < MM_ENEMY_MAX; ++i)
+        assert(mm_enemy_spawn(&pool, MM_ENEMY_WALKER, 8 + i * 24, 224) == i);
+    assert(mm_enemy_spawn(&pool, MM_ENEMY_WALKER, 8, 224) == -1);
+    assert(mm_enemy_spawn(&pool, MM_ENEMY_KIND_COUNT, 8, 224) == -1);
+    mm_enemy_tick(&world, &pool);
+    assert(pool.count == MM_ENEMY_MAX && pool.enemies[MM_ENEMY_MAX - 1].age == 1);
+    puts("PASS enemy walker: falls, walks, turns at wall and ledge; full pool rejects spawns");
+}
 int main(void) {
     diagonal_controls();
     samus_jump_measure();
@@ -1703,6 +1740,6 @@ int main(void) {
     missile_loadout();
     movement(); air_steering(); collisions(); jump_and_ledge(); states(); physics(); variable_jump(); ledge_jump();
     slopes(); slope_sweep(); tunnels(); wall_climb(); wall_jump_rules(); wall_jump_animation(); moonwalk(); poses(); crouch_poses(); crouch_tap(); double_tap(); ball_poses(); aiming(); beam_from_muzzle(); morph_rules(); ball_stands_on_slope();
-    ball_stand_real(); camera_and_input(); doors(); world_map(); door_locks(); hud_cells(); health_rules(); real_levels();
+    ball_stand_real(); camera_and_input(); doors(); world_map(); door_locks(); hud_cells(); health_rules(); enemy_walker(); real_levels();
     puts("All core regression tests passed."); return 0;
 }

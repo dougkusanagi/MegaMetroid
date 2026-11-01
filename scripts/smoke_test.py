@@ -152,6 +152,9 @@ def main():
         if 'mm_smoke_hud_failure' in symbols:
             hud = int(symbols['mm_smoke_hud_failure'], 16) & 0xFFFFFF
             commands += ['-ex', f'printf "MM_SMOKE_HUD_FAILURE=0x%x\\n", *(unsigned short*)0x{hud:x}']
+        if 'mm_smoke_enemy_failure' in symbols:
+            enemy = int(symbols['mm_smoke_enemy_failure'], 16) & 0xFFFFFF
+            commands += ['-ex', f'printf "MM_SMOKE_ENEMY_FAILURE=0x%x\\n", *(unsigned short*)0x{enemy:x}']
         if 'mm_smoke_perf' in symbols:
             perf = int(symbols['mm_smoke_perf'], 16) & 0xFFFFFF
             for index, label in enumerate(('NORMAL_CPU', 'NORMAL_DMA', 'NORMAL_MISSED', 'SPIN_CPU', 'SPIN_DMA', 'SPIN_MISSED',

@@ -5,6 +5,7 @@
 #include "core/weapon.h"
 #include "core/hud.h"
 #include "core/health.h"
+#include "core/enemy.h"
 
 /* More than any current room; the exporter refuses rooms that would overflow these tables. */
 #define MM_ROOM_MAX_DOORS 8
@@ -22,7 +23,8 @@ typedef struct {
     Sprite *beam_sprites[MM_BEAM_COUNT];
     bool missile_palette; /* PAL3 holds missile_sprite's palette instead of the beam's. */
     const char *door_prompt; /* Text on the HUD message row while Samus is at a door; NULL otherwise. */
-    MmHealth health; /* Energy, tanks and hit invulnerability (5.3); damage sources come with the enemies (5.1). */
+    MmHealth health; /* Energy, tanks and hit invulnerability (5.3); damage sources come with the enemies (5.2). */
+    MmEnemyPool enemies; /* Simulated enemies; art and animation arrive in 5.2. */
     u8 hud_cells[MM_HUD_ICON_ROWS][MM_HUD_COLUMNS]; /* Status bar tiles on the window, redrawn when they change. */
     u16 hud_tile; /* VRAM index of the first status bar tile, just below the sprite tiles. */
     Sprite *door_sprites[MM_ROOM_MAX_DOORS]; /* Full transparent door art; hidden for doors the room does not have. */

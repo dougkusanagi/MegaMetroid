@@ -16,6 +16,7 @@
 volatile u16 mm_smoke_result;
 volatile u32 mm_smoke_failure; /* Failure bitmask, printed through the GDB API. */
 volatile u16 mm_smoke_hud_failure; /* Status bar checks (7.1); the main mask has no bit left. */
+volatile u16 mm_smoke_enemy_failure; /* Enemy core and pool checks (5.1). */
 /* Chunked VDP readback stays within RAM. The GDB runner optionally saves these
    checkpoints to reconstruct video from the emulator's VRAM, CRAM and SAT. */
 volatile u16 mm_smoke_video[4096];
@@ -679,6 +680,37 @@ static int missile_weapon(Game *g)
     return failed;
 }
 
+/* Etapa 5.1: the placeholder walker runs on the target through game_update, falls to the floor,
+   walks right into a wall and turns around. */
+static int enemy_walker(Game *g)
+{
+    static unsigned char tiles[32 * 16];
+    MmWorld saved_world = g->world;
+    MmBody saved_player = g->player;
+    MmEnemy *e;
+    int i, failed = 0;
+    memset(tiles, 1, sizeof tiles);
+    for (i = 0; i < 32; ++i) tiles[12 * 32 + i] = 0;
+    for (i = 9; i < 12; ++i) tiles[i * 32 + 24] = 0;
+    g->world = (MmWorld){tiles, 32, 16, 0, 0};
+    mm_samus_init(&g->player, 200, 48);
+    mm_weapon_init(&g->weapon);
+    mm_enemy_pool_init(&g->enemies);
+    if (mm_enemy_spawn(&g->enemies, MM_ENEMY_WALKER, 40, 60) != 0) failed = 1;
+    for (i = 0; i < 320; ++i) {
+        game_update(g, (MmInput){0});
+        SYS_doVBlankProcess();
+    }
+    e = &g->enemies.enemies[0];
+    if (g->enemies.count != 1 || !e->active || !e->grounded || mm_pixel(e->y) != 80 ||
+        !e->facing_left || mm_pixel(e->x) >= 176 || e->age < 320) failed = 1;
+    g->world = saved_world;
+    g->player = saved_player;
+    mm_enemy_pool_init(&g->enemies);
+    mm_weapon_init(&g->weapon);
+    return failed;
+}
+
 int main(bool hardReset)
 {
     static Game g;
@@ -870,6 +902,7 @@ int main(bool hardReset)
     failed |= room_transitions(&g) << 17; /* Bits 17-30: which room/door check failed. */
     room_video(&g);
     if (missile_weapon(&g)) failed |= 1UL << 27;
+    mm_smoke_enemy_failure = enemy_walker(&g);
     /* CPU text writes must not race the sprite/scroll DMA in VBlank. */
     SYS_disableInts();
     /* Window plane keeps the result on screen; plane A scrolls with the camera. */
@@ -879,7 +912,7 @@ int main(bool hardReset)
     VDP_drawText("MOVE L/R JUMP CAMERA", 1, 1);
     SYS_enableInts();
     mm_smoke_failure = failed;
-    mm_smoke_result = failed || mm_smoke_hud_failure ? 2 : 1;
+    mm_smoke_result = failed || mm_smoke_hud_failure || mm_smoke_enemy_failure ? 2 : 1;
     mm_smoke_finish();
     return 0;
 }

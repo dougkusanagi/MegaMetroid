@@ -348,6 +348,10 @@ static void enter_room(Game *g, const room_def *room, u16 room_index, int x, int
     for (i = 0; i < g->door_lock_count; ++i) mm_lock_init(&g->door_locks[i], i == open_door);
     sync_door_solids(g);
     mm_samus_init(&g->player, x, y);
+    mm_enemy_pool_init(&g->enemies);
+    for (i = 0; i < room->enemy_spawn_count && i < MM_ENEMY_MAX; ++i)
+        mm_enemy_spawn(&g->enemies, room->enemy_spawns[i].kind,
+                       room->enemy_spawns[i].position.x, room->enemy_spawns[i].position.y);
 }
 
 /* Foreground tiles, then background tiles, from the start of the user VRAM. CPU transfers keep
@@ -588,6 +592,7 @@ void game_update(Game *g, MmInput input)
         for (i = 0; i < g->door_lock_count; ++i) mm_lock_tick(&g->door_locks[i]);
         sync_door_solids(g);
         mm_tick(&g->world, &g->player, input);
+        mm_enemy_tick(&g->world, &g->enemies);
         if (input.weapon_pressed) mm_weapon_cycle(&g->weapon);
         /* The shot leaves from the cannon of the pose that will be on screen. */
         row = player_row(&g->player);

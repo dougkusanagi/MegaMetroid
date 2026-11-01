@@ -10,6 +10,18 @@ O registro detalhado começa em 18/10/2026. A entrada anterior abaixo foi
 reconstituída do commit indicado; o histórico anterior completo permanece no Git
 (`git log`) e as entregas por etapa estão em [docs/PLANO.md](docs/PLANO.md).
 
+## 2026-11-01 16:40:00 −03:00 (America/Sao_Paulo) — Entidade de inimigo, núcleo (5.1)
+
+### Adicionado
+
+- Núcleo `core/enemy.c`: pool estático de 16 inimigos, tabela de comportamentos por ponteiro de
+  função e o comportamento provisório `walker`, que cai, anda e vira em paredes e beiradas com a
+  mesma colisão da Samus. `enter_room` cria os spawns da sala e `game_update` roda um tick por
+  inimigo. Ainda não há arte, paleta nem animação (5.2), e as salas seguem sem inimigos.
+
+**Validação:** `enemy_walker` no host; smoke no BlastEm via GDB com `game_update` sem falhas;
+ROM padrão reconstruída.
+
 ## 2026-11-01 12:00:00 −03:00 (America/Sao_Paulo) — Energia e dano, primeira parte (5.3)
 
 ### Adicionado

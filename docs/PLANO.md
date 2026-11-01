@@ -3,7 +3,7 @@
 Plano para continuar o port de Super Metroid para Mega Drive / Genesis usando o [SGDK](https://github.com/Stephane-D/SGDK).
 Cada etapa é pequena, testável no emulador e termina em **commit + push** (ver `AGENTS.md`).
 
-Última revisão: 2026-10-18.
+Última revisão: 2026-11-01.
 
 > **Nota (revisão da refatoração `codex/refactor-game-core`)**: o código dessa branch foi incorporado a esta. Avaliação: o núcleo (`src/core/`) é C portátil sem SGDK, em ponto fixo Q24.8, com colisão varrida por pixel, pool estático de projéteis, `src/game.c` como única camada SGDK e testes de regressão em `tests/` (`scripts/test.ps1`, exige MSVC/gcc/clang no host). Isso adianta as etapas 0.3, 0.4, 1.1, 1.2, 2.4, 4.1 e 4.2 e a câmera por zonas. As etapas ✅ acima foram validadas por compilação; o teste de comportamento no emulador ainda deve ser repetido a cada etapa. Não vale aproveitar: `dev` (versão anterior da mesma refatoração, com `player.c`/`physics.c` maiores), `0.54` (reescrita abandonada com arquivos vazios) e as cópias `better-org` / `working-v-col`.
 
@@ -23,7 +23,8 @@ Cada etapa é pequena, testável no emulador e termina em **commit + push** (ver
 - As portas azuis abrem com um tiro, vermelhas com cinco mísseis (ou um super) e verdes só com
   super, com a tampa animada nos cinco quadros originais (6.6.3). Mísseis e supers já são
   selecionáveis por START desde a 4.3; o contador na HUD entra na 7.1.
-- Listas de inimigos estão vazias; comportamento e instâncias entram nas fases 5 e 6.2.
+- As listas de inimigos das salas continuam vazias; o núcleo de comportamento existe (5.1), mas arte,
+  paleta, animação e os inimigos reais entram na 5.2.
 - A exportação de mapa e colisão ainda não é automática (6.2); mapas maiores pedem avaliação de RAM, ROM e streaming (6.4).
 - A nave segue decorativa, sem plataforma, save/recarga ou escotilha interativa (fases 6/7).
 
@@ -307,11 +308,21 @@ super e persistência na troca de sala) e `measured_missiles`/`missile_loadout` 
 
 | # | Etapa | Entrega | Teste |
 |---|-------|---------|-------|
-| 5.1 | Entidade de inimigo | Struct + tabela de comportamentos (ponteiro de função) | Inimigo andando e colidindo com o chão |
+| 5.1 ✅ | Entidade de inimigo | Struct + tabela de comportamentos (ponteiro de função) | Inimigo andando e colidindo com o chão |
 | 5.2 | Inimigos de Crateria | Zoomer, Skree, Ripper, Geemer (nesta ordem) | Cada um com IA e animação |
 | 5.3 (núcleo ✅; falta fonte de dano, morte e reinício) | Dano e vida | HP, invencibilidade, knockback, energia da Samus | Morrer e reiniciar a sala |
 | 5.4 | Drops | Energia/míssil pequenos | Pegar aumenta contadores |
 | 5.5 | Limite de sprites | Culling fora da tela; ≤80 sprites e ≤20 por scanline | Sala cheia sem flicker excessivo |
+
+**5.1 Entidade de inimigo** ✅ (2026-11-01). O núcleo portátil `src/core/enemy.c` tem `MmEnemy`
+(posição Q24.8, hitbox, vida, dano, direção), um pool estático de 16, `mm_enemy_spawn`,
+`mm_enemy_rect` e `mm_enemy_tick`, que chama o comportamento por ponteiro de função
+(`MmEnemyDef`). O comportamento provisório `walker` reusa `mm_move` (chão, paredes, rampas e
+beiradas) com a gravidade do original; a velocidade de 0,5 px/tick e a hitbox 16x16 são
+provisórias até a 5.2. `enter_room` inicializa o pool e cria os spawns da sala, e `game_update`
+roda um tick por inimigo. Custo: cerca de 1 KB de RAM no `Game`. Sem arte, paleta ou animação;
+isso entra na 5.2. Validação: `enemy_walker` no host (queda, caminhada, parede, beirada e pool
+cheio) e no smoke do BlastEm através de `game_update`.
 
 ### Fase 6 — Salas, portas e mundo
 
