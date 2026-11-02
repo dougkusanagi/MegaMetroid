@@ -18,6 +18,7 @@ extern const SpriteDefinition beam_impact_sprite;
 extern const SpriteDefinition missile_sprite;
 extern const SpriteDefinition door_cap;
 extern const SpriteDefinition zoomer_sprite;
+extern const SpriteDefinition skree_sprite;
 extern const TileSet hud_tiles;
 extern const TileSet hud_font;
 

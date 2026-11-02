@@ -688,13 +688,16 @@ static int missile_weapon(Game *g)
    follows its simulated position and advances its six-frame animation. */
 static int enemy_zoomer_art(Game *g)
 {
-    const MmEnemy *enemy;
-    Sprite *sprite;
+    const MmEnemy *enemy = NULL;
+    Sprite *sprite = NULL;
     int i, failed = 0;
-    if (g->enemies.count != 1 || g->enemies.enemies[0].kind != MM_ENEMY_ZOOMER) return 1;
-    enemy = &g->enemies.enemies[0];
-    sprite = g->enemy_sprites[0];
-    if (!sprite || sprite->definition != &zoomer_sprite) return 1;
+    for (i = 0; i < g->enemies.count; ++i)
+        if (g->enemies.enemies[i].kind == MM_ENEMY_ZOOMER) {
+            enemy = &g->enemies.enemies[i];
+            sprite = g->enemy_sprites[i];
+            break;
+        }
+    if (!enemy || !sprite || sprite->definition != &zoomer_sprite) return 1;
     idle(g, 2);
     if (SPR_getVisibility(sprite) != AUTO_FAST ||
         sprite->x != mm_pixel(enemy->x) - g->camera.x - ENEMY_DRAW_X + 0x80 ||
@@ -705,6 +708,32 @@ static int enemy_zoomer_art(Game *g)
     }
     if (sprite->frameInd != (enemy->age / ZOOMER_FRAME_TICKS) % ZOOMER_FRAME_COUNT) failed = 1;
     if (smoke_color(16 + 15) != g->room->palette_bg->data[15] || !smoke_color(16 + 15)) failed = 1;
+    return failed;
+}
+
+/* Etapa 5.2: the Skree spawned by the room is drawn with the Skree sheet in PAL1,
+   follows its simulated position and loops the four hanging frames. */
+static int enemy_skree_art(Game *g)
+{
+    const MmEnemy *enemy = NULL;
+    Sprite *sprite = NULL;
+    int i, failed = 0;
+    for (i = 0; i < g->enemies.count; ++i)
+        if (g->enemies.enemies[i].kind == MM_ENEMY_SKREE) {
+            enemy = &g->enemies.enemies[i];
+            sprite = g->enemy_sprites[i];
+            break;
+        }
+    if (!enemy || !sprite || sprite->definition != &skree_sprite) return 1;
+    idle(g, 2);
+    if (SPR_getVisibility(sprite) != AUTO_FAST ||
+        sprite->x != mm_pixel(enemy->x) - g->camera.x - SKREE_DRAW_X + 0x80 ||
+        sprite->y != mm_pixel(enemy->y) - g->camera.y - SKREE_DRAW_Y + 0x80) failed = 1;
+    for (i = 0; i < SKREE_FRAME_TICKS; ++i) {
+        game_update(g, (MmInput){0});
+        SYS_doVBlankProcess();
+    }
+    if (sprite->frameInd != (enemy->age / SKREE_FRAME_TICKS) % 4) failed = 1;
     return failed;
 }
 
@@ -858,6 +887,7 @@ int main(bool hardReset)
     /* PAL adds one tick in every five game_update calls: 760 calls become 912 ticks. */
     if (g.frame != 760 + (SYS_isPAL() ? 152 : 0)) failed |= 1024;
     if (enemy_zoomer_art(&g)) failed |= 1UL << 26;
+    if (enemy_skree_art(&g)) mm_smoke_enemy_failure |= 2;
     /* Both facings keep the normal-jump strip throughout descent, with no frame loop. */
     {
         int side;
@@ -931,7 +961,7 @@ int main(bool hardReset)
     failed |= room_transitions(&g) << 17; /* Bits 17-30: which room/door check failed. */
     room_video(&g);
     if (missile_weapon(&g)) failed |= 1UL << 27;
-    mm_smoke_enemy_failure = enemy_walker(&g);
+    mm_smoke_enemy_failure |= enemy_walker(&g);
     /* CPU text writes must not race the sprite/scroll DMA in VBlank. */
     SYS_disableInts();
     /* Window plane keeps the result on screen; plane A scrolls with the camera. */

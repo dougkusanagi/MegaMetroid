@@ -16,8 +16,9 @@ static int ledge_ahead(const MmWorld *w, const MmEnemy *e, int dir)
 
 /* Placeholder ground enemy for 5.1: gravity, walls, slopes and ledges through mm_move. Its
    speed and hitbox are generic; 5.2 replaces it with the measured Crateria behaviors. */
-static void walker(const MmWorld *w, MmEnemy *e)
+static void walker(const MmWorld *w, const MmBody *player, MmEnemy *e)
 {
+    (void)player;
     MmBody body = {0};
     int dir = e->facing_left ? -1 : 1;
     if (e->grounded && ledge_ahead(w, e, dir)) {
@@ -43,10 +44,66 @@ static void walker(const MmWorld *w, MmEnemy *e)
     if (!body.vx) e->facing_left = !e->facing_left;
 }
 
+/* Skree hangs still until Samus is under it, prepares, then dives diagonally toward her
+   current position. It burrows into the floor and disappears. */
+static void skree(const MmWorld *w, const MmBody *player, MmEnemy *e)
+{
+    int cx = mm_pixel(e->x) + (e->hitbox.left + e->hitbox.right) / 2;
+    int px = mm_pixel(player->x) + (player->hitbox.left + player->hitbox.right) / 2;
+    switch (e->state) {
+    case MM_ENEMY_STATE_IDLE: {
+        int py = mm_pixel(player->y);
+        int below = py - (mm_pixel(e->y) + e->hitbox.bottom);
+        if (below >= 0 && below <= MM_ENEMY_SKREE_SIGHT_Y &&
+            px >= cx - MM_ENEMY_SKREE_SIGHT_X && px <= cx + MM_ENEMY_SKREE_SIGHT_X) {
+            e->state = MM_ENEMY_STATE_PREPARE;
+            e->timer = MM_ENEMY_SKREE_PREPARE_TICKS;
+        }
+        break;
+    }
+    case MM_ENEMY_STATE_PREPARE:
+        if (--e->timer <= 0) {
+            e->state = MM_ENEMY_STATE_ATTACK;
+            e->facing_left = px < cx;
+            e->vx = px < cx ? -MM_ENEMY_SKREE_DIVE_X :
+                    px > cx ? MM_ENEMY_SKREE_DIVE_X : 0;
+            e->vy = MM_ENEMY_SKREE_DIVE_Y;
+        }
+        break;
+    case MM_ENEMY_STATE_ATTACK: {
+        MmRect probe;
+        int nx = e->x + e->vx;
+        probe.left = mm_pixel(nx) + e->hitbox.left;
+        probe.right = mm_pixel(nx) + e->hitbox.right;
+        probe.top = mm_pixel(e->y) + e->hitbox.top;
+        probe.bottom = mm_pixel(e->y) + e->hitbox.bottom;
+        if (mm_rect_blocked(w, probe)) e->vx = 0;
+        else e->x = nx;
+        e->y += e->vy;
+        probe.left = mm_pixel(e->x) + e->hitbox.left;
+        probe.right = mm_pixel(e->x) + e->hitbox.right;
+        probe.top = mm_pixel(e->y) + e->hitbox.bottom;
+        probe.bottom = probe.top + 1;
+        if (mm_rect_blocked(w, probe)) {
+            e->state = MM_ENEMY_STATE_BURROW;
+            e->timer = MM_ENEMY_SKREE_BURROW_TICKS;
+            e->vx = e->vy = 0;
+        }
+        break;
+    }
+    case MM_ENEMY_STATE_BURROW:
+        e->y += MM_UNIT;
+        if (--e->timer <= 0) e->active = 0;
+        break;
+    }
+}
+
 const MmEnemyDef mm_enemy_defs[MM_ENEMY_KIND_COUNT] = {
     {walker, 10, 10, {0, 0, 16, 16}, MM_ENEMY_WALK_SPEED},
     /* Zoomer keeps the shared ground behavior; 5.2 adds its sprite and animation. */
-    {walker, 15, 5, {0, 0, 16, 16}, MM_ENEMY_ZOOMER_SPEED}
+    {walker, 15, 5, {0, 0, 16, 16}, MM_ENEMY_ZOOMER_SPEED},
+    /* Skree does not walk; the speed field belongs to the ground behaviors. */
+    {skree, 15, 10, {0, 0, 8, 12}, 0}
 };
 
 void mm_enemy_pool_init(MmEnemyPool *pool)
@@ -69,18 +126,19 @@ int mm_enemy_spawn(MmEnemyPool *pool, int kind, int x, int y)
     e->health = def->health;
     e->damage = def->damage;
     e->grounded = e->facing_left = 0;
+    e->state = e->timer = 0;
     e->age = e->frame = 0;
     e->active = 1;
     return pool->count++;
 }
 
-void mm_enemy_tick(const MmWorld *w, MmEnemyPool *pool)
+void mm_enemy_tick(const MmWorld *w, const MmBody *player, MmEnemyPool *pool)
 {
     int i;
     for (i = 0; i < pool->count; ++i) {
         MmEnemy *e = &pool->enemies[i];
         if (!e->active) continue;
-        mm_enemy_defs[e->kind].behavior(w, e);
+        mm_enemy_defs[e->kind].behavior(w, player, e);
         ++e->age;
     }
 }

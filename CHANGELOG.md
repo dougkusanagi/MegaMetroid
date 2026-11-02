@@ -10,6 +10,20 @@ O registro detalhado começa em 18/10/2026. A entrada anterior abaixo foi
 reconstituída do commit indicado; o histórico anterior completo permanece no Git
 (`git log`) e as entregas por etapa estão em [docs/PLANO.md](docs/PLANO.md).
 
+## 2026-11-02 20:10:00 −03:00 (America/Sao_Paulo) — Skree, núcleo e arte (5.2, terceira parte)
+
+### Adicionado
+
+- Skree na Crateria 1 em `(128, 768)`: 15 HP, 10 de dano e corpo 8x12 do cabeçalho original.
+  Fica pendurado girando as asas, prepara por 16 ticks quando a Samus passa embaixo, mergulha na
+  diagonal (2 px/tick vertical, 0,5 px/tick horizontal) e enterra no chão.
+- Sprite de 32x32 com 8 quadros remapeado para a PAL1 por `scripts/build_skree_sprite.py`;
+  quadros 0..3 pendurado e 4..7 no mergulho.
+- `mm_enemy_tick` passa a receber o corpo da Samus, para comportamentos que miram no jogador.
+
+**Validação:** suíte do host (incluindo `enemy_skree`), smoke no BlastEm via GDB com
+`enemy_skree_art`; ROM de teste e ROM padrão reconstruídas.
+
 ## 2026-11-01 22:55:00 −03:00 (America/Sao_Paulo) — Zoomer, arte e spawn (5.2, segunda parte)
 
 ### Adicionado

@@ -3,7 +3,7 @@
 Plano para continuar o port de Super Metroid para Mega Drive / Genesis usando o [SGDK](https://github.com/Stephane-D/SGDK).
 Cada etapa é pequena, testável no emulador e termina em **commit + push** (ver `AGENTS.md`).
 
-Última revisão: 2026-11-01.
+Última revisão: 2026-11-02.
 
 > **Nota (revisão da refatoração `codex/refactor-game-core`)**: o código dessa branch foi incorporado a esta. Avaliação: o núcleo (`src/core/`) é C portátil sem SGDK, em ponto fixo Q24.8, com colisão varrida por pixel, pool estático de projéteis, `src/game.c` como única camada SGDK e testes de regressão em `tests/` (`scripts/test.ps1`, exige MSVC/gcc/clang no host). Isso adianta as etapas 0.3, 0.4, 1.1, 1.2, 2.4, 4.1 e 4.2 e a câmera por zonas. As etapas ✅ acima foram validadas por compilação; o teste de comportamento no emulador ainda deve ser repetido a cada etapa. Não vale aproveitar: `dev` (versão anterior da mesma refatoração, com `player.c`/`physics.c` maiores), `0.54` (reescrita abandonada com arquivos vazios) e as cópias `better-org` / `working-v-col`.
 
@@ -23,7 +23,7 @@ Cada etapa é pequena, testável no emulador e termina em **commit + push** (ver
 - As portas azuis abrem com um tiro, vermelhas com cinco mísseis (ou um super) e verdes só com
   super, com a tampa animada nos cinco quadros originais (6.6.3). Mísseis e supers já são
   selecionáveis por START desde a 4.3; o contador na HUD entra na 7.1.
-- Só o Zoomer tem arte, animação e spawn em sala (5.2); Skree, Ripper e Geemer ainda não têm arte
+- Zoomer e Skree têm arte, animação e spawn em sala (5.2); Ripper e Geemer ainda não têm arte
   nem IA própria.
 - A exportação de mapa e colisão ainda não é automática (6.2); mapas maiores pedem avaliação de RAM, ROM e streaming (6.4).
 - A nave segue decorativa, sem plataforma, save/recarga ou escotilha interativa (fases 6/7).
@@ -324,13 +324,17 @@ roda um tick por inimigo. Custo: cerca de 1 KB de RAM no `Game`. Sem arte, palet
 isso entra na 5.2. Validação: `enemy_walker` no host (queda, caminhada, parede, beirada e pool
 cheio) e no smoke do BlastEm através de `game_update`.
 
-**5.2 Inimigos de Crateria** (em andamento, 2026-11-01). O Zoomer está completo: 15 HP, 5 de
+**5.2 Inimigos de Crateria** (em andamento, 2026-11-02). O Zoomer está completo: 15 HP, 5 de
 dano, corpo 16x16 e velocidade provisória de 0,5 px/tick, comportamento de solo que cai, anda e
 vira em paredes e beiradas, sprite de 24x24 com 6 quadros e spawn na Crateria 1. A arte original
 foi remapeada para a PAL1 da sala e a entrada 15 das paletas de fundo virou amarelo
 (224,224,0); a fusão das paletas de fundo e primeiro plano fica adiada até ser necessária.
-Validação: `enemy_zoomer` no host, `enemy_zoomer_art` no smoke e a vista `zoomer` reconstruída
-da VRAM/CRAM no BlastEm. Skree, Ripper e Geemer continuam pendentes.
+O Skree também está completo: 15 HP, 10 de dano, corpo 8x12 e os valores do cabeçalho original;
+ele fica pendurado girando as asas (quadros 0..3), prepara por 16 ticks quando a Samus passa
+embaixo, mergulha na diagonal a 2 px/tick vertical e 0,5 px/tick horizontal (quadros 4..7) e
+enterra no chão. O sprite 32x32 foi remapeado para a mesma PAL1. Validação: `enemy_zoomer` e
+`enemy_skree` no host, `enemy_zoomer_art` e `enemy_skree_art` no smoke. Ripper e Geemer
+continuam pendentes.
 
 ### Fase 6 — Salas, portas e mundo
 

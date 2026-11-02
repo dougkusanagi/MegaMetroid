@@ -11,7 +11,7 @@
  "tilewidth": 8,
  "tileheight": 8,
  "nextlayerid": 6,
- "nextobjectid": 8,
+ "nextobjectid": 10,
  "properties": [
   {
    "name": "fg_image",
@@ -462,6 +462,25 @@
        "name": "kind",
        "type": "int",
        "value": 1
+      }
+     ]
+    },
+    {
+     "id": 9,
+     "name": "skree",
+     "type": "enemy",
+     "x": 128,
+     "y": 768,
+     "width": 0,
+     "height": 0,
+     "rotation": 0,
+     "visible": true,
+     "point": true,
+     "properties": [
+      {
+       "name": "kind",
+       "type": "int",
+       "value": 2
       }
      ]
     }

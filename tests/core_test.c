@@ -1694,17 +1694,19 @@ static void health_rules(void) {
 static void enemy_walker(void) {
     MmEnemyPool pool;
     MmEnemy *e;
+    MmBody player;
     int i;
     reset(); floor_at(30);
+    mm_samus_init(&player, 0, 0);
     for (i = 27; i < 30; ++i) tiles[i * 64 + 24] = 0;
     mm_enemy_pool_init(&pool);
     assert(mm_enemy_spawn(&pool, MM_ENEMY_WALKER, 40, 200) == 0);
     e = &pool.enemies[0];
     assert(mm_enemy_rect(e).left == 40 && mm_enemy_rect(e).right == 56 &&
            mm_enemy_rect(e).top == 200 && mm_enemy_rect(e).bottom == 216);
-    for (i = 0; i < 60; ++i) mm_enemy_tick(&world, &pool);
+    for (i = 0; i < 60; ++i) mm_enemy_tick(&world, &player, &pool);
     assert(e->grounded && mm_pixel(e->y) == 224 && e->age == 60);
-    for (i = 0; i < 320; ++i) mm_enemy_tick(&world, &pool);
+    for (i = 0; i < 320; ++i) mm_enemy_tick(&world, &player, &pool);
     assert(e->grounded && mm_pixel(e->y) == 224 && e->facing_left && mm_pixel(e->x) < 176);
     /* A gap in the floor turns the walker before the front foot leaves the ground. */
     reset(); floor_at(30);
@@ -1712,7 +1714,7 @@ static void enemy_walker(void) {
     mm_enemy_pool_init(&pool);
     assert(mm_enemy_spawn(&pool, MM_ENEMY_WALKER, 48, 224) == 0);
     e = &pool.enemies[0];
-    for (i = 0; i < 40; ++i) mm_enemy_tick(&world, &pool);
+    for (i = 0; i < 40; ++i) mm_enemy_tick(&world, &player, &pool);
     assert(e->grounded && mm_pixel(e->y) == 224 && e->facing_left && mm_pixel(e->x) <= 64);
     /* The pool fills up and rejects unknown kinds without writing past the array. */
     reset(); floor_at(30);
@@ -1721,7 +1723,7 @@ static void enemy_walker(void) {
         assert(mm_enemy_spawn(&pool, MM_ENEMY_WALKER, 8 + i * 24, 224) == i);
     assert(mm_enemy_spawn(&pool, MM_ENEMY_WALKER, 8, 224) == -1);
     assert(mm_enemy_spawn(&pool, MM_ENEMY_KIND_COUNT, 8, 224) == -1);
-    mm_enemy_tick(&world, &pool);
+    mm_enemy_tick(&world, &player, &pool);
     assert(pool.count == MM_ENEMY_MAX && pool.enemies[MM_ENEMY_MAX - 1].age == 1);
     puts("PASS enemy walker: falls, walks, turns at wall and ledge; full pool rejects spawns");
 }
@@ -1730,6 +1732,7 @@ static void enemy_walker(void) {
 static void enemy_zoomer(void) {
     MmEnemyPool pool;
     MmEnemy *e;
+    MmBody player;
     int i;
     assert(mm_enemy_defs[MM_ENEMY_ZOOMER].health == 15);
     assert(mm_enemy_defs[MM_ENEMY_ZOOMER].damage == 5);
@@ -1739,16 +1742,49 @@ static void enemy_zoomer(void) {
            mm_enemy_defs[MM_ENEMY_ZOOMER].hitbox.bottom == 16);
     assert(mm_enemy_defs[MM_ENEMY_ZOOMER].speed == MM_ENEMY_ZOOMER_SPEED);
     reset(); floor_at(30);
+    mm_samus_init(&player, 0, 0);
     for (i = 27; i < 30; ++i) tiles[i * 64 + 24] = 0;
     mm_enemy_pool_init(&pool);
     assert(mm_enemy_spawn(&pool, MM_ENEMY_ZOOMER, 40, 200) == 0);
     e = &pool.enemies[0];
     assert(e->kind == MM_ENEMY_ZOOMER && e->health == 15 && e->damage == 5);
-    for (i = 0; i < 60; ++i) mm_enemy_tick(&world, &pool);
+    for (i = 0; i < 60; ++i) mm_enemy_tick(&world, &player, &pool);
     assert(e->grounded && mm_pixel(e->y) == 224);
-    for (i = 0; i < 320; ++i) mm_enemy_tick(&world, &pool);
+    for (i = 0; i < 320; ++i) mm_enemy_tick(&world, &player, &pool);
     assert(e->grounded && mm_pixel(e->y) == 224 && e->facing_left && mm_pixel(e->x) < 176);
     puts("PASS Zoomer: 15 HP, 5 damage, 16x16 body; falls, crawls and turns at a wall");
+}
+/* Etapa 5.2: Skree hangs until Samus is under it, prepares, dives diagonally toward her and
+   burrows into the floor. The 15 HP, 10 damage and 8x12 body are the original header values. */
+static void enemy_skree(void) {
+    MmEnemyPool pool;
+    MmEnemy *e;
+    MmBody player;
+    int i;
+    assert(mm_enemy_defs[MM_ENEMY_SKREE].health == 15);
+    assert(mm_enemy_defs[MM_ENEMY_SKREE].damage == 10);
+    assert(mm_enemy_defs[MM_ENEMY_SKREE].hitbox.left == 0 &&
+           mm_enemy_defs[MM_ENEMY_SKREE].hitbox.top == 0 &&
+           mm_enemy_defs[MM_ENEMY_SKREE].hitbox.right == 8 &&
+           mm_enemy_defs[MM_ENEMY_SKREE].hitbox.bottom == 12);
+    /* Samus above the Skree does not trigger it. */
+    reset(); floor_at(30);
+    mm_samus_init(&player, 128, 0);
+    mm_enemy_pool_init(&pool);
+    assert(mm_enemy_spawn(&pool, MM_ENEMY_SKREE, 128, 64) == 0);
+    e = &pool.enemies[0];
+    for (i = 0; i < 60; ++i) mm_enemy_tick(&world, &player, &pool);
+    assert(e->state == MM_ENEMY_STATE_IDLE && mm_pixel(e->y) == 64);
+    /* Samus below and to the right makes it prepare, then dive right. */
+    mm_samus_init(&player, 170, 100);
+    mm_enemy_tick(&world, &player, &pool);
+    assert(e->state == MM_ENEMY_STATE_PREPARE);
+    for (i = 0; i < MM_ENEMY_SKREE_PREPARE_TICKS; ++i) mm_enemy_tick(&world, &player, &pool);
+    assert(e->state == MM_ENEMY_STATE_ATTACK && e->vx > 0 && e->vy > 0 && !e->facing_left);
+    /* The dive reaches the floor, burrows and disappears. */
+    for (i = 0; i < 400 && e->active; ++i) mm_enemy_tick(&world, &player, &pool);
+    assert(!e->active && e->state == MM_ENEMY_STATE_BURROW);
+    puts("PASS Skree: 15 HP, 10 damage, 8x12 body; hangs, dives toward Samus and burrows");
 }
 
 int main(void) {
@@ -1766,6 +1802,6 @@ int main(void) {
     missile_loadout();
     movement(); air_steering(); collisions(); jump_and_ledge(); states(); physics(); variable_jump(); ledge_jump();
     slopes(); slope_sweep(); tunnels(); wall_climb(); wall_jump_rules(); wall_jump_animation(); moonwalk(); poses(); crouch_poses(); crouch_tap(); double_tap(); ball_poses(); aiming(); beam_from_muzzle(); morph_rules(); ball_stands_on_slope();
-    ball_stand_real(); camera_and_input(); doors(); world_map(); door_locks(); hud_cells(); health_rules(); enemy_walker(); enemy_zoomer(); real_levels();
+    ball_stand_real(); camera_and_input(); doors(); world_map(); door_locks(); hud_cells(); health_rules(); enemy_walker(); enemy_zoomer(); enemy_skree(); real_levels();
     puts("All core regression tests passed."); return 0;
 }

@@ -192,6 +192,32 @@ static void draw_message(Game *g, const char *text)
     SYS_enableInts();
 }
 
+/* Art and animation for each enemy kind; NULL keeps the simulated enemy invisible. */
+typedef struct {
+    const SpriteDefinition *definition;
+    u16 frame_count, frame_ticks;
+    s16 draw_x, draw_y;
+} EnemyArt;
+
+static const EnemyArt enemy_art[MM_ENEMY_KIND_COUNT] = {
+    {NULL, 0, 0, 0, 0},
+    {&zoomer_sprite, ZOOMER_FRAME_COUNT, ZOOMER_FRAME_TICKS, ENEMY_DRAW_X, ENEMY_DRAW_Y},
+    {&skree_sprite, SKREE_FRAME_COUNT, SKREE_FRAME_TICKS, SKREE_DRAW_X, SKREE_DRAW_Y}
+};
+
+/* Skree spins frames 0..3 while hanging and shows 4..7 during the dive. */
+static u16 enemy_frame(const MmEnemy *enemy, const EnemyArt *art)
+{
+    if (enemy->kind == MM_ENEMY_SKREE) {
+        if (enemy->state == MM_ENEMY_STATE_ATTACK)
+            return 4 + (enemy->age / SKREE_ATTACK_FRAME_TICKS) % 4;
+        if (enemy->state == MM_ENEMY_STATE_PREPARE || enemy->state == MM_ENEMY_STATE_BURROW)
+            return 4;
+        return (enemy->age / art->frame_ticks) % 4;
+    }
+    return (enemy->age / art->frame_ticks) % art->frame_count;
+}
+
 static void render(Game *g)
 {
     int i;
@@ -270,15 +296,16 @@ static void render(Game *g)
     }
     for (i = 0; i < g->enemies.count && i < MM_ENEMY_MAX; ++i) {
         const MmEnemy *enemy = &g->enemies.enemies[i];
+        const EnemyArt *art = &enemy_art[enemy->kind];
         Sprite *sprite = g->enemy_sprites[i];
         if (!sprite) continue;
         if (!enemy->active) { SPR_setVisibility(sprite, HIDDEN); continue; }
         SPR_setVisibility(sprite, AUTO_FAST);
         SPR_setAutoAnimation(sprite, FALSE);
-        SPR_setFrame(sprite, (enemy->age / ZOOMER_FRAME_TICKS) % ZOOMER_FRAME_COUNT);
+        SPR_setFrame(sprite, enemy_frame(enemy, art));
         SPR_setHFlip(sprite, !enemy->facing_left);
-        SPR_setPosition(sprite, mm_pixel(enemy->x) - g->camera.x - ENEMY_DRAW_X,
-                        mm_pixel(enemy->y) - g->camera.y - ENEMY_DRAW_Y);
+        SPR_setPosition(sprite, mm_pixel(enemy->x) - g->camera.x - art->draw_x,
+                        mm_pixel(enemy->y) - g->camera.y - art->draw_y);
     }
     {
         MmRect body = {x + g->player.hitbox.left, y + g->player.hitbox.top,
@@ -385,10 +412,9 @@ static bool load_room_maps(Game *g)
     return g->foreground && g->background;
 }
 
-/* Art for each enemy kind; NULL keeps the simulated enemy invisible until its sheet exists. */
 static const SpriteDefinition *enemy_definition(int kind)
 {
-    return kind == MM_ENEMY_ZOOMER ? &zoomer_sprite : NULL;
+    return kind >= 0 && kind < MM_ENEMY_KIND_COUNT ? enemy_art[kind].definition : NULL;
 }
 
 static void release_enemy_sprites(Game *g)
@@ -641,7 +667,7 @@ void game_update(Game *g, MmInput input)
         for (i = 0; i < g->door_lock_count; ++i) mm_lock_tick(&g->door_locks[i]);
         sync_door_solids(g);
         mm_tick(&g->world, &g->player, input);
-        mm_enemy_tick(&g->world, &g->enemies);
+        mm_enemy_tick(&g->world, &g->player, &g->enemies);
         if (input.weapon_pressed) mm_weapon_cycle(&g->weapon);
         /* The shot leaves from the cannon of the pose that will be on screen. */
         row = player_row(&g->player);

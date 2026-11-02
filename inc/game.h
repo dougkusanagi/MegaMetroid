@@ -15,6 +15,13 @@
 #define ENEMY_DRAW_Y 8
 #define ZOOMER_FRAME_COUNT 6
 #define ZOOMER_FRAME_TICKS 8
+/* The 32x32 Skree frame keeps its body on the lower rows; the 8x12 hitbox covers its
+   lower centre. Frames 0..3 spin while hanging, 4..7 show the dive. */
+#define SKREE_FRAME_COUNT 8
+#define SKREE_FRAME_TICKS 8
+#define SKREE_ATTACK_FRAME_TICKS 4
+#define SKREE_DRAW_X 11
+#define SKREE_DRAW_Y 20
 
 typedef struct {
     const room_def *room;
