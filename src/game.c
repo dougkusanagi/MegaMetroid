@@ -268,6 +268,18 @@ static void render(Game *g)
         cap_x = door->position.x;
         SPR_setPosition(sprite, cap_x - g->camera.x, door->position.y - g->camera.y);
     }
+    for (i = 0; i < g->enemies.count && i < MM_ENEMY_MAX; ++i) {
+        const MmEnemy *enemy = &g->enemies.enemies[i];
+        Sprite *sprite = g->enemy_sprites[i];
+        if (!sprite) continue;
+        if (!enemy->active) { SPR_setVisibility(sprite, HIDDEN); continue; }
+        SPR_setVisibility(sprite, AUTO_FAST);
+        SPR_setAutoAnimation(sprite, FALSE);
+        SPR_setFrame(sprite, (enemy->age / ZOOMER_FRAME_TICKS) % ZOOMER_FRAME_COUNT);
+        SPR_setHFlip(sprite, !enemy->facing_left);
+        SPR_setPosition(sprite, mm_pixel(enemy->x) - g->camera.x - ENEMY_DRAW_X,
+                        mm_pixel(enemy->y) - g->camera.y - ENEMY_DRAW_Y);
+    }
     {
         MmRect body = {x + g->player.hitbox.left, y + g->player.hitbox.top,
                        x + g->player.hitbox.right, y + g->player.hitbox.bottom};
@@ -373,6 +385,37 @@ static bool load_room_maps(Game *g)
     return g->foreground && g->background;
 }
 
+/* Art for each enemy kind; NULL keeps the simulated enemy invisible until its sheet exists. */
+static const SpriteDefinition *enemy_definition(int kind)
+{
+    return kind == MM_ENEMY_ZOOMER ? &zoomer_sprite : NULL;
+}
+
+static void release_enemy_sprites(Game *g)
+{
+    u16 i;
+    for (i = 0; i < MM_ENEMY_MAX; ++i) {
+        if (g->enemy_sprites[i]) SPR_releaseSprite(g->enemy_sprites[i]);
+        g->enemy_sprites[i] = NULL;
+    }
+}
+
+static void create_enemy_sprites(Game *g)
+{
+    u16 i;
+    for (i = 0; i < MM_ENEMY_MAX; ++i) g->enemy_sprites[i] = NULL;
+    for (i = 0; i < g->enemies.count && i < MM_ENEMY_MAX; ++i) {
+        const SpriteDefinition *definition = enemy_definition(g->enemies.enemies[i].kind);
+        Sprite *sprite;
+        if (!definition) continue;
+        sprite = SPR_addSprite(definition, 0, 0, TILE_ATTR(PAL1, FALSE, FALSE, FALSE));
+        if (!sprite) continue;
+        SPR_setDepth(sprite, SPR_MAX_DEPTH - 3);
+        SPR_setVisibility(sprite, HIDDEN);
+        g->enemy_sprites[i] = sprite;
+    }
+}
+
 bool game_init(Game *g, u16 room_index)
 {
     int i;
@@ -401,6 +444,7 @@ bool game_init(Game *g, u16 room_index)
     PAL_setPalette(PAL1, g->room->palette_bg->data, CPU);
     load_room_maps(g);
     PAL_setPalette(PAL2, pal_samus_power_suit.data, CPU);
+    create_enemy_sprites(g);
     /* Explicit depths keep the complete door frame in front of Samus and shots. */
     g->sprite = NULL;
     for (i = 0; i < MM_ROOM_MAX_DOORS; ++i) {
@@ -412,6 +456,7 @@ bool game_init(Game *g, u16 room_index)
     }
     if (i < MM_ROOM_MAX_DOORS) {
         while (i > 0) SPR_releaseSprite(g->door_sprites[--i]);
+        release_enemy_sprites(g);
         if (g->foreground) MEM_free(g->foreground);
         if (g->background) MEM_free(g->background);
         SYS_enableInts();
@@ -421,6 +466,7 @@ bool game_init(Game *g, u16 room_index)
     if (g->sprite) SPR_setDepth(g->sprite, SPR_MAX_DEPTH - 1);
     if (!g->foreground || !g->background || !g->sprite) {
         for (i = 0; i < MM_ROOM_MAX_DOORS; ++i) SPR_releaseSprite(g->door_sprites[i]);
+        release_enemy_sprites(g);
         if (g->foreground) MEM_free(g->foreground);
         if (g->background) MEM_free(g->background);
         if (g->sprite) SPR_releaseSprite(g->sprite);
@@ -438,6 +484,7 @@ bool game_init(Game *g, u16 room_index)
             while (i > 0) SPR_releaseSprite(g->beam_sprites[--i]);
             SPR_releaseSprite(g->sprite);
             for (i = 0; i < MM_ROOM_MAX_DOORS; ++i) SPR_releaseSprite(g->door_sprites[i]);
+            release_enemy_sprites(g);
             MEM_free(g->foreground); MEM_free(g->background);
             SYS_enableInts();
             return FALSE;
@@ -491,6 +538,7 @@ bool game_change_room(Game *g, u16 room_index, Vect2D_s16 spawn, int from_door)
     /* The picture goes black before anything in VRAM changes, so the swap is never seen. */
     PAL_fadeOutAll(ROOM_FADE_FRAMES, FALSE);
     for (i = 0; i < MM_BEAM_COUNT; ++i) SPR_setVisibility(g->beam_sprites[i], HIDDEN);
+    release_enemy_sprites(g);
     MAP_release(g->foreground);
     MAP_release(g->background);
     g->foreground = g->background = NULL;
@@ -500,6 +548,7 @@ bool game_change_room(Game *g, u16 room_index, Vect2D_s16 spawn, int from_door)
     /* Ammo and the selected weapon cross the door: PAL3 must fade in with the same sheet. */
     g->missile_palette = g->weapon.selected != MM_WEAPON_BEAM;
     loaded = load_room_maps(g);
+    if (loaded) create_enemy_sprites(g);
     SYS_enableInts();
     if (!loaded) return FALSE;
     render(g);

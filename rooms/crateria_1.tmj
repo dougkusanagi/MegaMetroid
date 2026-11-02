@@ -445,7 +445,27 @@
    "opacity": 1,
    "visible": true,
    "draworder": "topdown",
-   "objects": []
+   "objects": [
+    {
+     "id": 8,
+     "name": "zoomer",
+     "type": "enemy",
+     "x": 400,
+     "y": 1216,
+     "width": 0,
+     "height": 0,
+     "rotation": 0,
+     "visible": true,
+     "point": true,
+     "properties": [
+      {
+       "name": "kind",
+       "type": "int",
+       "value": 1
+      }
+     ]
+    }
+   ]
   }
  ]
 }

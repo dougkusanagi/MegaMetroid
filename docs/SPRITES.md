@@ -176,9 +176,11 @@ Cada prancha vira `res/images/<prancha>-original-sgdk/`, com um `.res` (catálog
 | Doors | `doors-original-sgdk` | Portas com batente e abertura da tampa (azul, rosa, verde, laranja, cinza) e portas de Ceres |
 | Samus's Starship | `starship-original-sgdk` | Nave como `IMAGE` (192×80): luzes como uma imagem e 8 paletas (`starship_lights_pal_NN`), escotilha abrindo em 10 imagens |
 | Status Bar | `status-bar-original-sgdk` | Tiles do HUD: texto ENERGY, ícones de item (apagado/aceso), AUTO, dígitos e tiles do minimapa em 3 cores. O preto vira o índice 0 |
-| Enemies | `enemies-original-sgdk` | Uma tira por linha de inimigo nas três colunas da prancha. A linha de cada inimigo de Crateria (Zoomer, Skree, Ripper, Geemer) é identificada na etapa 5.2 |
+| Enemies | `enemies-original-sgdk` | Uma tira por linha de inimigo nas três colunas da prancha. Mapeamento confirmado na 5.2: Zoomer = `enemies_left_r00`; Skree = `enemies_left_r10`; Ripper = `enemies_left_r06`; Geemer = `enemies_right_r12_0` e `enemies_right_r13_2` |
 
 Como na Samus, as cores são as originais e o índice 0 é transparente. Cada tira usa uma paleta só. Quando uma linha precisa de mais de 15 cores (quadros de dano piscando, por exemplo), ela é dividida em tiras consecutivas.
+
+Quadros por tira: Zoomer 6 de 24×24, Skree 8 de 32×32, Ripper 3 de 24×16, Geemer 3 de 24×32 e 6 de 24×40.
 
 Ficam como referência em RGB, sem entrada no `.res` (`sgdk_ready = no` no manifesto):
 
@@ -357,3 +359,19 @@ O cabeçalho gerado inclui 110 posições relativas e quadros que coincidem nos
 dois sentidos. Sem nova medição para os testes rotineiros. Diagonais 75–78 e
 transições BF/C0/C1–C4 ainda não são usadas; salto e mira diagonal seguem os
 controles comuns. A entrada em movimento e as rampas precisam de cobertura.
+
+### Zoomer (5.2)
+
+`scripts/build_zoomer_sprite.py` remapeia `enemies_left_r00` para a PAL1 da
+sala (fundo), sem alterar os pixels de origem: o corpo azul/roxo usa 4/9/10/11/
+12/13, os espinhos claros usam 8/14 e o amarelo original vira o índice 15. O
+resultado é `res/images/enemies/zoomer.png`, com 144×24 (6 quadros de 24×24),
+corpo visível de 22×17 e hitbox 16×16. O render usa origem `x - 4, y - 8`,
+inverte horizontalmente quando o inimigo olha para a direita e troca de quadro a
+cada 8 ticks.
+
+A entrada 15 das paletas de fundo do Landing Site e da Crateria 2 passa a ser
+amarelo `(224,224,0)`; os pixels dessas imagens não mudam. A fusão das paletas
+de fundo e primeiro plano fica adiada até ser necessária. Validação: `enemy_zoomer`
+no host, `enemy_zoomer_art` no smoke e a vista `zoomer` reconstruída da VRAM/CRAM
+no BlastEm.

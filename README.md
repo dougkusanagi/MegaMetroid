@@ -92,9 +92,9 @@ impacto do míssil ainda usa o quadro do beam, sem arte própria nesta etapa.
 Os efeitos sonoros do Super Metroid ficam em `res/sound/Sound-Effects/`; o tiro, o giro (em loop
 enquanto a Samus gira) e o pouso já tocam. A música do Landing Site ("Arrival on Crateria") toca como
 PCM, convertida dos MP3 de `res/sound/musics/` por `scripts/convert_music.py` (ver a 8.1 em `docs/PLANO.md`).
-O núcleo de inimigos já simula queda, caminhada e colisão (5.1), mas as fases atuais ainda não
-têm inimigos visíveis nem blocos destrutíveis; as portas azuis já abrem com o tiro. O valor de
-dano está preparado no projétil para a integração futura.
+O Zoomer já aparece, cai, anda e vira nas beiradas da Crateria 1, com sprite e animação próprios
+(5.2); Skree, Ripper e Geemer ainda não têm arte nem IA. Não há blocos destrutíveis; as portas
+azuis já abrem com o tiro. O valor de dano está preparado no projétil para a integração futura.
 O sprite da Samus usa as poses originais do jogo (parada, andando, pulando, girando, agachando, em bola, mirando e atirando, cada uma com desenho próprio para a esquerda). Ver a etapa 3.2 em `docs/PLANO.md`.
 
 O salto giratório só começa quando C é pressionado enquanto Samus já estava em

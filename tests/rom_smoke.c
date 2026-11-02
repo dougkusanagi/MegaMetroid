@@ -313,19 +313,23 @@ static void room_video(Game *g)
 {
     static const s16 views[][2] = {{1024, 976}, {0, 1024}, {2048, 1024},
                                   {0, 512}, {2048, 256}, {1664, 1024},
-                                  {0, 1024}, {2048, 1024}};
+                                  {0, 1024}, {2048, 1024}, {256, 1024}};
     vu32 *control = (vu32 *)VDP_CTRL_PORT;
     vu16 *data = (vu16 *)VDP_DATA_PORT;
     int scene, i, chunk;
     MmDoorLock saved_locks[MM_ROOM_MAX_DOORS];
     memcpy(saved_locks, g->door_locks, sizeof saved_locks);
-    for (scene = 0; scene < 8; ++scene) {
+    for (scene = 0; scene < 9; ++scene) {
         mm_samus_init(&g->player, views[scene][0] + 108, views[scene][1] + 84);
-        if (scene >= 6) {
+        if (scene >= 6 && scene < 8) {
             int door = scene == 6 ? 1 : 3;
             g->door_locks[door].state = MM_DOOR_OPEN;
             g->door_locks[door].ticks = 0;
             mm_samus_init(&g->player, scene == 6 ? -8 : 2276, 1136);
+        }
+        if (scene == 8) {
+            mm_enemy_pool_init(&g->enemies);
+            mm_enemy_spawn(&g->enemies, MM_ENEMY_ZOOMER, 400, 1216);
         }
         mm_weapon_init(&g->weapon);
         /* Load all newly visible rows/columns, then finish sprite DMA. */
@@ -680,6 +684,30 @@ static int missile_weapon(Game *g)
     return failed;
 }
 
+/* Etapa 5.2: the Zoomer spawned by the room is drawn with the Zoomer sheet in PAL1,
+   follows its simulated position and advances its six-frame animation. */
+static int enemy_zoomer_art(Game *g)
+{
+    const MmEnemy *enemy;
+    Sprite *sprite;
+    int i, failed = 0;
+    if (g->enemies.count != 1 || g->enemies.enemies[0].kind != MM_ENEMY_ZOOMER) return 1;
+    enemy = &g->enemies.enemies[0];
+    sprite = g->enemy_sprites[0];
+    if (!sprite || sprite->definition != &zoomer_sprite) return 1;
+    idle(g, 2);
+    if (SPR_getVisibility(sprite) != AUTO_FAST ||
+        sprite->x != mm_pixel(enemy->x) - g->camera.x - ENEMY_DRAW_X + 0x80 ||
+        sprite->y != mm_pixel(enemy->y) - g->camera.y - ENEMY_DRAW_Y + 0x80) failed = 1;
+    for (i = 0; i < ZOOMER_FRAME_TICKS; ++i) {
+        game_update(g, (MmInput){0});
+        SYS_doVBlankProcess();
+    }
+    if (sprite->frameInd != (enemy->age / ZOOMER_FRAME_TICKS) % ZOOMER_FRAME_COUNT) failed = 1;
+    if (smoke_color(16 + 15) != g->room->palette_bg->data[15] || !smoke_color(16 + 15)) failed = 1;
+    return failed;
+}
+
 /* Etapa 5.1: the placeholder walker runs on the target through game_update, falls to the floor,
    walks right into a wall and turns around. */
 static int enemy_walker(Game *g)
@@ -829,6 +857,7 @@ int main(bool hardReset)
         !rows_seen[PLAYER_ANIM_WALK_AIM_UP_R] || !rows_seen[PLAYER_ANIM_JUMP_AIM_DIAG_UP_R]) failed |= 512;
     /* PAL adds one tick in every five game_update calls: 760 calls become 912 ticks. */
     if (g.frame != 760 + (SYS_isPAL() ? 152 : 0)) failed |= 1024;
+    if (enemy_zoomer_art(&g)) failed |= 1UL << 26;
     /* Both facings keep the normal-jump strip throughout descent, with no frame loop. */
     {
         int side;

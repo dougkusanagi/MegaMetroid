@@ -10,6 +10,20 @@ O registro detalhado começa em 18/10/2026. A entrada anterior abaixo foi
 reconstituída do commit indicado; o histórico anterior completo permanece no Git
 (`git log`) e as entregas por etapa estão em [docs/PLANO.md](docs/PLANO.md).
 
+## 2026-11-01 22:55:00 −03:00 (America/Sao_Paulo) — Zoomer, arte e spawn (5.2, segunda parte)
+
+### Adicionado
+
+- Zoomer visível na Crateria 1: sprite de 24x24 com 6 quadros, animação de 8 ticks por quadro,
+  espelhamento conforme a direção, profundidade abaixo de Samus e spawn em `(400, 1216)`. A arte
+  original foi remapeada para a PAL1 da sala por `scripts/build_zoomer_sprite.py`.
+- Entrada 15 das paletas de fundo do Landing Site e da Crateria 2 definida como amarelo
+  `(224,224,0)`, sem alterar os pixels dos mapas.
+
+**Validação:** suíte do host (incluindo `enemy_zoomer`), smoke no BlastEm via GDB com
+`enemy_zoomer_art` e a nova vista `zoomer` reconstruída da VRAM/CRAM; ROM de teste e ROM padrão
+reconstruídas.
+
 ## 2026-11-01 19:55:00 −03:00 (America/Sao_Paulo) — Zoomer, núcleo (5.2, primeira parte)
 
 ### Adicionado

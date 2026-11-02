@@ -95,7 +95,10 @@ def main():
     # Merge neutral sky shades; use the spare entries for closed door shades.
     door_extra = [(0,68,152),(24,116,232),(120,172,232),(112,72,80),(144,104,112),(208,168,176)]
     bank1 = [(0,0,0)] + bg_colors + [hardware(c) for c in door_extra]
+    assert len(bank1) <= 15
     bank1 += [(0,0,0)] * (16-len(bank1))
+    # The last bank1 entry is free: keep it as the bright highlight for PAL1 enemies.
+    bank1[15] = hardware((248,248,0))
     assert len(bank1)==16
     samus = [hardware(c) for c in palette(Image.open(ROOT/'res/images/samus-original-sgdk/palettes/pal_samus_power_suit.png'))]
     beam = Image.open(ROOT/'res/images/weapons-original-sgdk/weapons_power_beam.png')

@@ -23,8 +23,8 @@ Cada etapa é pequena, testável no emulador e termina em **commit + push** (ver
 - As portas azuis abrem com um tiro, vermelhas com cinco mísseis (ou um super) e verdes só com
   super, com a tampa animada nos cinco quadros originais (6.6.3). Mísseis e supers já são
   selecionáveis por START desde a 4.3; o contador na HUD entra na 7.1.
-- As listas de inimigos das salas continuam vazias; o núcleo de comportamento existe (5.1), mas arte,
-  paleta, animação e os inimigos reais entram na 5.2.
+- Só o Zoomer tem arte, animação e spawn em sala (5.2); Skree, Ripper e Geemer ainda não têm arte
+  nem IA própria.
 - A exportação de mapa e colisão ainda não é automática (6.2); mapas maiores pedem avaliação de RAM, ROM e streaming (6.4).
 - A nave segue decorativa, sem plataforma, save/recarga ou escotilha interativa (fases 6/7).
 
@@ -324,11 +324,13 @@ roda um tick por inimigo. Custo: cerca de 1 KB de RAM no `Game`. Sem arte, palet
 isso entra na 5.2. Validação: `enemy_walker` no host (queda, caminhada, parede, beirada e pool
 cheio) e no smoke do BlastEm através de `game_update`.
 
-**5.2 Inimigos de Crateria** (em andamento, 2026-11-01). O núcleo já define `MM_ENEMY_ZOOMER`
-com 15 HP, 5 de dano, corpo 16x16 e velocidade provisória de 0,5 px/tick, reusando o
-comportamento de solo que cai, anda e vira em paredes e beiradas. Sprite, paleta, animação e os
-spawns nas salas entram ainda nesta etapa; a alocação de paleta para os inimigos precisa ser
-decidida antes da arte. Validação: `enemy_zoomer` no host e smoke no BlastEm via GDB.
+**5.2 Inimigos de Crateria** (em andamento, 2026-11-01). O Zoomer está completo: 15 HP, 5 de
+dano, corpo 16x16 e velocidade provisória de 0,5 px/tick, comportamento de solo que cai, anda e
+vira em paredes e beiradas, sprite de 24x24 com 6 quadros e spawn na Crateria 1. A arte original
+foi remapeada para a PAL1 da sala e a entrada 15 das paletas de fundo virou amarelo
+(224,224,0); a fusão das paletas de fundo e primeiro plano fica adiada até ser necessária.
+Validação: `enemy_zoomer` no host, `enemy_zoomer_art` no smoke e a vista `zoomer` reconstruída
+da VRAM/CRAM no BlastEm. Skree, Ripper e Geemer continuam pendentes.
 
 ### Fase 6 — Salas, portas e mundo
 

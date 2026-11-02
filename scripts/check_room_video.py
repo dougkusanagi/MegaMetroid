@@ -6,7 +6,7 @@ from PIL import Image
 
 ROOT=Path(__file__).resolve().parents[1]
 OUT=ROOT/'tests/out'
-NAMES=['ship','west-lower-door','east-lower-door','west-upper-door','east-upper-door','blocks','west-open-overlap','east-open-overlap']
+NAMES=['ship','west-lower-door','east-lower-door','west-upper-door','east-upper-door','blocks','west-open-overlap','east-open-overlap','zoomer']
 
 
 def word(data,address):
@@ -97,7 +97,7 @@ def main():
         for pixels,pri,want_high in [(b,bp,False),(a,ap,False),(s,sp,False),
                                      (b,bp,True),(a,ap,True),(s,sp,True)]:
             take=(pixels!=0)&(pri==want_high);composed[take]=pixels[take]
-        if i >= 6:
+        if 6 <= i < 8:
             # Independently compare the open door sprite with its transparent source,
             # and prove the SAT order occludes actual Samus pixels at the metal jamb.
             door = np.array(Image.open(ROOT/'res/images/doors/door_cap.png'))[:,128:160]

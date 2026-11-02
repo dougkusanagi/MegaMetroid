@@ -9,6 +9,12 @@
 
 /* More than any current room; the exporter refuses rooms that would overflow these tables. */
 #define MM_ROOM_MAX_DOORS 8
+/* The 24x24 Zoomer frame has its 22x17 body on rows 7..23 and columns 1..22, so these
+   offsets centre it on the 16x16 hitbox and put its feet on the hitbox bottom. */
+#define ENEMY_DRAW_X 4
+#define ENEMY_DRAW_Y 8
+#define ZOOMER_FRAME_COUNT 6
+#define ZOOMER_FRAME_TICKS 8
 
 typedef struct {
     const room_def *room;
@@ -25,6 +31,7 @@ typedef struct {
     const char *door_prompt; /* Text on the HUD message row while Samus is at a door; NULL otherwise. */
     MmHealth health; /* Energy, tanks and hit invulnerability (5.3); damage sources come with the enemies (5.2). */
     MmEnemyPool enemies; /* Simulated enemies; art and animation arrive in 5.2. */
+    Sprite *enemy_sprites[MM_ENEMY_MAX]; /* NULL for enemies without art yet. */
     u8 hud_cells[MM_HUD_ICON_ROWS][MM_HUD_COLUMNS]; /* Status bar tiles on the window, redrawn when they change. */
     u16 hud_tile; /* VRAM index of the first status bar tile, just below the sprite tiles. */
     Sprite *door_sprites[MM_ROOM_MAX_DOORS]; /* Full transparent door art; hidden for doors the room does not have. */
