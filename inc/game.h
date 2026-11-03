@@ -27,6 +27,11 @@
 #define RIPPER_FRAME_TICKS 8
 #define RIPPER_DRAW_X 8
 #define RIPPER_DRAW_Y 6
+/* Geemer's 24x32 strip has three walk frames; its 16x16 body sits in the middle. */
+#define GEEMER_FRAME_COUNT 3
+#define GEEMER_FRAME_TICKS 8
+#define GEEMER_DRAW_X 4
+#define GEEMER_DRAW_Y 8
 
 typedef struct {
     const room_def *room;

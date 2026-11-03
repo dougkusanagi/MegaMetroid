@@ -23,8 +23,8 @@ Cada etapa é pequena, testável no emulador e termina em **commit + push** (ver
 - As portas azuis abrem com um tiro, vermelhas com cinco mísseis (ou um super) e verdes só com
   super, com a tampa animada nos cinco quadros originais (6.6.3). Mísseis e supers já são
   selecionáveis por START desde a 4.3; o contador na HUD entra na 7.1.
-- Zoomer, Skree e Ripper têm arte, animação e spawn em sala (5.2); o Geemer ainda não tem arte
-  nem IA própria.
+- Zoomer, Skree, Ripper e Geemer têm arte, animação e spawn em sala (5.2); o Geemer ainda reusa
+  a IA de solo do Zoomer, sem andar em paredes e teto como no original.
 - A exportação de mapa e colisão ainda não é automática (6.2); mapas maiores pedem avaliação de RAM, ROM e streaming (6.4).
 - A nave segue decorativa, sem plataforma, save/recarga ou escotilha interativa (fases 6/7).
 
@@ -309,7 +309,7 @@ super e persistência na troca de sala) e `measured_missiles`/`missile_loadout` 
 | # | Etapa | Entrega | Teste |
 |---|-------|---------|-------|
 | 5.1 ✅ | Entidade de inimigo | Struct + tabela de comportamentos (ponteiro de função) | Inimigo andando e colidindo com o chão |
-| 5.2 | Inimigos de Crateria | Zoomer, Skree, Ripper, Geemer (nesta ordem) | Cada um com IA e animação |
+| 5.2 ✅ | Inimigos de Crateria | Zoomer, Skree, Ripper, Geemer (nesta ordem) | Cada um com IA e animação |
 | 5.3 (núcleo ✅; falta fonte de dano, morte e reinício) | Dano e vida | HP, invencibilidade, knockback, energia da Samus | Morrer e reiniciar a sala |
 | 5.4 | Drops | Energia/míssil pequenos | Pegar aumenta contadores |
 | 5.5 | Limite de sprites | Culling fora da tela; ≤80 sprites e ≤20 por scanline | Sala cheia sem flicker excessivo |
@@ -324,7 +324,7 @@ roda um tick por inimigo. Custo: cerca de 1 KB de RAM no `Game`. Sem arte, palet
 isso entra na 5.2. Validação: `enemy_walker` no host (queda, caminhada, parede, beirada e pool
 cheio) e no smoke do BlastEm através de `game_update`.
 
-**5.2 Inimigos de Crateria** (em andamento, 2026-11-02). O Zoomer está completo: 15 HP, 5 de
+**5.2 Inimigos de Crateria** ✅ (2026-11-02). O Zoomer está completo: 15 HP, 5 de
 dano, corpo 16x16 e velocidade provisória de 0,5 px/tick, comportamento de solo que cai, anda e
 vira em paredes e beiradas, sprite de 24x24 com 6 quadros e spawn na Crateria 1. A arte original
 foi remapeada para a PAL1 da sala e a entrada 15 das paletas de fundo virou amarelo
@@ -335,8 +335,11 @@ embaixo, mergulha na diagonal a 2 px/tick vertical e 0,5 px/tick horizontal (qua
 enterra no chão. O sprite 32x32 foi remapeado para a mesma PAL1. O Ripper também está completo:
 200 HP, 5 de dano, corpo 8x4 e os valores do cabeçalho original; voa em altura fixa e vira nas
 paredes, com sprite 24x16 de 3 quadros no ciclo A, B, A, C e spawn no corredor da Crateria 1.
-Validação: `enemy_zoomer`, `enemy_skree` e `enemy_ripper` no host; `enemy_zoomer_art`,
-`enemy_skree_art` e `enemy_ripper_art` no smoke. O Geemer continua pendente.
+O Geemer também está completo: 15 HP, 5 de dano, corpo 16x16, sprite 24x32 de 3 quadros
+remapeado para a mesma PAL1 e spawn no alto da Crateria 2. Ele reusa a IA de solo do Zoomer;
+andar em paredes e teto, como no original, fica para uma etapa futura.
+Validação: `enemy_zoomer`, `enemy_geemer`, `enemy_skree` e `enemy_ripper` no host;
+`enemy_zoomer_art`, `enemy_geemer_art`, `enemy_skree_art` e `enemy_ripper_art` no smoke.
 
 ### Fase 6 — Salas, portas e mundo
 

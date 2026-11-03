@@ -11,7 +11,7 @@
  "tilewidth": 8,
  "tileheight": 8,
  "nextlayerid": 6,
- "nextobjectid": 3,
+ "nextobjectid": 4,
  "properties": [
   {
    "name": "fg_image",
@@ -298,7 +298,27 @@
    "opacity": 1,
    "visible": true,
    "draworder": "topdown",
-   "objects": []
+   "objects": [
+    {
+     "id": 3,
+     "name": "geemer",
+     "type": "enemy",
+     "x": 160,
+     "y": 128,
+     "width": 0,
+     "height": 0,
+     "rotation": 0,
+     "visible": true,
+     "point": true,
+     "properties": [
+      {
+       "name": "kind",
+       "type": "int",
+       "value": 4
+      }
+     ]
+    }
+   ]
   }
  ]
 }

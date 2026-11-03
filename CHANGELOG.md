@@ -10,6 +10,25 @@ O registro detalhado começa em 18/10/2026. A entrada anterior abaixo foi
 reconstituída do commit indicado; o histórico anterior completo permanece no Git
 (`git log`) e as entregas por etapa estão em [docs/PLANO.md](docs/PLANO.md).
 
+## 2026-11-02 22:35:00 −03:00 (America/Sao_Paulo) — Geemer, núcleo e arte (5.2, quinta parte)
+
+### Adicionado
+
+- Geemer no alto da Crateria 2 em `(160, 128)`: 15 HP, 5 de dano, corpo 16x16 e a mesma
+  velocidade do Zoomer; reusa a IA de solo que cai, anda e vira em paredes e beiradas.
+- Sprite de 24x32 com 3 quadros remapeado para a PAL1 por `scripts/build_geemer_sprite.py`.
+- `enemy_geemer` no host e `enemy_geemer_art` no smoke; o smoke confere que o spawn não
+  nasce dentro da colisão e que o sprite segue posição e quadro.
+
+### Corrigido
+
+- O `enemy_walker` sintético do smoke não zerava os sprites da sala anterior antes de trocar
+  o pool; com um Geemer na sala, o sprite 0 continuava apontando para outra folha e travava
+  o primeiro `game_update`. O teste agora salva, limpa e restaura `enemy_sprites`.
+
+**Validação:** suíte do host (incluindo `enemy_geemer`), smoke no BlastEm via GDB com
+`MM_SMOKE_FAILURE=0x0` e `MM_SMOKE_ENEMY_FAILURE=0x0`; ROM de teste e ROM padrão reconstruídas.
+
 ## 2026-11-02 21:25:00 −03:00 (America/Sao_Paulo) — Ripper, núcleo e arte (5.2, quarta parte)
 
 ### Adicionado

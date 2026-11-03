@@ -203,7 +203,8 @@ static const EnemyArt enemy_art[MM_ENEMY_KIND_COUNT] = {
     {NULL, 0, 0, 0, 0},
     {&zoomer_sprite, ZOOMER_FRAME_COUNT, ZOOMER_FRAME_TICKS, ENEMY_DRAW_X, ENEMY_DRAW_Y},
     {&skree_sprite, SKREE_FRAME_COUNT, SKREE_FRAME_TICKS, SKREE_DRAW_X, SKREE_DRAW_Y},
-    {&ripper_sprite, RIPPER_FRAME_COUNT, RIPPER_FRAME_TICKS, RIPPER_DRAW_X, RIPPER_DRAW_Y}
+    {&ripper_sprite, RIPPER_FRAME_COUNT, RIPPER_FRAME_TICKS, RIPPER_DRAW_X, RIPPER_DRAW_Y},
+    {&geemer_sprite, GEEMER_FRAME_COUNT, GEEMER_FRAME_TICKS, GEEMER_DRAW_X, GEEMER_DRAW_Y}
 };
 
 /* Skree spins frames 0..3 while hanging and shows 4..7 during the dive. */

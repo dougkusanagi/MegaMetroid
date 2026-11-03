@@ -27,6 +27,8 @@ volatile u16 mm_smoke_video_chunk;
 volatile u16 mm_smoke_memory[10];
 volatile u16 mm_smoke_perf[10]; /* CPU/DMA/missed VInts per jump, then initial/minimum camera Y. */
 
+static int enemy_geemer_art(Game *g);
+
 /* Samus placed at pos stands in the open, inside the room. */
 static int spawn_valid(const room_def *room, Vect2D_s16 pos)
 {
@@ -263,6 +265,7 @@ static int room_transitions(Game *g)
         px = mm_pixel(g->player.x); py = mm_pixel(g->player.y);
         if (!room_loaded(g) || g->player.facing_left || !g->player.grounded ||
             px != 24 || py + g->player.hitbox.bottom != 160 || g->camera.x != 0) failed |= 4;
+        if (enemy_geemer_art(g)) mm_smoke_enemy_failure |= 8;
         if (g->door_locks[0].state != MM_DOOR_OPEN || g->world.solid_count != 0 ||
             !door_art(g, 0)) failed |= 128;
         /* Crateria 2 has a single door, so the other cap sprites must stay hidden. */
@@ -766,6 +769,33 @@ static int enemy_ripper_art(Game *g)
     return failed;
 }
 
+/* Etapa 5.2: the Geemer spawned by the room is drawn with its purple sheet in PAL1,
+   follows its simulated position and advances its three-frame walk cycle. */
+static int enemy_geemer_art(Game *g)
+{
+    const MmEnemy *enemy = NULL;
+    Sprite *sprite = NULL;
+    int i, failed = 0;
+    for (i = 0; i < g->enemies.count; ++i)
+        if (g->enemies.enemies[i].kind == MM_ENEMY_GEEMER) {
+            enemy = &g->enemies.enemies[i];
+            sprite = g->enemy_sprites[i];
+            break;
+        }
+    if (!enemy || !sprite || sprite->definition != &geemer_sprite) return 1;
+    idle(g, 2);
+    if (mm_rect_blocked(&g->world, mm_enemy_rect(enemy))) failed = 1;
+    if (SPR_getVisibility(sprite) != AUTO_FAST ||
+        sprite->x != mm_pixel(enemy->x) - g->camera.x - GEEMER_DRAW_X + 0x80 ||
+        sprite->y != mm_pixel(enemy->y) - g->camera.y - GEEMER_DRAW_Y + 0x80) failed = 1;
+    for (i = 0; i < GEEMER_FRAME_TICKS; ++i) {
+        game_update(g, (MmInput){0});
+        SYS_doVBlankProcess();
+    }
+    if (sprite->frameInd != (enemy->age / GEEMER_FRAME_TICKS) % GEEMER_FRAME_COUNT) failed = 1;
+    return failed;
+}
+
 /* Etapa 5.1: the placeholder walker runs on the target through game_update, falls to the floor,
    walks right into a wall and turns around. */
 static int enemy_walker(Game *g)
@@ -773,8 +803,11 @@ static int enemy_walker(Game *g)
     static unsigned char tiles[32 * 16];
     MmWorld saved_world = g->world;
     MmBody saved_player = g->player;
+    Sprite *saved_sprites[MM_ENEMY_MAX];
     MmEnemy *e;
     int i, failed = 0;
+    memcpy(saved_sprites, g->enemy_sprites, sizeof saved_sprites);
+    memset(g->enemy_sprites, 0, sizeof g->enemy_sprites);
     memset(tiles, 1, sizeof tiles);
     for (i = 0; i < 32; ++i) tiles[12 * 32 + i] = 0;
     for (i = 9; i < 12; ++i) tiles[i * 32 + 24] = 0;
@@ -792,6 +825,7 @@ static int enemy_walker(Game *g)
         !e->facing_left || mm_pixel(e->x) >= 176 || e->age < 320) failed = 1;
     g->world = saved_world;
     g->player = saved_player;
+    memcpy(g->enemy_sprites, saved_sprites, sizeof saved_sprites);
     mm_enemy_pool_init(&g->enemies);
     mm_weapon_init(&g->weapon);
     return failed;

@@ -120,7 +120,9 @@ const MmEnemyDef mm_enemy_defs[MM_ENEMY_KIND_COUNT] = {
     /* Skree does not walk; the speed field belongs to the ground behaviors. */
     {skree, 15, 10, {0, 0, 8, 12}, 0, 0},
     /* Ripper starts left, as the original Crateria mainstreet placement does. */
-    {ripper, 200, 5, {0, 0, 8, 4}, MM_ENEMY_RIPPER_SPEED, 1}
+    {ripper, 200, 5, {0, 0, 8, 4}, MM_ENEMY_RIPPER_SPEED, 1},
+    /* Geemer is the purple Geemer/Zoomer variant; it shares the crawling AI. */
+    {walker, 15, 5, {0, 0, 16, 16}, MM_ENEMY_ZOOMER_SPEED, 0}
 };
 
 void mm_enemy_pool_init(MmEnemyPool *pool)

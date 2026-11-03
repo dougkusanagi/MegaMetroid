@@ -20,6 +20,7 @@ extern const SpriteDefinition door_cap;
 extern const SpriteDefinition zoomer_sprite;
 extern const SpriteDefinition skree_sprite;
 extern const SpriteDefinition ripper_sprite;
+extern const SpriteDefinition geemer_sprite;
 extern const TileSet hud_tiles;
 extern const TileSet hud_font;
 

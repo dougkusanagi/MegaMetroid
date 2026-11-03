@@ -173,6 +173,10 @@ static const RoomDoorDef crateria_2_doors[] = {
     {{0, 96}, ROOM_CRATERIA_1, {2240, 368}, ROOM_DOOR_BLUE, ROOM_DOOR_FACING_RIGHT, 0}
 };
 
+static const RoomEnemySpawn crateria_2_enemies[] = {
+    {4, {160, 128}}
+};
+
 const room_def room_crateria_2 = {
     .tileset_fg = &crateria_2_fg_tileset,
     .tileset_bg = &crateria_2_bg_tileset,
@@ -189,8 +193,8 @@ const room_def room_crateria_2 = {
     .player_initial_pos = {1168, 80},
     .camera_zones = NULL,
     .camera_zone_count = 0,
-    .enemy_spawns = NULL,
-    .enemy_spawn_count = 0,
+    .enemy_spawns = crateria_2_enemies,
+    .enemy_spawn_count = sizeof(crateria_2_enemies) / sizeof(crateria_2_enemies[0]),
     .doors = crateria_2_doors,
     .door_count = sizeof(crateria_2_doors) / sizeof(crateria_2_doors[0]),
 };

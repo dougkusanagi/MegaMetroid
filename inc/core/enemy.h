@@ -7,8 +7,8 @@
 /* Pool size for one room; enter_room spawns up to this many and ignores extra room spawns. */
 #define MM_ENEMY_MAX 16
 
-/* Kinds index mm_enemy_defs. Geemer joins Zoomer, Skree and Ripper in 5.2. */
-enum { MM_ENEMY_WALKER, MM_ENEMY_ZOOMER, MM_ENEMY_SKREE, MM_ENEMY_RIPPER, MM_ENEMY_KIND_COUNT };
+/* Kinds index mm_enemy_defs. Geemer is the purple crawler that shares the Zoomer AI. */
+enum { MM_ENEMY_WALKER, MM_ENEMY_ZOOMER, MM_ENEMY_SKREE, MM_ENEMY_RIPPER, MM_ENEMY_GEEMER, MM_ENEMY_KIND_COUNT };
 
 /* Behavior state shared by the enemies that need more than walking. */
 enum {

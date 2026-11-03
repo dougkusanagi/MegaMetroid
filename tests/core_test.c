@@ -1754,6 +1754,33 @@ static void enemy_zoomer(void) {
     assert(e->grounded && mm_pixel(e->y) == 224 && e->facing_left && mm_pixel(e->x) < 176);
     puts("PASS Zoomer: 15 HP, 5 damage, 16x16 body; falls, crawls and turns at a wall");
 }
+/* Etapa 5.2: Geemer is the purple Geemer/Zoomer variant; it keeps the same 15 HP,
+   5 damage and 16x16 body and reuses the shared ground behavior. */
+static void enemy_geemer(void) {
+    MmEnemyPool pool;
+    MmEnemy *e;
+    MmBody player;
+    int i;
+    assert(mm_enemy_defs[MM_ENEMY_GEEMER].health == 15);
+    assert(mm_enemy_defs[MM_ENEMY_GEEMER].damage == 5);
+    assert(mm_enemy_defs[MM_ENEMY_GEEMER].hitbox.left == 0 &&
+           mm_enemy_defs[MM_ENEMY_GEEMER].hitbox.top == 0 &&
+           mm_enemy_defs[MM_ENEMY_GEEMER].hitbox.right == 16 &&
+           mm_enemy_defs[MM_ENEMY_GEEMER].hitbox.bottom == 16);
+    assert(mm_enemy_defs[MM_ENEMY_GEEMER].speed == MM_ENEMY_ZOOMER_SPEED);
+    reset(); floor_at(30);
+    mm_samus_init(&player, 0, 0);
+    for (i = 27; i < 30; ++i) tiles[i * 64 + 24] = 0;
+    mm_enemy_pool_init(&pool);
+    assert(mm_enemy_spawn(&pool, MM_ENEMY_GEEMER, 40, 200) == 0);
+    e = &pool.enemies[0];
+    assert(e->kind == MM_ENEMY_GEEMER && e->health == 15 && e->damage == 5);
+    for (i = 0; i < 60; ++i) mm_enemy_tick(&world, &player, &pool);
+    assert(e->grounded && mm_pixel(e->y) == 224);
+    for (i = 0; i < 320; ++i) mm_enemy_tick(&world, &player, &pool);
+    assert(e->grounded && mm_pixel(e->y) == 224 && e->facing_left && mm_pixel(e->x) < 176);
+    puts("PASS Geemer: 15 HP, 5 damage, 16x16 body; falls, crawls and turns at a wall");
+}
 /* Etapa 5.2: Skree hangs until Samus is under it, prepares, dives diagonally toward her and
    burrows into the floor. The 15 HP, 10 damage and 8x12 body are the original header values. */
 static void enemy_skree(void) {
@@ -1833,6 +1860,6 @@ int main(void) {
     missile_loadout();
     movement(); air_steering(); collisions(); jump_and_ledge(); states(); physics(); variable_jump(); ledge_jump();
     slopes(); slope_sweep(); tunnels(); wall_climb(); wall_jump_rules(); wall_jump_animation(); moonwalk(); poses(); crouch_poses(); crouch_tap(); double_tap(); ball_poses(); aiming(); beam_from_muzzle(); morph_rules(); ball_stands_on_slope();
-    ball_stand_real(); camera_and_input(); doors(); world_map(); door_locks(); hud_cells(); health_rules(); enemy_walker(); enemy_zoomer(); enemy_skree(); enemy_ripper(); real_levels();
+    ball_stand_real(); camera_and_input(); doors(); world_map(); door_locks(); hud_cells(); health_rules(); enemy_walker(); enemy_zoomer(); enemy_geemer(); enemy_skree(); enemy_ripper(); real_levels();
     puts("All core regression tests passed."); return 0;
 }
