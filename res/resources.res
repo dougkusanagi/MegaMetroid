@@ -21,6 +21,9 @@ SPRITE zoomer_sprite "images/enemies/zoomer.png" 3 3 FAST 8 NONE
 # Skree: original strip remapped to the same PAL1 background palette by
 # scripts/build_skree_sprite.py; frames 0-3 hang, 4-7 dive.
 SPRITE skree_sprite "images/enemies/skree.png" 4 4 FAST 8 NONE
+# Ripper: original strip remapped to the same PAL1 background palette by
+# scripts/build_ripper_sprite.py; its three frames loop as A, B, A, C.
+SPRITE ripper_sprite "images/enemies/ripper.png" 3 2 FAST 8 NONE
 WAV				beam_sfx				"sound/Sound-Effects/beam_shot.wav"							XGM2
 WAV				missile_sfx				"sound/Sound-Effects/ammo_missile_shot.wav"					XGM2
 WAV				super_sfx				"sound/Sound-Effects/ammo_supermissile_shot.wav"			XGM2

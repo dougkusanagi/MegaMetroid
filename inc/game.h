@@ -22,6 +22,11 @@
 #define SKREE_ATTACK_FRAME_TICKS 4
 #define SKREE_DRAW_X 11
 #define SKREE_DRAW_Y 20
+/* Ripper's 24x16 strip centres its 8x4 body; its four-step loop is A, B, A, C. */
+#define RIPPER_FRAME_COUNT 3
+#define RIPPER_FRAME_TICKS 8
+#define RIPPER_DRAW_X 8
+#define RIPPER_DRAW_Y 6
 
 typedef struct {
     const room_def *room;

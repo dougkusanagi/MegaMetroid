@@ -182,9 +182,10 @@ Como na Samus, as cores são as originais e o índice 0 é transparente. Cada ti
 
 Quadros por tira: Zoomer 6 de 24×24, Skree 8 de 32×32, Ripper 3 de 24×16, Geemer 3 de 24×32 e 6 de 24×40.
 
-O Zoomer e o Skree já têm folhas remapeadas para a PAL1 em `res/images/enemies/`, geradas por
-`scripts/build_zoomer_sprite.py` e `scripts/build_skree_sprite.py`. No Skree, os quadros 0..3
-mostram as asas girando pendurado e os quadros 4..7 o mergulho.
+O Zoomer, o Skree e o Ripper já têm folhas remapeadas para a PAL1 em `res/images/enemies/`,
+geradas por `scripts/build_zoomer_sprite.py`, `scripts/build_skree_sprite.py` e
+`scripts/build_ripper_sprite.py`. No Skree, os quadros 0..3 mostram as asas girando pendurado e
+os quadros 4..7 o mergulho. O Ripper usa os quadros A, B, A, C.
 
 Ficam como referência em RGB, sem entrada no `.res` (`sgdk_ready = no` no manifesto):
 

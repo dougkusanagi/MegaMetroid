@@ -737,6 +737,35 @@ static int enemy_skree_art(Game *g)
     return failed;
 }
 
+/* Etapa 5.2: the Ripper spawned by the room is drawn with its own sheet in PAL1, follows its
+   simulated position and loops the original A, B, A, C frames. */
+static int enemy_ripper_art(Game *g)
+{
+    const MmEnemy *enemy = NULL;
+    Sprite *sprite = NULL;
+    int i, failed = 0;
+    for (i = 0; i < g->enemies.count; ++i)
+        if (g->enemies.enemies[i].kind == MM_ENEMY_RIPPER) {
+            enemy = &g->enemies.enemies[i];
+            sprite = g->enemy_sprites[i];
+            break;
+        }
+    if (!enemy || !sprite || sprite->definition != &ripper_sprite) return 1;
+    idle(g, 2);
+    if (SPR_getVisibility(sprite) != AUTO_FAST ||
+        sprite->x != mm_pixel(enemy->x) - g->camera.x - RIPPER_DRAW_X + 0x80 ||
+        sprite->y != mm_pixel(enemy->y) - g->camera.y - RIPPER_DRAW_Y + 0x80) failed = 1;
+    for (i = 0; i < RIPPER_FRAME_TICKS; ++i) {
+        game_update(g, (MmInput){0});
+        SYS_doVBlankProcess();
+    }
+    {
+        static const u8 loop[4] = {0, 1, 0, 2};
+        if (sprite->frameInd != loop[(enemy->age / RIPPER_FRAME_TICKS) % 4]) failed = 1;
+    }
+    return failed;
+}
+
 /* Etapa 5.1: the placeholder walker runs on the target through game_update, falls to the floor,
    walks right into a wall and turns around. */
 static int enemy_walker(Game *g)
@@ -888,6 +917,7 @@ int main(bool hardReset)
     if (g.frame != 760 + (SYS_isPAL() ? 152 : 0)) failed |= 1024;
     if (enemy_zoomer_art(&g)) failed |= 1UL << 26;
     if (enemy_skree_art(&g)) mm_smoke_enemy_failure |= 2;
+    if (enemy_ripper_art(&g)) mm_smoke_enemy_failure |= 4;
     /* Both facings keep the normal-jump strip throughout descent, with no frame loop. */
     {
         int side;

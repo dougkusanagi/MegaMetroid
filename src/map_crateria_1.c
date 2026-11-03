@@ -179,7 +179,8 @@ static const RoomDoorDef crateria_1_doors[] = {
 
 static const RoomEnemySpawn crateria_1_enemies[] = {
     {1, {400, 1216}},
-    {2, {128, 768}}
+    {2, {128, 768}},
+    {3, {440, 552}}
 };
 
 const room_def room_crateria_1 = {

@@ -93,8 +93,9 @@ Os efeitos sonoros do Super Metroid ficam em `res/sound/Sound-Effects/`; o tiro,
 enquanto a Samus gira) e o pouso já tocam. A música do Landing Site ("Arrival on Crateria") toca como
 PCM, convertida dos MP3 de `res/sound/musics/` por `scripts/convert_music.py` (ver a 8.1 em `docs/PLANO.md`).
 O Zoomer já aparece, cai, anda e vira nas beiradas da Crateria 1, com sprite e animação próprios
-(5.2); o Skree fica pendurado no teto, mergulha quando a Samus passa embaixo e enterra no chão.
-Ripper e Geemer ainda não têm arte nem IA. Não há blocos destrutíveis; as portas
+(5.2); o Skree fica pendurado no teto, mergulha quando a Samus passa embaixo e enterra no chão;
+o Ripper voa em altura fixa pelo corredor e vira nas paredes. O Geemer ainda não tem arte nem IA.
+Não há blocos destrutíveis; as portas
 azuis já abrem com o tiro. O valor de dano está preparado no projétil para a integração futura.
 O sprite da Samus usa as poses originais do jogo (parada, andando, pulando, girando, agachando, em bola, mirando e atirando, cada uma com desenho próprio para a esquerda). Ver a etapa 3.2 em `docs/PLANO.md`.
 

@@ -10,6 +10,19 @@ O registro detalhado começa em 18/10/2026. A entrada anterior abaixo foi
 reconstituída do commit indicado; o histórico anterior completo permanece no Git
 (`git log`) e as entregas por etapa estão em [docs/PLANO.md](docs/PLANO.md).
 
+## 2026-11-02 21:25:00 −03:00 (America/Sao_Paulo) — Ripper, núcleo e arte (5.2, quarta parte)
+
+### Adicionado
+
+- Ripper na Crateria 1 em `(440, 552)`: 200 HP, 5 de dano e corpo 8x4 do cabeçalho original.
+  Voa em altura fixa pelo corredor e vira ao encontrar uma parede.
+- Sprite de 24x16 com 3 quadros remapeado para a PAL1 por `scripts/build_ripper_sprite.py`,
+  no ciclo original A, B, A, C.
+- `MmEnemyDef` ganhou a direção inicial; o Ripper nasce virado para a esquerda.
+
+**Validação:** suíte do host (incluindo `enemy_ripper`), smoke no BlastEm via GDB com
+`enemy_ripper_art`; ROM de teste e ROM padrão reconstruídas.
+
 ## 2026-11-02 20:10:00 −03:00 (America/Sao_Paulo) — Skree, núcleo e arte (5.2, terceira parte)
 
 ### Adicionado

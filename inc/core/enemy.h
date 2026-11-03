@@ -7,8 +7,8 @@
 /* Pool size for one room; enter_room spawns up to this many and ignores extra room spawns. */
 #define MM_ENEMY_MAX 16
 
-/* Kinds index mm_enemy_defs. Ripper and Geemer join Zoomer and Skree in 5.2. */
-enum { MM_ENEMY_WALKER, MM_ENEMY_ZOOMER, MM_ENEMY_SKREE, MM_ENEMY_KIND_COUNT };
+/* Kinds index mm_enemy_defs. Geemer joins Zoomer, Skree and Ripper in 5.2. */
+enum { MM_ENEMY_WALKER, MM_ENEMY_ZOOMER, MM_ENEMY_SKREE, MM_ENEMY_RIPPER, MM_ENEMY_KIND_COUNT };
 
 /* Behavior state shared by the enemies that need more than walking. */
 enum {
@@ -28,6 +28,9 @@ enum {
 #define MM_ENEMY_SKREE_DIVE_X 128 /* 0.5 px/tick, enough to reach Samus across the shaft. */
 #define MM_ENEMY_SKREE_DIVE_Y 512 /* 2 px/tick downward. */
 #define MM_ENEMY_SKREE_BURROW_TICKS 16
+/* Ripper flies horizontally and turns at walls. The original linear speed table entry is
+   1.0 px/tick; its 8x4 body, 200 HP and 5 damage are the original header values. */
+#define MM_ENEMY_RIPPER_SPEED 256
 
 typedef struct {
     int x, y; /* Q24.8 world position of the hitbox origin (its left/top pixel). */
@@ -53,6 +56,7 @@ typedef struct {
     int health, damage;
     MmRect hitbox;
     int speed; /* Q24.8 px/tick along the facing direction. */
+    int facing_left; /* Initial direction; ground enemies start facing right. */
 } MmEnemyDef;
 
 extern const MmEnemyDef mm_enemy_defs[MM_ENEMY_KIND_COUNT];

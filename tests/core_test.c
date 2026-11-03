@@ -1787,6 +1787,37 @@ static void enemy_skree(void) {
     puts("PASS Skree: 15 HP, 10 damage, 8x12 body; hangs, dives toward Samus and burrows");
 }
 
+/* Etapa 5.2: Ripper flies at a fixed height and reverses at walls. The 200 HP, 5 damage and
+   8x4 body are the original header values; its initial direction is left. */
+static void enemy_ripper(void) {
+    MmEnemyPool pool;
+    MmEnemy *e;
+    MmBody player;
+    int i;
+    assert(mm_enemy_defs[MM_ENEMY_RIPPER].health == 200);
+    assert(mm_enemy_defs[MM_ENEMY_RIPPER].damage == 5);
+    assert(mm_enemy_defs[MM_ENEMY_RIPPER].hitbox.left == 0 &&
+           mm_enemy_defs[MM_ENEMY_RIPPER].hitbox.top == 0 &&
+           mm_enemy_defs[MM_ENEMY_RIPPER].hitbox.right == 8 &&
+           mm_enemy_defs[MM_ENEMY_RIPPER].hitbox.bottom == 4);
+    assert(mm_enemy_defs[MM_ENEMY_RIPPER].speed == MM_ENEMY_RIPPER_SPEED);
+    reset();
+    tiles[20 * 64 + 24] = 0;
+    mm_samus_init(&player, 0, 0);
+    mm_enemy_pool_init(&pool);
+    assert(mm_enemy_spawn(&pool, MM_ENEMY_RIPPER, 40, 160) == 0);
+    e = &pool.enemies[0];
+    assert(e->facing_left && !e->grounded && e->health == 200 && e->damage == 5);
+    for (i = 0; i < 40; ++i) mm_enemy_tick(&world, &player, &pool);
+    assert(e->facing_left && mm_pixel(e->x) == 0 && mm_pixel(e->y) == 160);
+    mm_enemy_tick(&world, &player, &pool);
+    assert(!e->facing_left && mm_pixel(e->x) == 0);
+    for (i = 0; i < 400 && !e->facing_left; ++i) mm_enemy_tick(&world, &player, &pool);
+    assert(e->facing_left && mm_pixel(e->x) >= 184 && mm_pixel(e->x) <= 185);
+    assert(mm_pixel(e->y) == 160);
+    puts("PASS Ripper: 200 HP, 5 damage, 8x4 body; flies at fixed height and turns at walls");
+}
+
 int main(void) {
     diagonal_controls();
     samus_jump_measure();
@@ -1802,6 +1833,6 @@ int main(void) {
     missile_loadout();
     movement(); air_steering(); collisions(); jump_and_ledge(); states(); physics(); variable_jump(); ledge_jump();
     slopes(); slope_sweep(); tunnels(); wall_climb(); wall_jump_rules(); wall_jump_animation(); moonwalk(); poses(); crouch_poses(); crouch_tap(); double_tap(); ball_poses(); aiming(); beam_from_muzzle(); morph_rules(); ball_stands_on_slope();
-    ball_stand_real(); camera_and_input(); doors(); world_map(); door_locks(); hud_cells(); health_rules(); enemy_walker(); enemy_zoomer(); enemy_skree(); real_levels();
+    ball_stand_real(); camera_and_input(); doors(); world_map(); door_locks(); hud_cells(); health_rules(); enemy_walker(); enemy_zoomer(); enemy_skree(); enemy_ripper(); real_levels();
     puts("All core regression tests passed."); return 0;
 }

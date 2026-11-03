@@ -23,7 +23,7 @@ Cada etapa é pequena, testável no emulador e termina em **commit + push** (ver
 - As portas azuis abrem com um tiro, vermelhas com cinco mísseis (ou um super) e verdes só com
   super, com a tampa animada nos cinco quadros originais (6.6.3). Mísseis e supers já são
   selecionáveis por START desde a 4.3; o contador na HUD entra na 7.1.
-- Zoomer e Skree têm arte, animação e spawn em sala (5.2); Ripper e Geemer ainda não têm arte
+- Zoomer, Skree e Ripper têm arte, animação e spawn em sala (5.2); o Geemer ainda não tem arte
   nem IA própria.
 - A exportação de mapa e colisão ainda não é automática (6.2); mapas maiores pedem avaliação de RAM, ROM e streaming (6.4).
 - A nave segue decorativa, sem plataforma, save/recarga ou escotilha interativa (fases 6/7).
@@ -332,9 +332,11 @@ foi remapeada para a PAL1 da sala e a entrada 15 das paletas de fundo virou amar
 O Skree também está completo: 15 HP, 10 de dano, corpo 8x12 e os valores do cabeçalho original;
 ele fica pendurado girando as asas (quadros 0..3), prepara por 16 ticks quando a Samus passa
 embaixo, mergulha na diagonal a 2 px/tick vertical e 0,5 px/tick horizontal (quadros 4..7) e
-enterra no chão. O sprite 32x32 foi remapeado para a mesma PAL1. Validação: `enemy_zoomer` e
-`enemy_skree` no host, `enemy_zoomer_art` e `enemy_skree_art` no smoke. Ripper e Geemer
-continuam pendentes.
+enterra no chão. O sprite 32x32 foi remapeado para a mesma PAL1. O Ripper também está completo:
+200 HP, 5 de dano, corpo 8x4 e os valores do cabeçalho original; voa em altura fixa e vira nas
+paredes, com sprite 24x16 de 3 quadros no ciclo A, B, A, C e spawn no corredor da Crateria 1.
+Validação: `enemy_zoomer`, `enemy_skree` e `enemy_ripper` no host; `enemy_zoomer_art`,
+`enemy_skree_art` e `enemy_ripper_art` no smoke. O Geemer continua pendente.
 
 ### Fase 6 — Salas, portas e mundo
 

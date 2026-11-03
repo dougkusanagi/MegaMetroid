@@ -483,6 +483,25 @@
        "value": 2
       }
      ]
+    },
+    {
+     "id": 10,
+     "name": "ripper",
+     "type": "enemy",
+     "x": 440,
+     "y": 552,
+     "width": 0,
+     "height": 0,
+     "rotation": 0,
+     "visible": true,
+     "point": true,
+     "properties": [
+      {
+       "name": "kind",
+       "type": "int",
+       "value": 3
+      }
+     ]
     }
    ]
   }

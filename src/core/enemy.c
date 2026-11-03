@@ -98,12 +98,29 @@ static void skree(const MmWorld *w, const MmBody *player, MmEnemy *e)
     }
 }
 
+/* Ripper flies horizontally at a fixed height and reverses when its body would enter a wall. */
+static void ripper(const MmWorld *w, const MmBody *player, MmEnemy *e)
+{
+    MmRect probe;
+    int speed = mm_enemy_defs[e->kind].speed;
+    int nx = e->x + (e->facing_left ? -speed : speed);
+    (void)player;
+    probe.left = mm_pixel(nx) + e->hitbox.left;
+    probe.right = mm_pixel(nx) + e->hitbox.right;
+    probe.top = mm_pixel(e->y) + e->hitbox.top;
+    probe.bottom = mm_pixel(e->y) + e->hitbox.bottom;
+    if (mm_rect_blocked(w, probe)) e->facing_left = !e->facing_left;
+    else e->x = nx;
+}
+
 const MmEnemyDef mm_enemy_defs[MM_ENEMY_KIND_COUNT] = {
-    {walker, 10, 10, {0, 0, 16, 16}, MM_ENEMY_WALK_SPEED},
+    {walker, 10, 10, {0, 0, 16, 16}, MM_ENEMY_WALK_SPEED, 0},
     /* Zoomer keeps the shared ground behavior; 5.2 adds its sprite and animation. */
-    {walker, 15, 5, {0, 0, 16, 16}, MM_ENEMY_ZOOMER_SPEED},
+    {walker, 15, 5, {0, 0, 16, 16}, MM_ENEMY_ZOOMER_SPEED, 0},
     /* Skree does not walk; the speed field belongs to the ground behaviors. */
-    {skree, 15, 10, {0, 0, 8, 12}, 0}
+    {skree, 15, 10, {0, 0, 8, 12}, 0, 0},
+    /* Ripper starts left, as the original Crateria mainstreet placement does. */
+    {ripper, 200, 5, {0, 0, 8, 4}, MM_ENEMY_RIPPER_SPEED, 1}
 };
 
 void mm_enemy_pool_init(MmEnemyPool *pool)
@@ -125,7 +142,8 @@ int mm_enemy_spawn(MmEnemyPool *pool, int kind, int x, int y)
     e->kind = kind;
     e->health = def->health;
     e->damage = def->damage;
-    e->grounded = e->facing_left = 0;
+    e->grounded = 0;
+    e->facing_left = def->facing_left;
     e->state = e->timer = 0;
     e->age = e->frame = 0;
     e->active = 1;
