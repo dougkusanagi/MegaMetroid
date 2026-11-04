@@ -201,6 +201,13 @@ saltos atravessando a emenda do fundo. CPU é o maior valor da média de oito
 quadros do SGDK; DMA é a maior fila em bytes; MISSED conta VInts além de um por
 frame. A fase faz 40 quadros de aquecimento e mede 110 quadros por salto.
 
+Além disso, o smoke imprime `PROFILE_<n>_LEFT_MIN/TIGHT/MISSED/DMA` para oito cenários de 300 quadros
+(parado, andando, pulos, giros atirando, nas duas salas; lista em `profile_scenarios`, `tests/rom_smoke.c`).
+`LEFT_MIN` é a menor folga, em linhas de varredura de 224, entre o fim da lógica e o próximo VBlank
+(lida do contador V do VDP); `TIGHT` conta quadros com menos de 16 linhas; `MISSED` conta VInts perdidos.
+Não faz parte da condição de falha: serve para comparar antes e depois de uma otimização. Um quadro NTSC
+tem 262 linhas, cerca de 488 ciclos cada.
+
 Para preencher uma lacuna de referência de céu, o coletor específico é
 `scripts/sm_sky_reference.lua`, usando o mesmo wrapper headless. Os probes já
 estão arquivados; não executar novamente para ajustar o port. A opção

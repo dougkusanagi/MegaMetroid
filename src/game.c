@@ -171,6 +171,10 @@ static void draw_hud(Game *g, bool all)
                         g->weapon.supers, g->weapon.supers_max, g->weapon.selected};
     u16 x, y;
     if (MM_DEBUG_OVERLAY) return; /* The overlay uses these rows. */
+    /* Building the cells costs about a tenth of a frame (digit divisions in software on the 68000),
+       and the bar changes only with energy, ammo or the selected weapon. */
+    if (!all && mm_hud_state_equal(&state, &g->hud_state)) return;
+    g->hud_state = state;
     mm_hud_cells(&state, cells);
     /* CPU writes to the VDP must not be interrupted by VBlank scroll/DMA commands. */
     for (y = 0; y < MM_HUD_ICON_ROWS; ++y)

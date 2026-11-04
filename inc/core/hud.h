@@ -48,4 +48,6 @@ typedef struct {
    energy covers it. An ammo icon appears once its capacity (or count) is above 0, lit while
    selected; missiles show three digits and supers two, as in the original. */
 void mm_hud_cells(const MmHudState *state, unsigned char cells[MM_HUD_ICON_ROWS][MM_HUD_COLUMNS]);
+/* True if both states give the same cells; lets a frame skip the work of mm_hud_cells. */
+int mm_hud_state_equal(const MmHudState *a, const MmHudState *b);
 #endif

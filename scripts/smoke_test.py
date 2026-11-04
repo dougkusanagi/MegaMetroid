@@ -160,6 +160,11 @@ def main():
             for index, label in enumerate(('NORMAL_CPU', 'NORMAL_DMA', 'NORMAL_MISSED', 'SPIN_CPU', 'SPIN_DMA', 'SPIN_MISSED',
                                            'NORMAL_Y0', 'NORMAL_YMIN', 'SPIN_Y0', 'SPIN_YMIN')):
                 commands += ['-ex', f'printf "{label}=%d\\n", *(unsigned short*)0x{perf+index*2:x}']
+        if 'mm_smoke_profile' in symbols:
+            profile = int(symbols['mm_smoke_profile'], 16) & 0xFFFFFF
+            for scenario in range(8):
+                for index, label in enumerate(('LEFT_MIN', 'TIGHT', 'MISSED', 'DMA')):
+                    commands += ['-ex', f'printf "PROFILE_{scenario}_{label}=%d\\n", *(unsigned short*)0x{profile+(scenario*4+index)*2:x}']
         if 'mm_smoke_memory' in symbols:
             memory = int(symbols['mm_smoke_memory'], 16) & 0xFFFFFF
             for index, label in enumerate(('VRAM_TILES_AVAILABLE', 'VRAM_TILES_ROOM_0', 'VRAM_TILES_ROOM_1', 'HEAP_FREE_START',
@@ -204,7 +209,7 @@ end
         print(f'SMOKE PASS (BlastEm GDB API, {time.monotonic()-started:.1f}s, ' +
               ('realtime audio' if args.realtime else 'unthrottled, no audio') +
               (', headless)' if args.hidden else ', secondary monitor)'))
-        metrics = [line for line in output.splitlines() if line.startswith(('NORMAL_', 'SPIN_', 'VRAM_', 'HEAP_'))]
+        metrics = [line for line in output.splitlines() if line.startswith(('NORMAL_', 'SPIN_', 'VRAM_', 'HEAP_', 'PROFILE_'))]
         if any(int(line.split('=', 1)[1]) for line in metrics):
             for line in metrics: print(line)
         if args.capture_scenes:

@@ -40,3 +40,10 @@ void mm_hud_cells(const MmHudState *s, unsigned char cells[MM_HUD_ICON_ROWS][MM_
         digits(&cells[1][MM_HUD_SUPER_COUNT_COLUMN], s->supers % 100, 2);
     }
 }
+
+int mm_hud_state_equal(const MmHudState *a, const MmHudState *b)
+{
+    return a->energy == b->energy && a->energy_max == b->energy_max &&
+           a->missiles == b->missiles && a->missiles_max == b->missiles_max &&
+           a->supers == b->supers && a->supers_max == b->supers_max && a->selected == b->selected;
+}

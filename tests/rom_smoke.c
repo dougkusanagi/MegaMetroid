@@ -26,6 +26,11 @@ volatile u16 mm_smoke_video_chunk;
    trip through the doors, and the largest free block at the end. */
 volatile u16 mm_smoke_memory[10];
 volatile u16 mm_smoke_perf[10]; /* CPU/DMA/missed VInts per jump, then initial/minimum camera Y. */
+/* Frame profile per scenario: fewest scanlines left before the next VBlank, frames with under
+   MM_PROFILE_TIGHT lines left, VInts missed, largest DMA queue in bytes. */
+#define MM_PROFILE_SCENARIOS 8
+#define MM_PROFILE_TIGHT 16
+volatile u16 mm_smoke_profile[MM_PROFILE_SCENARIOS][4];
 
 static int enemy_geemer_art(Game *g);
 
@@ -123,6 +128,72 @@ static int jump_performance(Game *g)
     }
     return failed;
 }
+/* Scanlines left before the next VBlank once the game logic of a frame has finished. In the
+   224-line picture, lines 0..223 are drawn and anything later is still in VBlank, where the
+   work is early (the headroom is then a whole frame); a VInt already taken shows as missed. */
+static u16 scanlines_left(void)
+{
+    u16 line = GET_VCOUNTER;
+    return line < 224 ? 224 - line : 224;
+}
+
+typedef struct {
+    int x, y, axis, jump, shoot, room;
+} ProfileScenario;
+
+static const ProfileScenario profile_scenarios[MM_PROFILE_SCENARIOS] = {
+    {256, 1176, 0, 0, 0, ROOM_CRATERIA_1},  /* standing still, Zoomer on screen */
+    {256, 1176, 1, 0, 0, ROOM_CRATERIA_1},  /* walking, camera scrolling sideways */
+    {256, 1176, 0, 1, 0, ROOM_CRATERIA_1},  /* standing jumps */
+    {256, 1176, 1, 1, 0, ROOM_CRATERIA_1},  /* walking spin jumps */
+    {256, 1176, 1, 1, 1, ROOM_CRATERIA_1},  /* spin jumps shooting */
+    {1493, 1176, 1, 1, 0, ROOM_CRATERIA_1}, /* spin jumps over the sky seam */
+    {1168, 80, 0, 1, 0, ROOM_CRATERIA_2},   /* standing jumps in the second room */
+    {1168, 80, 1, 1, 1, ROOM_CRATERIA_2},   /* spin jumps shooting in the second room */
+};
+
+static void frame_profile(Game *g)
+{
+    int s, frame;
+    const room_def *home = g->room;
+    u16 home_index = g->room_index;
+    MmBody saved_player = g->player;
+    for (s = 0; s < MM_PROFILE_SCENARIOS; ++s) {
+        const ProfileScenario *sc = &profile_scenarios[s];
+        volatile u16 *out = mm_smoke_profile[s];
+        u16 left_min = 0xFFFF, tight = 0, missed = 0, dma_max = 0;
+        if (g->room_index != sc->room) game_change_room(g, sc->room, (Vect2D_s16){sc->x, sc->y}, -1);
+        mm_samus_init(&g->player, sc->x, sc->y);
+        mm_weapon_init(&g->weapon);
+        for (frame = 0; frame < 40; ++frame) {
+            game_update(g, (MmInput){0});
+            SYS_doVBlankProcess();
+        }
+        for (frame = 0; frame < 300; ++frame) {
+            int phase = frame % 70;
+            u32 start = vtimer;
+            u16 bytes, left;
+            /* The walk turns around every 90 frames, so it never reaches a door. */
+            MmInput input = {.axis = frame / 90 % 2 ? -sc->axis : sc->axis, .jump_pressed = sc->jump && phase == 0,
+                             .jump_held = sc->jump && phase < 40,
+                             .shoot_pressed = sc->shoot && frame % 10 == 0, .shoot_held = sc->shoot};
+            game_update(g, input);
+            bytes = DMA_getQueueTransferSize();
+            left = scanlines_left();
+            SYS_doVBlankProcess();
+            if (vtimer > start + 1) { missed += vtimer - start - 1; left = 0; }
+            if (left < left_min) left_min = left;
+            if (left < MM_PROFILE_TIGHT) ++tight;
+            if (bytes > dma_max) dma_max = bytes;
+        }
+        out[0] = left_min; out[1] = tight; out[2] = missed; out[3] = dma_max;
+    }
+    /* The checks after this one start from the room and pose they had before. */
+    if (g->room_index != home_index) game_change_room(g, home_index, home->player_initial_pos, -1);
+    g->player = saved_player;
+    mm_weapon_init(&g->weapon);
+}
+
 /* VRAM from first_tile on holds exactly the tiles of set (read back through the VDP). */
 static int vram_holds(const TileSet *set, u16 first_tile)
 {
@@ -1022,6 +1093,7 @@ int main(bool hardReset)
         if (impact_frames != 31 || g.weapon.beams[0].impact_ticks) failed |= 8192;
     }
     if (jump_performance(&g)) failed |= 65536;
+    frame_profile(&g);
     failed |= room_transitions(&g) << 17; /* Bits 17-30: which room/door check failed. */
     room_video(&g);
     if (missile_weapon(&g)) failed |= 1UL << 27;

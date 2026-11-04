@@ -1667,6 +1667,19 @@ static void hud_cells(void) {
            MM_HUD_ENERGY_DIGITS_COLUMN + 2 <= MM_HUD_MISSILE_COLUMN &&
            MM_HUD_MISSILE_COUNT_COLUMN + 3 <= MM_HUD_SUPER_COLUMN &&
            MM_HUD_SUPER_COUNT_COLUMN + 2 <= MM_HUD_COLUMNS && MM_HUD_TILE_COUNT == 37);
+    /* A frame may skip the rebuild only when no field that feeds the cells differs. */
+    {
+        MmHudState a = {99, 199, 5, 10, 2, 5, MM_WEAPON_BEAM}, b = a;
+        int *fields_a[7] = {&a.energy, &a.energy_max, &a.missiles, &a.missiles_max, &a.supers, &a.supers_max, &a.selected};
+        int *fields_b[7] = {&b.energy, &b.energy_max, &b.missiles, &b.missiles_max, &b.supers, &b.supers_max, &b.selected};
+        assert(mm_hud_state_equal(&a, &b));
+        for (i = 0; i < 7; ++i) {
+            ++*fields_b[i];
+            assert(!mm_hud_state_equal(&a, &b));
+            --*fields_b[i];
+            assert(mm_hud_state_equal(&a, &b) && fields_a[i] != fields_b[i]);
+        }
+    }
     puts("PASS HUD: energy digits and tanks, ammo icons lit by selection, counts, hidden empty bins");
 }
 

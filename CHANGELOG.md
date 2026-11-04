@@ -10,6 +10,30 @@ O registro detalhado começa em 18/10/2026. A entrada anterior abaixo foi
 reconstituída do commit indicado; o histórico anterior completo permanece no Git
 (`git log`) e as entregas por etapa estão em [docs/PLANO.md](docs/PLANO.md).
 
+## 2026-11-04 23:50:00 −03:00 (America/Sao_Paulo) — HUD só refeito quando muda (8.4, primeira parte)
+
+### Adicionado
+
+- O smoke mede oito cenários de 300 quadros (parado, andando, pulos e giros, com e sem tiro, nas duas salas) e
+  imprime `PROFILE_<n>_LEFT_MIN/TIGHT/MISSED/DMA`: folga em linhas de varredura, quadros apertados, VInts perdidos
+  e maior fila de DMA. Só informa, não reprova.
+
+### Melhorado
+
+- O painel de energia e munição era recalculado todo quadro (~25 linhas de varredura, cerca de um décimo do
+  quadro no BlastEm NTSC). Agora só é recalculado quando energia, munição ou arma selecionada mudam.
+  CPU média de 8 quadros: parado 70% → 60%, giro 76% → 65%. Folga mínima no giro andando: 21 → 47 linhas.
+
+### Limites
+
+- **Saltar atirando ainda perde quadros**: giro atirando no Landing Site 30 → 17 VInts perdidos em 300 quadros;
+  na Crateria 2, 16 → 9. A causa seguinte medida é o `mm_weapon_tick` com tiros no ar. Só pular, sem atirar, não
+  perde quadros em nenhum cenário. Medido no BlastEm NTSC; hardware real não foi medido.
+
+**Validação:** suíte local `scripts/test.ps1` completa (inclui `mm_hud_state_equal`); smoke no BlastEm via GDB,
+acelerado, sem áudio e headless, com `MM_SMOKE_FAILURE=0x0`; ROM de teste e ROM padrão reconstruídas.
+Plano da tarefa em `docs/plans/desempenho-saltos.md`.
+
 ## 2026-11-04 20:22:45 −03:00 (America/Sao_Paulo) — Guia de pedidos para agentes
 
 ### Adicionado

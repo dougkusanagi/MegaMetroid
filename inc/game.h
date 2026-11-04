@@ -50,6 +50,7 @@ typedef struct {
     MmEnemyPool enemies; /* Simulated enemies; art and animation arrive in 5.2. */
     Sprite *enemy_sprites[MM_ENEMY_MAX]; /* NULL for enemies without art yet. */
     u8 hud_cells[MM_HUD_ICON_ROWS][MM_HUD_COLUMNS]; /* Status bar tiles on the window, redrawn when they change. */
+    MmHudState hud_state; /* The state hud_cells was built from; a frame with the same state skips the rebuild. */
     u16 hud_tile; /* VRAM index of the first status bar tile, just below the sprite tiles. */
     Sprite *door_sprites[MM_ROOM_MAX_DOORS]; /* Full transparent door art; hidden for doors the room does not have. */
     MmDoorLock door_locks[MM_ROOM_MAX_DOORS];
