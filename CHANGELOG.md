@@ -18,6 +18,7 @@ reconstituída do commit indicado; o histórico anterior completo permanece no G
   HUD e retomada após recusas amplas, além de orientações para evitar pedidos
   ambíguos, hipóteses tratadas como fatos e autorizações inventadas.
 - Link no README para o guia. Nenhuma mudança no comportamento do jogo.
+- Exemplos marcados como Markdown (`md`) para realce de sintaxe no guia.
 
 **Validação:** suíte local `scripts/test.ps1` completa e `git diff --check`.
 

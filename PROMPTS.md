@@ -21,7 +21,7 @@ substituir as regras do provedor.
 
 ## Pedido geral: investigar e corrigir
 
-```text
+```md
 Leia CLAUDE.md, AGENTS.md e MEMORY.md. Continue o MegaMetroid dentro do objetivo
 do porte e preserve as alterações existentes no repositório.
 
@@ -40,7 +40,7 @@ Não declare resolvido nem fiel ao original o que não foi verificado.
 
 ## Desempenho durante o salto
 
-```text
+```md
 Leia as instruções do projeto. Investigue os slowdowns durante os saltos.
 Determine um cenário reproduzível e compare o trabalho por quadro parado,
 andando e saltando, com câmera parada e em movimento quando aplicável.
@@ -53,7 +53,7 @@ o que foi medido antes e depois e os limites dessa comparação.
 
 ## Tiro durante a corrida
 
-```text
+```md
 Leia as instruções do projeto e as medições arquivadas de projéteis.
 Investigue se o Power Beam durante a corrida diverge da referência medida.
 Compare posição inicial, deslocamento por tick e trajetória em relação à sala
@@ -66,7 +66,7 @@ Corrija divergências comprovadas, acrescente regressão adequada e valide a ROM
 
 ## HUD
 
-```text
+```md
 Leia as instruções do projeto. Compare o HUD atual com as referências visuais
 disponíveis: posição, espaçamento, tiles, cores, números, ícones e prioridade
 de desenho. Liste diferenças observadas e adaptações necessárias aos limites
@@ -78,7 +78,7 @@ não demonstram correspondência visual.
 
 ## Retomar depois de uma recusa ampla
 
-```text
+```md
 Reavalie a tarefa concreta à luz da seção de escopo do AGENTS.md.
 O pedido atual é diagnosticar e corrigir [descreva o defeito] no código deste
 repositório. Explique qual operação específica estaria impedida e o motivo,
