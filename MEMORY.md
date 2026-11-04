@@ -9,3 +9,5 @@ Fatos operacionais duráveis que o código não mostra. Uma linha por fato.
 - Não há paleta livre: PAL0/PAL1 são da sala, PAL2 da Samus, PAL3 do tiro com os tons da nave do Landing Site nos índices 10–15.
 - Nesta máquina, Python vem de `uv` em `.venv` (Pillow, numpy); ponha `.venv\Scripts` no PATH antes de `scripts/test.ps1`, `build.ps1` e `smoke_test.py`.
 - O SGDK não tem `memcmp`/libc completa (`-fno-builtin`); compare buffers à mão.
+- No 68000, `*`, `/` e `%` de `int` (32 bits) por valor variável chamam a libgcc (~1.000 ciclos, ~2 linhas de varredura cada): evite-os em laços por quadro; o traçado do canhão custava ~8 linhas por passo por isso.
+- Para cronometrar trechos, leia `GET_VCOUNTER` dentro da área visível (linhas 0–223, sem VInt no meio); o contador repete 0xE5–0xEA no VBlank, então não meça através dele. Um quadro NTSC tem 262 linhas (~488 ciclos cada).
