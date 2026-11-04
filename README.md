@@ -4,6 +4,10 @@ Powered by  <a href="https://github.com/Stephane-D/SGDK">SGDK</a>
 
 Build instructions: [`docs/BUILD.md`](docs/BUILD.md).
 
+Instruções de contribuição com agentes: [`AGENTS.md`](AGENTS.md). O
+[`CLAUDE.md`](CLAUDE.md) importa essas regras e orienta a investigação de
+fidelidade e desempenho por evidências, sem mudar o objetivo do porte.
+
 Os smoke tests mostram o BlastEm no monitor secundário sem retirar o foco.
 Use `python scripts/smoke_test.py --hidden` para mantê-lo oculto; sem monitor secundário,
 a execução fica oculta automaticamente.

@@ -10,6 +10,19 @@ O registro detalhado começa em 18/10/2026. A entrada anterior abaixo foi
 reconstituída do commit indicado; o histórico anterior completo permanece no Git
 (`git log`) e as entregas por etapa estão em [docs/PLANO.md](docs/PLANO.md).
 
+## 2026-11-04 20:21:55 −03:00 (America/Sao_Paulo) — Contexto do porte para agentes
+
+### Melhorado
+
+- Instruções de escopo para avaliar cada operação sem recusar todo o projeto por
+  ser um porte; eventuais impedimentos devem ser específicos, preservando o
+  trabalho independente e sem presumir direitos sobre recursos de terceiros.
+- `CLAUDE.md` importa as regras e a memória do projeto e adapta o ciclo de
+  evidências do Craft Anything para investigar HUD, tiro e desempenho. A mudança
+  é documental: não altera o jogo nem garante a aceitação de tarefas pelo Claude.
+
+**Validação:** suíte local `scripts/test.ps1` completa e `git diff --check`.
+
 ## 2026-11-02 22:35:00 −03:00 (America/Sao_Paulo) — Geemer, núcleo e arte (5.2, quinta parte)
 
 ### Adicionado
