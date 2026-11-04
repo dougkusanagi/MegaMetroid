@@ -10,6 +10,28 @@ O registro detalhado começa em 18/10/2026. A entrada anterior abaixo foi
 reconstituída do commit indicado; o histórico anterior completo permanece no Git
 (`git log`) e as entregas por etapa estão em [docs/PLANO.md](docs/PLANO.md).
 
+## 2026-11-04 20:56:17 −03:00 (America/Sao_Paulo) — Agentes com uso controlado
+
+### Adicionado
+
+- Cinco agentes Claude com modelo, esforço, ferramentas e limite de turnos:
+  consulta (Haiku low), implementação (Sonnet low), problemas (Sonnet high),
+  revisão (Sonnet medium) e decisão excepcional (Opus low).
+- Configuração local do projeto para Sonnet 5.5 low e guia `docs/AGENTES.md`
+  com os alvos T3, limites da automação e orientação para a assinatura Claude.
+
+### Melhorado
+
+- Regras de encaminhamento por risco e incerteza, sem delegações triviais,
+  escritores concorrentes ou ciclos de tentativas sem novas evidências.
+- Revisão independente proporcional ao risco e entrega centralizada no
+  coordenador. Não habilita cobrança extra nem altera o comportamento do jogo.
+
+**Validação:** conferência de configuração por Haiku via T3 com alvo low,
+campos e JSON verificados localmente, suíte `scripts/test.ps1` completa e
+`git diff --check`. Os cinco papéis não foram exercitados de ponta a ponta;
+o teste T3 confirma a delegação Haiku, não o carregamento nativo de cada agente.
+
 ## 2026-11-04 20:47:44 −03:00 (America/Sao_Paulo) — Tiro sem custo de divisão (8.4, segunda parte)
 
 ### Corrigido

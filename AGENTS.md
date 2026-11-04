@@ -40,19 +40,44 @@ O plano de trabalho está em [`docs/PLANO.md`](docs/PLANO.md) — siga as etapas
 - Evite alocação dinâmica em tempo de execução; prefira arrays estáticos e dados em ROM (`const`).
 - Respeite os limites do hardware (VRAM, 80 sprites, 20 por scanline, 64 KB de RAM).
 
-## Agentes e modelos (recomendação, não obrigatória)
+## Agentes e economia de uso
 
-Divisão usual por papel. O modelo entre parênteses é o atual; se ele deixar de existir, use outro equivalente para o mesmo papel.
+Entrada recomendada: **Sonnet 5.5, esforço low**, para classificar o pedido,
+resolver tarefas triviais e coordenar uma etapa por vez. Os agentes Claude estão
+em `.claude/agents/`; instruções de configuração em [`docs/AGENTES.md`](docs/AGENTES.md).
 
-| Papel | Modelo atual | Uso |
+| Agente | Modelo / esforço | Quando usar |
 |---|---|---|
-| Implementação | `deepseek4.1-flash-free` (barato) | Etapas do `docs/PLANO.md` já detalhadas e tarefas bem definidas. |
-| Dúvidas | Opus 5.5, esforço baixo | Perguntas sobre código, SGDK, hardware e o original, sem alterar arquivos. |
-| Problemas | Sonnet 5.5, esforço alto | Depuração, falhas recorrentes e revisão do trabalho de implementação. |
+| `consulta` | Haiku / low | Localizar chamadas, testes e referências ou responder uma pergunta factual delimitada, sem editar. |
+| `implementacao` | Sonnet / low | Implementar uma etapa já definida, sem dúvida de arquitetura ou física. |
+| `problemas` | Sonnet / high | Investigar causa desconhecida, desempenho, VDP/DMA, VRAM/sprites, XGM2 e divergências de fidelidade. |
+| `revisao` | Sonnet / medium | Revisar um diff de comportamento e suas evidências, sem implementar. |
+| `decisao` | Opus / low | Impasse após diagnóstico do agente de problemas ou decisão de arquitetura com alternativas reais. Uso excepcional. |
 
-- O agente de implementação consulta `tests/reference/super_metroid/`, `docs/FISICA.md` e `docs/SPRITES.md` antes de definir valores de física ou de sprites. Não invente valores.
-- Passe a tarefa ao agente de problemas quando:
-  - o smoke test falhar 2 vezes pela mesma causa;
-  - o problema envolver timing do VDP, DMA, limites de VRAM ou sprites, áudio (XGM2) ou divergência de fidelidade com as medições de referência;
-  - a etapa exigir decisões de arquitetura não descritas no plano.
-- Antes de marcar uma etapa como concluída, o agente de problemas revisa o diff feito pelo agente de implementação.
+- Escolha o papel pelo risco e pela incerteza, não só pelo tamanho do diff. Se
+  não for necessário contexto separado, faça o trabalho no agente principal;
+  não abra um subagente para uma consulta ou edição trivial.
+- Ao delegar, informe objetivo, arquivos relevantes, evidências existentes,
+  critério de conclusão e o que não deve ser alterado. Peça um resumo curto de
+  resultado, validação, riscos e próximo passo; não duplique a investigação.
+- Subagentes não fazem commit/push e não delegam novamente. O coordenador
+  mantém a responsabilidade pelos testes finais, documentação e entrega.
+- Use um subagente por vez e apenas um escritor no checkout. Não execute duas
+  builds ou sessões de emulador em paralelo; BlastEm compartilha a porta 1234.
+- Antes de mudar física ou sprites, consulte as referências existentes. Passe
+  diretamente a `problemas` os casos de hardware, áudio e fidelidade acima.
+  Também escale após duas falhas pela mesma causa ou quando a solução deixar
+  de ser uma implementação já definida. Não repita tentativas sem nova evidência.
+- `problemas` trabalha em uma hipótese mensurável por vez. Após duas tentativas
+  sem reduzir a incerteza, devolve evidências, tentativas e dúvida concreta ao
+  coordenador, que pode acionar `decisao` uma vez. Não crie ciclos de agentes.
+- Antes de concluir mudança de comportamento, peça uma revisão independente do
+  diff. Use `problemas` para riscos de hardware/fidelidade; nos demais, `revisao`.
+  Documentação e formatação não exigem revisor. Quem implementou não se apresenta
+  como revisor independente; uma nova revisão usa outra invocação.
+- Não escale Opus, esforço ou provedor silenciosamente se o modelo estiver
+  indisponível. Informe a limitação e continue apenas trabalho independente.
+- Os modelos Claude usam a assinatura do usuário. Não habilite cobrança extra
+  nem adote outro provedor automaticamente. O DeepSeek antes recomendado fica
+  como opção somente se o usuário pedir esse provedor; confirme capacidades e
+  use a delegação do T3 Code, nunca o trate como modelo nativo do Claude.

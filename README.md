@@ -8,6 +8,7 @@ Instruções de contribuição com agentes: [`AGENTS.md`](AGENTS.md). O
 [`CLAUDE.md`](CLAUDE.md) importa essas regras e orienta a investigação de
 fidelidade e desempenho por evidências, sem mudar o objetivo do porte.
 Exemplos de pedidos e orientações para formulá-los: [`PROMPTS.md`](PROMPTS.md).
+Modelos, esforço e seleção de subagentes: [`docs/AGENTES.md`](docs/AGENTES.md).
 
 Os smoke tests mostram o BlastEm no monitor secundário sem retirar o foco.
 Use `python scripts/smoke_test.py --hidden` para mantê-lo oculto; sem monitor secundário,

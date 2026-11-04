@@ -8,6 +8,11 @@ substituir as regras do provedor.
 
 ## Antes de pedir
 
+Configuração econômica: selecione **Claude Sonnet 5.5 / low** no T3 Code.
+O `AGENTS.md` orienta a seleção dos especialistas; veja
+[`docs/AGENTES.md`](docs/AGENTES.md). Pedidos de desempenho e hardware vão para
+Sonnet high, sem exigir que toda a conversa use esse nível.
+
 - Inicie a sessão na raiz deste repositório e peça a leitura de `CLAUDE.md`,
   `AGENTS.md` e `MEMORY.md`.
 - Descreva o sintoma observado, a sala, a ação e o resultado esperado. Quando

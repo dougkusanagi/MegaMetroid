@@ -9,6 +9,16 @@ Continuar o porte de Super Metroid para Mega Drive/Genesis em C com SGDK.
 Pedidos de maior fidelidade abrangem comportamento, HUD, animações e desempenho.
 Leia a seção de escopo do `AGENTS.md` antes de avaliar a tarefa concreta.
 
+## Seleção de agentes
+
+Siga a tabela e os critérios de economia do `AGENTS.md`. Classifique o pedido
+antes de investigar; não leia o repositório inteiro só para escolher um agente.
+No T3 Code, uma delegação com modelo/esforço próprios usa `delegate_task` com
+`target.options` explícito, conforme `docs/AGENTES.md`. Não presuma que o agente
+do T3 carrega o corpo de `.claude/agents/`: indique o arquivo do papel no briefing.
+Fora do T3, use os agentes nativos definidos nessa pasta.
+Tarefas triviais ficam no coordenador. Não delegue novamente dentro de um filho.
+
 ## Estudar → implementar → comparar → corrigir
 
 1. Leia o fluxo afetado e a etapa correspondente de `docs/PLANO.md`. Preserve
