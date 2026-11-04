@@ -10,6 +10,17 @@ O registro detalhado começa em 18/10/2026. A entrada anterior abaixo foi
 reconstituída do commit indicado; o histórico anterior completo permanece no Git
 (`git log`) e as entregas por etapa estão em [docs/PLANO.md](docs/PLANO.md).
 
+## 2026-11-04 20:22:45 −03:00 (America/Sao_Paulo) — Guia de pedidos para agentes
+
+### Adicionado
+
+- `PROMPTS.md` com exemplos para triagem, slowdowns, tiro durante a corrida,
+  HUD e retomada após recusas amplas, além de orientações para evitar pedidos
+  ambíguos, hipóteses tratadas como fatos e autorizações inventadas.
+- Link no README para o guia. Nenhuma mudança no comportamento do jogo.
+
+**Validação:** suíte local `scripts/test.ps1` completa e `git diff --check`.
+
 ## 2026-11-04 20:21:55 −03:00 (America/Sao_Paulo) — Contexto do porte para agentes
 
 ### Melhorado
