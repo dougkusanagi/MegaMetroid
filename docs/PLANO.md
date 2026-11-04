@@ -605,8 +605,11 @@ os verdes que já coincidem com a nave.
 passou a perfilar oito cenários (folga em linhas de varredura, VInts perdidos e DMA). Só pular não perde quadros;
 **pular atirando perde** (30 de 300 no Landing Site, 16 na Crateria 2). O `draw_hud` refazia as células todo quadro
 (~25 linhas, cerca de um décimo do quadro) e agora só refaz quando o painel muda: CPU média de 70% para 60% parado
-e de 76% para 65% no giro, perdas de 30 para 17 e de 16 para 9. **Ainda não resolvido:** saltar atirando segue
-perdendo quadros. Medidas, passos e próximo passo em [plans/desempenho-saltos.md](plans/desempenho-saltos.md).
+e de 76% para 65% no giro, perdas de 30 para 17 e de 16 para 9. Segunda parte: o quadro em que o
+tiro nasce custava até ~150 linhas (traçado do canhão com multiplicações e divisões de 32 bits por passo); agora é
+incremental e custa ~35, com os mesmos pontos de impacto. Giro atirando: de 17 para 1–2 perdas no Landing Site e de
+9 para 0 na Crateria 2. **Ainda não resolvido:** sobram 1–2 quadros perdidos no Landing Site. Medidas, passos e
+próximo passo em [plans/desempenho-saltos.md](plans/desempenho-saltos.md).
 
 ## 4. Riscos e decisões em aberto
 

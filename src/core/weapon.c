@@ -85,6 +85,29 @@ static void apply_cycle(MmWeapon *w)
     w->selected = next;
 }
 
+/* The cannon trace in `steps` equal steps from (bx, by) to (bx + ex, by + ey), where steps is the
+   larger of |ex| and |ey|. Step k tests the beam at bx + ex * k / steps (rounded toward zero), and
+   likewise for y. Each coordinate is kept as quotient and remainder, so no step needs a software
+   32-bit multiply or divide on the 68000 (about 8 scanlines each). A blocked rectangle stays
+   blocked when it grows, so a trace whose whole box is free has no blocked step. */
+static int cannon_trace(const MmWorld *w, int bx, int by, int ex, int ey, int steps, int *hit_x, int *hit_y)
+{
+    int ax = ex < 0 ? -ex : ex, ay = ey < 0 ? -ey : ey;
+    int qx = 0, qy = 0, rx = 0, ry = 0, step;
+    MmRect box = {(ex < 0 ? bx + ex : bx) - MM_BEAM_RADIUS, (ey < 0 ? by + ey : by) - MM_BEAM_RADIUS,
+                  (ex < 0 ? bx : bx + ex) + MM_BEAM_RADIUS, (ey < 0 ? by : by + ey) + MM_BEAM_RADIUS};
+    if (!mm_rect_blocked(w, box)) return 0;
+    for (step = 1; step <= steps; ++step) {
+        int x, y;
+        rx += ax; if (rx >= steps) { rx -= steps; ++qx; }
+        ry += ay; if (ry >= steps) { ry -= steps; ++qy; }
+        x = bx + (ex < 0 ? -qx : qx);
+        y = by + (ey < 0 ? -qy : qy);
+        if (beam_blocked(w, x, y)) { *hit_x = x; *hit_y = y; return 1; }
+    }
+    return 0;
+}
+
 void mm_weapon_init(MmWeapon *w)
 {
     w->selected = MM_WEAPON_BEAM;
@@ -143,20 +166,14 @@ void mm_weapon_tick(MmWeapon *w, const MmWorld *world, const MmBody *player,
                  aim == MM_AIM_DOWN || aim == MM_AIM_DIAG_DOWN ? 1 : 0;
         int px = mm_pixel(player->x), py = mm_pixel(player->y);
         int ex = muzzle_x - CANNON_BASE_X, ey = muzzle_y - CANNON_BASE_Y;
-        int steps = ex < 0 ? -ex : ex, step, x = px + muzzle_x, y = py + muzzle_y, speed;
+        int steps = ex < 0 ? -ex : ex, x = px + muzzle_x, y = py + muzzle_y, speed, hit_x, hit_y;
         if ((ey < 0 ? -ey : ey) > steps) steps = ey < 0 ? -ey : ey;
         speed = kind != MM_WEAPON_BEAM ? MM_SHOT_START_SPEED :
                 dx && dy ? MM_BEAM_DIAGONAL_SPEED : MM_BEAM_SPEED;
         b->active = 1;
         /* Trace from the body centre to the muzzle; never spawn beyond a wall. */
-        for (step = 1; step <= steps; ++step) {
-            if (beam_blocked(world, px + CANNON_BASE_X + ex * step / steps,
-                             py + CANNON_BASE_Y + ey * step / steps)) {
-                impact(b, px + CANNON_BASE_X + ex * step / steps,
-                       py + CANNON_BASE_Y + ey * step / steps);
-                break;
-            }
-        }
+        if (cannon_trace(world, px + CANNON_BASE_X, py + CANNON_BASE_Y, ex, ey, steps, &hit_x, &hit_y))
+            impact(b, hit_x, hit_y);
         b->x = x * MM_UNIT; b->y = y * MM_UNIT;
         b->vx = dx * speed; b->vy = dy * speed;
         b->kind = kind;

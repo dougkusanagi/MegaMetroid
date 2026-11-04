@@ -1,4 +1,5 @@
 #include <assert.h>
+#include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
 #include "core/world.h"
@@ -1237,6 +1238,50 @@ static void beam_from_muzzle(void) {
     assert(!w.beams[0].active);
     puts("PASS beam leaves from the muzzle along the aim, never from inside a wall");
 }
+/* The cannon trace tests the same points as the original formula (body centre + offset * step / steps,
+   rounded toward zero) and stops at the same wall, now without a division per step. Checked for every
+   muzzle offset up to 24 px against a full tile, both slopes and a door cap, over a block of positions. */
+static int reference_trace(const MmWorld *w, int bx, int by, int ex, int ey, int *hit_x, int *hit_y) {
+    int steps = abs(ex) > abs(ey) ? abs(ex) : abs(ey), step;
+    for (step = 1; step <= steps; ++step) {
+        int x = bx + ex * step / steps, y = by + ey * step / steps;
+        MmRect r = {x - MM_BEAM_RADIUS, y - MM_BEAM_RADIUS, x + MM_BEAM_RADIUS, y + MM_BEAM_RADIUS};
+        if (mm_rect_blocked(w, r)) { *hit_x = x; *hit_y = y; return 1; }
+    }
+    return 0;
+}
+static void cannon_trace_matches_formula(void) {
+    static const int kinds[4] = {0, 2, 3, -1}; /* solid tile, the two slopes, then a door cap */
+    MmBody b;
+    MmCamera camera = {0, 0};
+    MmInput shoot = {.shoot_held = 1, .shoot_pressed = 1};
+    MmRect cap = {0, 0, 8, 24};
+    int checked = 0, hits = 0, kind, tx, ty, ex, ey;
+    mm_samus_init(&b, 240, 100);
+    for (kind = 0; kind < 4; ++kind)
+        for (ty = 10; ty < 20; ++ty)
+            for (tx = 28; tx < 38; ++tx) {
+                reset();
+                world.solids = 0; world.solid_count = 0;
+                if (kinds[kind] >= 0) tiles[ty * 64 + tx] = (unsigned char)kinds[kind];
+                else { cap.left = tx * 8; cap.top = ty * 8; cap.right = cap.left + 8; cap.bottom = cap.top + 24;
+                       world.solids = &cap; world.solid_count = 1; }
+                for (ey = -24; ey <= 24; ++ey)
+                    for (ex = -24; ex <= 24; ++ex) {
+                        MmWeapon w;
+                        int hit_x = 0, hit_y = 0, expected = reference_trace(&world, 260, 124, ex, ey, &hit_x, &hit_y);
+                        mm_weapon_init(&w);
+                        w.selected = MM_WEAPON_MISSILE; /* A missile does not move on its spawn tick. */
+                        mm_weapon_tick(&w, &world, &b, shoot, camera, 20 + ex, 24 + ey);
+                        assert(w.fired && (w.beams[0].impact_ticks != 0) == expected);
+                        if (expected) { assert(w.beams[0].impact_x == hit_x && w.beams[0].impact_y == hit_y); ++hits; }
+                        ++checked;
+                    }
+            }
+    world.solids = 0; world.solid_count = 0;
+    assert(hits > 10000 && checked > hits);
+    puts("PASS cannon trace: same impact points as the divide-per-step formula, walls, slopes and door caps");
+}
 /* Reference: Mesen crouch_morph, down_hold, morph_jump and morph_up_hold. */
 static void measured_postures(void) {
     MmBody b;
@@ -1872,7 +1917,7 @@ int main(void) {
     measured_missiles();
     missile_loadout();
     movement(); air_steering(); collisions(); jump_and_ledge(); states(); physics(); variable_jump(); ledge_jump();
-    slopes(); slope_sweep(); tunnels(); wall_climb(); wall_jump_rules(); wall_jump_animation(); moonwalk(); poses(); crouch_poses(); crouch_tap(); double_tap(); ball_poses(); aiming(); beam_from_muzzle(); morph_rules(); ball_stands_on_slope();
+    slopes(); slope_sweep(); tunnels(); wall_climb(); wall_jump_rules(); wall_jump_animation(); moonwalk(); poses(); crouch_poses(); crouch_tap(); double_tap(); ball_poses(); aiming(); beam_from_muzzle(); cannon_trace_matches_formula(); morph_rules(); ball_stands_on_slope();
     ball_stand_real(); camera_and_input(); doors(); world_map(); door_locks(); hud_cells(); health_rules(); enemy_walker(); enemy_zoomer(); enemy_geemer(); enemy_skree(); enemy_ripper(); real_levels();
     puts("All core regression tests passed."); return 0;
 }

@@ -10,6 +10,30 @@ O registro detalhado começa em 18/10/2026. A entrada anterior abaixo foi
 reconstituída do commit indicado; o histórico anterior completo permanece no Git
 (`git log`) e as entregas por etapa estão em [docs/PLANO.md](docs/PLANO.md).
 
+## 2026-11-05 00:25:00 −03:00 (America/Sao_Paulo) — Tiro sem custo de divisão (8.4, segunda parte)
+
+### Corrigido
+
+- Atirar durante o salto perdia quadros. O quadro em que o tiro nasce traçava o canhão com duas multiplicações e
+  duas divisões de 32 bits por passo (software no 68000): cerca de 150 linhas de varredura num disparo de 18 passos
+  (mais da metade do quadro) e mais de 224 num de 30. O traçado agora é incremental, sem divisão, e testa o trecho
+  inteiro de uma vez. O ponto de impacto é o mesmo de antes. Disparo de 18 passos: ~150 → ~35 linhas.
+
+### Melhorado
+
+- Giro atirando no BlastEm NTSC, em 300 quadros: Landing Site 17 → 2 VInts perdidos, Crateria 2 9 → 0.
+  Desde o início desta investigação: 30 → 2 e 16 → 0.
+
+### Limites
+
+- **Ainda sobram 1 a 2 VInts perdidos** no giro atirando do Landing Site (varia com o layout da ROM). Os cenários sem
+  tiro seguem em 0. Medido só no BlastEm NTSC; hardware real não foi medido.
+
+**Validação:** suíte local `scripts/test.ps1` completa, com o novo `cannon_trace_matches_formula` (compara o ponto
+de impacto com a fórmula antiga em ~1,1 milhão de casos: paredes, as duas rampas e portas; uma mutação proposital
+foi detectada); smoke no BlastEm via GDB, acelerado, sem áudio e headless, com `MM_SMOKE_FAILURE=0x0`.
+Plano da tarefa em `docs/plans/desempenho-saltos.md`.
+
 ## 2026-11-04 23:50:00 −03:00 (America/Sao_Paulo) — HUD só refeito quando muda (8.4, primeira parte)
 
 ### Adicionado

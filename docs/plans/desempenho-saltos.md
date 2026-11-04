@@ -21,22 +21,26 @@ diagnóstico (não versionada): `mm_hud_cells` ~25 linhas por chamada; `mm_tick`
 com 3 inimigos ~36; `mm_rect_blocked` ~1,3 (caixa do tiro) a mais de 3,7 (caixa da Samus); `mm_weapon_tick` ~3 sem tiro
 e ~39 com tiros no ar; laço de sprites de portas e inimigos ~28; `SPR_update` ~15.
 
-| Cenário | Antes (perdidos / folga mín.) | Após o passo 1 |
+| Cenário | Antes (perdidos / folga mín.) | Após os passos 1 e 2 |
 |---|---|---|
 | 0 parado | 0 / 73 | 0 / 99 |
 | 3 giro andando | 0 / 21 | 0 / 47 |
-| 4 giro atirando | 30 / 0 | 17 / 0 |
-| 7 giro atirando (Crateria 2) | 16 / 0 | 9 / 0 |
+| 4 giro atirando | 30 / 0 | 17 / 0 → 2 / 0 (passo 2) |
+| 7 giro atirando (Crateria 2) | 16 / 0 | 9 / 0 → 0 / 12 (passo 2) |
 
 CPU média de 8 quadros (`SYS_getCPULoad`): parado 70% → 60%; giro 76% → 65%.
 
 ## Passos
 
 1. ✅ `draw_hud` reconstruía as células todo quadro. Agora só quando o estado do painel muda.
-2. ⏳ Saltar atirando ainda perde quadros. O maior custo é `mm_weapon_tick` com tiros no ar (varredura pixel a pixel,
-   uma `mm_rect_blocked` por pixel, com o laço das portas sólidas a cada chamada). Próximo passo: medir por que o
-   custo por chamada é tão alto e reduzi-lo no código compartilhado.
-3. ⏳ Outros custos fixos medidos: `mm_tick` e `mm_enemy_tick` parados (~31 e ~36 linhas), laço de sprites de
+2. ✅ Causa de saltar atirando: o quadro em que o tiro nasce. O traçado do canhão (média de 15 passos, até 29) fazia
+   duas multiplicações e duas divisões de 32 bits por passo, em software no 68000 (~8 linhas por passo): ~150 linhas
+   num disparo de 18 passos e mais de 224 num de 30. Agora o traçado é incremental (quociente e resto, sem divisão)
+   e testa o trecho inteiro de uma vez, pois colisão que bloqueia um retângulo bloqueia um maior. Mesmos pontos de
+   impacto (teste `cannon_trace_matches_formula`, ~1,1 milhão de comparações com a fórmula antiga; uma mutação
+   no resto foi detectada). Quadro de disparo de 18 passos: ~150 → ~35 linhas.
+   Perdas em 300 quadros: Landing Site 17 → 1 ou 2 (varia com o layout da ROM), Crateria 2 9 → 0.
+3. ⏳ Resta 1 a 2 VInts perdidos no giro atirando do Landing Site (folga mínima 0). Outros custos fixos medidos: `mm_tick` e `mm_enemy_tick` parados (~31 e ~36 linhas), laço de sprites de
    portas e inimigos (~28), inimigos fora da tela que ainda simulam.
 
 ## Tentativas que falharam
