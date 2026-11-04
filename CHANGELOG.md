@@ -10,7 +10,7 @@ O registro detalhado começa em 18/10/2026. A entrada anterior abaixo foi
 reconstituída do commit indicado; o histórico anterior completo permanece no Git
 (`git log`) e as entregas por etapa estão em [docs/PLANO.md](docs/PLANO.md).
 
-## 2026-11-04 23:48:00 −03:00 (America/Sao_Paulo) — Tiro sem custo de divisão (8.4, segunda parte)
+## 2026-11-04 20:47:44 −03:00 (America/Sao_Paulo) — Tiro sem custo de divisão (8.4, segunda parte)
 
 ### Corrigido
 
@@ -26,7 +26,7 @@ reconstituída do commit indicado; o histórico anterior completo permanece no G
 
 ### Limites
 
-- **Ainda sobram 1 a 2 VInts perdidos** no giro atirando do Landing Site (varia com o layout da ROM). Os cenários sem
+- **Ainda sobram 2 VInts perdidos** no giro atirando do Landing Site na build final (foi 1 numa build com código de teste a mais). Os cenários sem
   tiro seguem em 0. Medido só no BlastEm NTSC; hardware real não foi medido.
 
 **Validação:** suíte local `scripts/test.ps1` completa, com o novo `cannon_trace_matches_formula` (compara o ponto
@@ -34,7 +34,7 @@ de impacto com a fórmula antiga em ~1,1 milhão de casos: paredes, as duas ramp
 foi detectada); smoke no BlastEm via GDB, acelerado, sem áudio e headless, com `MM_SMOKE_FAILURE=0x0`.
 Plano da tarefa em `docs/plans/desempenho-saltos.md`.
 
-## 2026-11-04 23:44:00 −03:00 (America/Sao_Paulo) — HUD só refeito quando muda (8.4, primeira parte)
+## 2026-11-04 20:43:33 −03:00 (America/Sao_Paulo) — HUD só refeito quando muda (8.4, primeira parte)
 
 ### Adicionado
 

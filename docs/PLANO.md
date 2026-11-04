@@ -607,8 +607,8 @@ passou a perfilar oito cenários (folga em linhas de varredura, VInts perdidos e
 (~25 linhas, cerca de um décimo do quadro) e agora só refaz quando o painel muda: CPU média de 70% para 60% parado
 e de 76% para 65% no giro, perdas de 30 para 17 e de 16 para 9. Segunda parte: o quadro em que o
 tiro nasce custava até ~150 linhas (traçado do canhão com multiplicações e divisões de 32 bits por passo); agora é
-incremental e custa ~35, com os mesmos pontos de impacto. Giro atirando: de 17 para 1–2 perdas no Landing Site e de
-9 para 0 na Crateria 2. **Ainda não resolvido:** sobram 1–2 quadros perdidos no Landing Site. Medidas, passos e
+incremental e custa ~35, com os mesmos pontos de impacto. Giro atirando: de 17 para 2 perdas no Landing Site e de
+9 para 0 na Crateria 2. **Ainda não resolvido:** sobram 2 quadros perdidos no Landing Site (build final). Medidas, passos e
 próximo passo em [plans/desempenho-saltos.md](plans/desempenho-saltos.md).
 
 ## 4. Riscos e decisões em aberto
