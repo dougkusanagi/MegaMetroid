@@ -99,8 +99,11 @@ static u16 player_row(const MmBody *p)
         return PLAYER_ANIM_LAND_SHOOT_R + side;
     /* Turn strips are indexed by the OLD facing. Aim/shoot keep their cannon pose,
        and a ball, spin or wall kick keeps its own animation. */
+    /* A jump from a frontal moonwalk keeps the BF/C0 turn pose even with the shot
+       held (the shot is released over the transition). */
     if (p->turn_pose_ticks && !p->ball && !p->spin_jumping && p->pose != MM_POSE_WALL_KICK &&
-        p->pose != MM_POSE_UNMORPH && p->aim == MM_AIM_FORWARD && !p->shoot_pose_timer)
+        p->pose != MM_POSE_UNMORPH && (p->moonwalk_jump ||
+        (p->aim == MM_AIM_FORWARD && !p->shoot_pose_timer)))
         return (p->grounded ? PLAYER_ANIM_TURN_R : PLAYER_ANIM_TURN_AIR_R) + p->turn_pose_left;
     if ((p->aim == MM_AIM_FORWARD && !p->shoot_pose_timer) || p->ball || p->pose == MM_POSE_UNMORPH ||
         p->pose == MM_POSE_SPIN || p->pose == MM_POSE_WALL_KICK)

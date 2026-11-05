@@ -281,6 +281,24 @@ attack também continuam pendentes: space jump e screw dependem de upgrades
 (7.3) ainda não implementados, e pouco HP usa tiras `xx` sem número de pose na
 prancha, que o extrator não endereça por pose.
 
+**3.3.7 Moonwalk no salto (BF/C0)** ✅ (2026-11-05). As poses BF/C0 ("moonwalking
+- turn/jump") e C1–C4 (com mira) são aliases das tiras de virada na prancha
+(`25/26` e `8B–8E`): a regeneração da prancha (redownload do asset 182270 do
+Spriters Resource, 6496×4384) foi idêntica à versionada, confirmando que a arte
+da transição já está na folha como `TURN`. Indo do guia técnico público do
+moonwalk (wiki.supermetroid.run/Moonwalk, não medido no original): pular no
+moonwalk frontal solta o tiro, dá um pulo normal (sem giro) para trás e vira
+de lado durante o voo. O núcleo marca `moonwalk_jump`, zera o giro e arma a
+pose de virada por seis ticks no rosto antigo; o render mostra `TURN` no chão e
+`TURN_AIR` no ar, mesmo com o tiro segurado (a virada aérea rearma a pose, como
+nas viradas comuns). Host cobre os dois lados, a saída do flag e o pulo
+diagonal com giro (C1–C4 ainda sem linhas na folha); a ROM confere tira e
+quadro após cada VBlank. Custo: um inteiro (4 bytes no 68000), sem tiles,
+sprites ou paletas novos. **Limites:** comportamento qualitativo sem medição
+própria (o save state do Mesen não está nesta máquina); física de Moonfall
+(queda sem teto) fora do escopo; transição do moonwalk diagonal (C1–C4)
+continua pendente.
+
 **Ambiente SGDK (2026-11-05).** O Cygwin do SGDK parou de iniciar nesta máquina
 (`VirtualAlloc ... Win32 error 487`, `Couldn't reserve space for cygwin's heap`,
 também em `make --version` fora do projeto): o MSYS do SGDK quer reservar o heap

@@ -1134,6 +1134,34 @@ static void moonwalk(void) {
             assert(b.moonwalk_ticks && b.aim == MM_AIM_FORWARD);
         }
     }
+    /* Jump from a frontal moonwalk (3.3.7): normal jump (no spin) with the BF/C0
+       turn pose for six ticks on the old facing. Diagonal moonwalk jumps keep
+       the spin (C1-C4 rows are not on the sheet yet). */
+    for (side = 0; side < 2; ++side) {
+        int direction = side ? 1 : -1, diagonal;
+        for (diagonal = 0; diagonal < 2; ++diagonal) {
+            reset(); floor_at(20);
+            mm_samus_init(&b, 200, 112); mm_tick(&world, &b, idle);
+            b.facing_left = side;
+            for (frame = 0; frame < 5; ++frame)
+                mm_tick(&world, &b, (MmInput){.axis = direction, .shoot_held = 1,
+                    .aim_diagonal = diagonal ? -1 : 0});
+            assert(b.moonwalk_ticks);
+            mm_tick(&world, &b, (MmInput){.axis = direction, .shoot_held = 1, .jump_held = 1,
+                .jump_pressed = 1, .aim_diagonal = diagonal ? -1 : 0});
+            assert(b.jumped && !b.moonwalk_ticks);
+            if (diagonal) assert(b.spin_jumping && !b.moonwalk_jump);
+            else {
+                assert(!b.spin_jumping && b.moonwalk_jump);
+                assert(b.turn_pose_ticks == MM_TURN_POSE_TICKS && b.turn_pose_left == side);
+                /* The flag lasts through the air turnaround (steer re-arms the
+                   turn pose), then clears with it. */
+                for (frame = 0; frame < 20 && b.moonwalk_jump; ++frame)
+                    mm_tick(&world, &b, (MmInput){.axis = direction, .shoot_held = 1, .jump_held = 1});
+                assert(!b.moonwalk_jump && frame > MM_TURN_POSE_TICKS);
+            }
+        }
+    }
     puts("PASS moonwalk: 110 archived displacements/frames both facings, stop, fire release, option and walls");
 }
 

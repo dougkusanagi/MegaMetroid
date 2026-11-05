@@ -66,7 +66,7 @@ void mm_body_init(MmBody *b, int x, int y, MmRect hitbox)
     b->grounded = b->facing_left = b->jumped = 0;
     b->speed = b->run_extra = b->turn = b->slide = b->walking = b->falling = 0;
     b->turn_pose_ticks = b->turn_pose_left = 0;
-    b->moonwalk_enabled = b->moonwalk_ticks = 0;
+    b->moonwalk_enabled = b->moonwalk_ticks = b->moonwalk_jump = 0;
     b->spin_jumping = b->stun = b->shoot_pose_timer = 0;
     b->aim = MM_AIM_FORWARD;
     b->jump_frame = 0; b->jump_frame_ticks = 3;
@@ -437,15 +437,22 @@ void mm_tick(const MmWorld *w, MmBody *b, MmInput input)
     int direction = input.axis < 0 ? -1 : input.axis > 0 ? 1 : 0;
     int moving_before_jump = b->vx != 0, wall_jump, was_grounded = b->grounded, was_crouching = b->crouching;
     int was_ball = b->ball, was_wall_kick = b->pose == MM_POSE_WALL_KICK;
+    int was_moonwalk = b->moonwalk_ticks > 0;
     int stunned = b->stun > 0;
     if (stunned) --b->stun;
     if (b->pose_timer) --b->pose_timer;
     if (b->turn_pose_ticks) --b->turn_pose_ticks;
+    if (b->moonwalk_jump && !b->turn_pose_ticks) b->moonwalk_jump = 0;
     b->jumped = !stunned && input.jump_pressed && b->grounded && !b->ball &&
         (!b->crouching || fits(w, b, b->stand_box));
     /* As in Super Metroid, only a jump while walking spins: from rest, even with a direction pressed on
        the same tick, the jump is a standing one. A jump during a slide, with no direction, still spins. */
     if (b->jumped) b->spin_jumping = moving_before_jump && (direction || b->slide);
+    /* Jumping from a frontal moonwalk does not spin: it is the BF/C0 turn/jump
+       transition (public technical guide; unmeasured, see HISTORICO 3.3.7). */
+    if (b->jumped && was_moonwalk && !input.aim_y && !input.aim_diagonal) {
+        b->spin_jumping = 0; b->moonwalk_jump = 1;
+    }
     /* Wall jump, as in Super Metroid: only in a spin jump, touching a wall and pressing away from it.
        The kick turns the body the pressed way and accelerates from rest, with free steering. */
     wall_jump = !stunned && input.jump_pressed && !b->jumped && !b->grounded && !b->ball && b->spin_jumping &&
@@ -505,6 +512,12 @@ void mm_tick(const MmWorld *w, MmBody *b, MmInput input)
         b->pose_timer = b->spin_jumping ? 0 : MM_TAKEOFF_TICKS;
         if (wall_jump) { b->jump_frame = 0; b->jump_frame_ticks = MM_WALL_KICK_START_TICKS; }
         if (b->ball) { b->pose = MM_POSE_BALL; b->pose_timer = 0; }
+        /* Frontal moonwalk jump: the BF/C0 pose (the turn strips) shows for six
+           ticks with the old facing, over the normal jump. */
+        if (b->moonwalk_jump) {
+            b->turn_pose_ticks = MM_TURN_POSE_TICKS;
+            b->turn_pose_left = b->facing_left;
+        }
     }
     /* Releasing jump stops the ascent at once, also before the takeoff ends: a tap is a short hop.
        While thrown by a hit the upward knockback is preserved as well, so a tap does not cancel it. */

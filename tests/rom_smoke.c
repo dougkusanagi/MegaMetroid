@@ -567,9 +567,12 @@ static int moonwalk(Game *g)
     static unsigned char tiles[64 * 32];
     MmWorld saved_world = g->world;
     MmBody saved_player = g->player;
+    /* The jump trajectory can cross an enemy in the real room: park the pool. */
+    int saved_enemy_count = g->enemies.count;
     int side, frame, failed = 0;
     memset(tiles, 1, sizeof tiles); memset(tiles + 30 * 64, 0, 64 * 2);
     g->world = (MmWorld){tiles, 64, 32, 0, 0};
+    g->enemies.count = 0;
     for (side = 0; side < 2; ++side) {
         int direction = side ? 1 : -1;
         mm_samus_init(&g->player, 200, 192);
@@ -599,8 +602,34 @@ static int moonwalk(Game *g)
         game_update(g, (MmInput){.axis = direction}); SYS_doVBlankProcess();
         if (g->player.moonwalk_ticks || !g->player.turn_pose_ticks) failed = 1;
         idle(g, 15);
+        /* Jump from the frontal moonwalk (3.3.7): normal jump with the BF/C0
+           turn pose on the old facing; the shot does not suppress it. The exit
+           above turned Samus around, so facing is set again explicitly. */
+        g->player.facing_left = side;
+        for (frame = 0; frame < 3; ++frame) {
+            game_update(g, (MmInput){.axis = direction, .shoot_held = 1});
+            SYS_doVBlankProcess();
+        }
+        if (!g->player.moonwalk_ticks) failed = 1;
+        game_update(g, (MmInput){.axis = direction, .shoot_held = 1, .jump_held = 1, .jump_pressed = 1});
+        SYS_doVBlankProcess();
+        if (g->player.spin_jumping || !g->player.moonwalk_jump) failed = 1;
+        for (frame = 0; frame < MM_TURN_POSE_TICKS; ++frame) {
+            int row = (g->player.grounded ? PLAYER_ANIM_TURN_R : PLAYER_ANIM_TURN_AIR_R) + side;
+            if (g->animation != row) failed = 1;
+            if (g->sprite->frameInd != (MM_TURN_POSE_TICKS - g->player.turn_pose_ticks) / 2) failed = 1;
+            game_update(g, (MmInput){.axis = direction, .shoot_held = 1, .jump_held = 1});
+            SYS_doVBlankProcess();
+        }
+        /* Wait for the landing: 15 idle ticks are not enough for a full jump. */
+        for (frame = 0; frame < 200 && !g->player.grounded; ++frame) {
+            game_update(g, (MmInput){.jump_held = 1});
+            SYS_doVBlankProcess();
+        }
+        if (!g->player.grounded) failed = 1;
+        idle(g, 15);
     }
-    g->world = saved_world; g->player = saved_player;
+    g->world = saved_world; g->player = saved_player; g->enemies.count = saved_enemy_count;
     mm_weapon_init(&g->weapon);
     return failed;
 }

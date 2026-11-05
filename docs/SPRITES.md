@@ -423,6 +423,14 @@ quadro `(ticks - 1) / 16`, o mesmo relógio do frontal, e a boca do canhão vem
 do primeiro quadro de cada tira (diagonais DU/DD). A reserva de tiles do sprite
 continua determinada pelo máximo da folha; nenhum sprite, paleta ou campo novo.
 
+### Moonwalk no salto (3.3.7)
+
+BF/C0 e C1–C4 não têm tiras próprias: na prancha são aliases das poses de
+virada `25/26` e `8B–8E` (mesmos quadros, ver `manifest_poses.csv`). A
+transição do pulo a partir do moonwalk reutiliza `TURN`/`TURN_AIR`, sem linhas,
+tiles ou paletas novos. O download restaurado da prancha (asset 182270,
+6496×4384) regenerou a extração idêntica à versionada.
+
 ### Zoomer (5.2)
 
 `scripts/build_zoomer_sprite.py` remapeia `enemies_left_r00` para a PAL1 da

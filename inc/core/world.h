@@ -77,6 +77,7 @@ typedef struct {
     int slide, walking; /* Ground: sliding after letting go, already walking. */
     int falling; /* In the air without a jump: walked off a ledge. */
     int moonwalk_enabled, moonwalk_ticks; /* Option; active cycle 1..96, zero outside moonwalk. */
+    int moonwalk_jump; /* Jump started from a frontal moonwalk: shows the BF/C0 turn pose. */
     int spin_jumping;
     int stun; /* Ticks left thrown by a hit: steering is ignored and vx/vy are preserved. */
     int shoot_pose_timer; /* Ticks the shooting pose still shows; refilled while the shot is held. */

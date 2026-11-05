@@ -35,13 +35,13 @@ reinício, drops, portas e HUD fiéis, sem quadros perdidos.
 
 **Próxima tarefa:**
 
-1. **3.3 Animações completas** — moonwalk no salto (BF/C0 sem arte extraída), pouco HP, space jump e screw attack (dependem de upgrades da 7.3). Moonwalk diagonal (3.3.6) concluído em 2026-11-05.
+1. **3.3 Animações completas** — moonwalk diagonal (3.3.6) e no salto (3.3.7, BF/C0 = virada) concluídos; ficam pouco HP, space jump e screw attack (sem medida no Mesen nesta máquina; space/screw dependem de upgrades da 7.3).
 
 Fora do marco: a arte do drop de míssil e as tabelas de drop do original seguem provisórias (a energia já usa a orbe roxa original animada).
 
 ## Etapas pendentes
 
-Concluídas: fases 0, 1 e 2; 3.1, 3.2, 3.4, 3.3.6 (moonwalk diagonal); 4.1–4.3; 5.1–5.4; 6.0–6.5; 7.1.1; 8.1, 8.4 (B1).
+Concluídas: fases 0, 1 e 2; 3.1, 3.2, 3.4, 3.3.6 (moonwalk diagonal), 3.3.7 (moonwalk no salto); 4.1–4.3; 5.1–5.4; 6.0–6.5; 7.1.1; 8.1, 8.4 (B1).
 Detalhes em `HISTORICO.md`.
 
 | # | Etapa | Falta | Teste |

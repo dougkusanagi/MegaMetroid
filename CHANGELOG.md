@@ -10,6 +10,24 @@ O registro detalhado começa em 18/10/2026. A entrada anterior abaixo foi
 reconstituída do commit indicado; o histórico anterior completo permanece no Git
 (`git log`) e as entregas por etapa estão em [docs/PLANO.md](docs/PLANO.md).
 
+## 2026-11-05 18:12:00 −03:00 (America/Sao_Paulo) — Moonwalk no salto (3.3.7)
+
+### Adicionado
+
+- Pulo a partir do moonwalk frontal: vira pulo normal (sem giro) com a pose
+  BF/C0 de transição (as tiras de virada, alias na prancha), visível mesmo com
+  o tiro segurado. A prancha original foi redownloadada (asset 182270); os
+  BF/C0 confirmaram-se aliases das poses de virada.
+
+### Validação
+
+- `scripts/test.ps1` completo no host e smoke do BlastEm (`SMOKE PASS`,
+  acelerado, sem áudio, headless, incluindo o pulo a partir do moonwalk).
+- ROM padrão rebuildada em `out/rom.bin` (1.572.864 bytes, checksum 3AE7).
+  Comportamento qualitativo sem medição própria no original (guia técnico
+  público); física de Moonfall fora do escopo. Custo: um inteiro (4 bytes),
+  sem tiles novos.
+
 ## 2026-11-05 17:15:00 −03:00 (America/Sao_Paulo) — Moonwalk diagonal (3.3.6)
 
 ### Adicionado
