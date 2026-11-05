@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Organização do canal de ports</title>
+<style>
+  :root { --bg:#fafaf8; --fg:#1d1d1f; --mut:#5f6368; --line:#e2e2de; --acc:#2563eb; --warn:#b45309; --card:#fff; }
+  @media (prefers-color-scheme: dark) { :root { --bg:#141416; --fg:#ececec; --mut:#a0a0a8; --line:#2c2c30; --acc:#7aa2ff; --warn:#f0a24a; --card:#1c1c1f; } }
+  * { box-sizing:border-box; }
+  body { margin:0; font:16px/1.6 system-ui, sans-serif; background:var(--bg); color:var(--fg); }
+  main { max-width:860px; margin:0 auto; padding:32px 20px 64px; }
+  h1 { font-size:1.9rem; margin:0 0 4px; }
+  h2 { font-size:1.25rem; margin:40px 0 12px; padding-top:16px; border-top:1px solid var(--line); }
+  h3 { font-size:1.05rem; margin:20px 0 6px; }
+  p.lead { color:var(--mut); margin-top:0; }
+  .card { background:var(--card); border:1px solid var(--line); border-radius:10px; padding:16px 18px; margin:12px 0; }
+  .rec { border-left:4px solid var(--acc); }
+  .warn { border-left:4px solid var(--warn); }
+  table { width:100%; border-collapse:collapse; font-size:.95rem; }
+  th, td { text-align:left; padding:8px 10px; border-bottom:1px solid var(--line); vertical-align:top; }
+  th { color:var(--mut); font-weight:600; }
+  .scroll { overflow-x:auto; }
+  pre { background:var(--card); border:1px solid var(--line); border-radius:8px; padding:12px 14px; overflow-x:auto; font-size:.88rem; line-height:1.45; }
+  code { font-family:ui-monospace, Consolas, monospace; }
+  ol, ul { padding-left:1.3rem; }
+  li { margin:4px 0; }
+  nav a { color:var(--acc); margin-right:14px; text-decoration:none; }
+</style>
+</head>
+<body>
+<main>
+<h1>Organização do canal de ports</h1>
+<p class="lead">Resumo das recomendações para roteiros, vídeos e divulgação dos ports. Novembro de 2026.</p>
+<nav><a href="#resumo">Resumo</a><a href="#onde">Onde guardar</a><a href="#repo">Repo</a><a href="#fluxo">Fluxo</a><a href="#ideias">Ideias</a><a href="#riscos">Riscos</a><a href="#passos">Próximos passos</a></nav>
+
+<h2 id="resumo">Resumo</h2>
+<div class="card rec">
+<ul>
+<li><strong>Roteiros, agenda e textos:</strong> um repositório GitHub <em>separado</em> (ex.: <code>devlog-ports</code>), para todos os ports, não só o MegaMetroid.</li>
+<li><strong>Vídeos brutos, projetos de edição e exportações:</strong> OneDrive (ou HD externo + OneDrive para os finais). Git não serve para arquivos grandes.</li>
+<li><strong>Repo do MegaMetroid:</strong> fica só com o código. Ele aponta para o devlog no README, e o devlog lê o <code>CHANGELOG.md</code> dele para gerar pautas.</li>
+<li><strong>Um vídeo por marco do plano</strong>, não por tempo. Cada vídeo longo gera de 3 a 5 cortes, postados um por dia.</li>
+</ul>
+</div>
+
+<h2 id="onde">Onde guardar cada coisa</h2>
+<div class="scroll"><table>
+<tr><th>Material</th><th>Onde</th><th>Por quê</th></tr>
+<tr><td>Roteiros, ideias, legendas, agenda, checklist</td><td>GitHub (repo devlog)</td><td>Texto pequeno, histórico, diff, edição pelo Claude/Codex, issues como pautas.</td></tr>
+<tr><td>Gravações brutas (OBS, BlastEm)</td><td>Pasta local + OneDrive</td><td>Gigabytes; só precisam de backup, não de versão.</td></tr>
+<tr><td>Projetos de edição (DaVinci/CapCut)</td><td>OneDrive</td><td>Arquivos binários que mudam inteiros.</td></tr>
+<tr><td>Vídeos finais e cortes exportados</td><td>OneDrive (<code>/Ports/Videos/AAAA-MM-slug/</code>)</td><td>Para reupload e para o agendamento.</td></tr>
+<tr><td>Miniaturas (fonte e PNG final)</td><td>Fonte no OneDrive; PNG final também no repo</td><td>O PNG é pequeno e ajuda a ver o histórico do canal.</td></tr>
+<tr><td>Links publicados e métricas</td><td>GitHub (arquivo por vídeo)</td><td>Um só lugar com o que foi ao ar e o resultado.</td></tr>
+</table></div>
+<p>Não use Git LFS para vídeo: a cota grátis do GitHub é pequena e o versionamento de vídeo não traz ganho.</p>
+
+<h2 id="repo">Estrutura sugerida do repo devlog</h2>
+<pre><code>devlog-ports/
+├── README.md              # propósito, canais, como usar
+├── canal.md               # identidade: nome, tom, hashtags, bio, links
+├── templates/
+│   ├── video-longo.md     # gancho, blocos, fecho, checklist de gravação
+│   ├── corte.md           # 1 ideia, 20–45 s, gancho em 2 s
+│   └── post.md            # textos por rede (X, Reddit, Bluesky)
+├── videos/
+│   ├── 2026-10-megametroid-wall-jump/
+│   │   ├── roteiro.md
+│   │   ├── cortes.md      # cada corte + link publicado
+│   │   ├── posts.md       # textos usados e onde
+│   │   └── thumb.png
+│   └── 2026-11-megametroid-fisica-portas/ ...
+├── pautas.md              # backlog de ideias (ou GitHub Issues)
+├── agenda.md              # o que sai em cada dia
+└── comunidades.md         # onde postar, regras de cada lugar, contatos</code></pre>
+<p>Um GitHub Project (quadro) com colunas <em>Ideia → Roteiro → Gravado → Editado → Agendado → Publicado</em> dá visão rápida. Cada vídeo é uma issue; os cortes são itens da issue.</p>
+<p>Os roteiros já escritos estão em <code>MegaMetroid/docs/divulgacao/roteiros.md</code>. Depois que o repo existir, eles podem ir para lá e sair do MegaMetroid.</p>
+
+<h2 id="fluxo">Fluxo por vídeo</h2>
+<ol>
+<li><strong>Pauta:</strong> ao fechar um marco do <code>docs/PLANO.md</code>, peça ao Claude uma pauta a partir do <code>CHANGELOG.md</code> desde o último vídeo.</li>
+<li><strong>Roteiro:</strong> preencha o template. Escreva o gancho de cada corte já no roteiro, para não cortar depois "no escuro".</li>
+<li><strong>Gravação:</strong> grave cada cena isolada, em 60 fps, com captura limpa (sem HUD do emulador). Grave em vertical ou com espaço para recorte 9:16.</li>
+<li><strong>Edição:</strong> vídeo longo primeiro; os cortes saem dos mesmos clipes.</li>
+<li><strong>Agendamento:</strong> YouTube Studio e TikTok agendam nativo; no X, use o agendamento do próprio site. Registre os links em <code>cortes.md</code>.</li>
+<li><strong>Revisão (uma semana depois):</strong> anote visualizações e retenção em <code>videos/.../metricas.md</code> e o que repetir.</li>
+</ol>
+
+<h2 id="ideias">Ideias além do que você já faz</h2>
+<h3>Formato</h3>
+<ul>
+<li><strong>Comparação lado a lado SNES × Mega Drive</strong> como marca visual do canal. É o tipo de corte que mais circula nesse nicho.</li>
+<li><strong>Série técnica "Mega Drive limits"</strong>: divisão no 68000, 80 sprites, VRAM, DMA, 3 canais PCM no XGM2. Atrai devs de homebrew e não depende só de um jogo.</li>
+<li><strong>"Before / after" de 15 s</strong> para cada correção visível (pulo, câmera, animação).</li>
+<li><strong>Devlog escrito curto</strong> (post no GitHub Pages, itch.io devlog ou Bluesky) com GIFs: bom para quem não vê vídeo e para buscadores.</li>
+<li><strong>Making of com IA</strong>: um vídeo honesto sobre como os agentes ajudam (medição, testes no BlastEm, revisão). É um tema com público próprio.</li>
+<li><strong>Lives curtas</strong> de desenvolvimento, gravadas e cortadas depois.</li>
+</ul>
+<h3>Ferramentas</h3>
+<ul>
+<li>OBS com cenas prontas: jogo 16:9, jogo 9:16 com moldura, lado a lado.</li>
+<li>DaVinci Resolve (grátis) para o longo; legendas automáticas do CapCut ou do próprio YouTube para os cortes.</li>
+<li>Templates de miniatura com a mesma fonte, layout e cor, para o canal ter cara reconhecível.</li>
+<li>Uma página "links" (GitHub Pages) com canal, redes e a lista dos ports.</li>
+</ul>
+<h3>Comunidade</h3>
+<ul>
+<li>Discord do SGDK, SpritesMind, r/SEGAGENESIS, r/megadrive, r/retrogaming, Bluesky (#SGDK). Leia as regras de autopromoção de cada um.</li>
+<li>Participe antes de divulgar: responda dúvidas técnicas e compartilhe soluções (ex.: a armadilha do canal PCM 4). Isso gera mais alcance que só postar links.</li>
+<li>Contate canais de notícias retro e homebrew com um e-mail curto e um vídeo de 30 s.</li>
+</ul>
+
+<h2 id="riscos">Riscos</h2>
+<div class="card warn">
+<ul>
+<li><strong>Propriedade intelectual:</strong> o MegaMetroid usa recursos extraídos de Super Metroid. A Nintendo costuma pedir a retirada de fan games, e a exposição aumenta essa chance. Não distribua a ROM nem os recursos, e não ponha o código público com esses recursos sem avaliar isso.</li>
+<li><strong>Monetização:</strong> ganhar dinheiro com o conteúdo (monetização do canal, Patreon, doações ligadas ao port) aumenta o risco. Se quiser monetizar, faça isso com conteúdo técnico ou com projetos próprios.</li>
+<li><strong>Diversifique:</strong> um projeto homebrew original (mesmo pequeno) em paralelo dá ao canal um conteúdo que ninguém pode derrubar e que você pode vender ou distribuir.</li>
+<li><strong>Automação de postagem:</strong> X, TikTok e Reddit restringem bots. Use o agendamento nativo; com o navegador, só com você logado e confirmando cada post.</li>
+</ul>
+</div>
+
+<h2 id="passos">Próximos passos</h2>
+<ol>
+<li>Criar o repo <code>devlog-ports</code> (privado no início) com a estrutura acima e mover os roteiros.</li>
+<li>Criar <code>OneDrive/Ports/Videos/</code> com uma pasta por vídeo, usando o mesmo nome da pasta no repo.</li>
+<li>Gravar as cenas do Vídeo 2 (física, portas, mísseis) com a ROM atual.</li>
+<li>Montar o quadro no GitHub Projects e agendar os 4 cortes do Vídeo 2.</li>
+</ol>
+<p>Posso fazer o passo 1 (criar o repo com <code>gh</code>, templates e mover os roteiros) quando você confirmar o nome e se ele deve ser privado.</p>
+</main>
+</body>
+</html>
