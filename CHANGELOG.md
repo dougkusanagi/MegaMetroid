@@ -10,6 +10,19 @@ O registro detalhado começa em 18/10/2026. A entrada anterior abaixo foi
 reconstituída do commit indicado; o histórico anterior completo permanece no Git
 (`git log`) e as entregas por etapa estão em [docs/PLANO.md](docs/PLANO.md).
 
+## 2026-11-05 15:06:00 −03:00 (America/Sao_Paulo) — 5.4 validada no BlastEm (matar, ver e pegar)
+
+### Adicionado
+
+- `drops_on_screen` no smoke: matar um Zoomer agachado, ver a esfera provisória no centro do
+  inimigo (quadro, posição e profundidade) e pegar os três drops — energia até o teto
+  (97 → 99), míssil até a capacidade (4 → 5) e o terceiro expirando.
+
+### Validação
+
+- `scripts/test.ps1` completo e smoke do BlastEm (`SMOKE PASS`, acelerado, sem áudio, headless).
+  A arte dos drops e as tabelas de drop do original seguem provisórias.
+
 ## 2026-11-05 15:05:00 −03:00 (America/Sao_Paulo) — 5.3 validada no BlastEm e knockback corrigido
 
 ### Corrigido

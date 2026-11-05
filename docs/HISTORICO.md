@@ -317,7 +317,7 @@ super e persistência na troca de sala) e `measured_missiles`/`missile_loadout` 
 | 5.1 ✅ | Entidade de inimigo | Struct + tabela de comportamentos (ponteiro de função) | Inimigo andando e colidindo com o chão |
 | 5.2 ✅ | Inimigos de Crateria | Zoomer, Skree, Ripper, Geemer (nesta ordem) | Cada um com IA e animação |
 | 5.3 ✅ | Dano e vida | HP, invencibilidade, knockback, energia da Samus | Morrer e reiniciar a sala |
-| 5.4 | Drops | Energia/míssil pequenos | Pegar aumenta contadores |
+| 5.4 ✅ | Drops | Energia/míssil pequenos | Pegar aumenta contadores |
 | 5.5 | Limite de sprites | Culling fora da tela; ≤80 sprites e ≤20 por scanline | Sala cheia sem flicker excessivo |
 
 **5.1 Entidade de inimigo** ✅ (2026-11-01). O núcleo portátil `src/core/enemy.c` tem `MmEnemy`
@@ -361,6 +361,17 @@ e controle de volta depois, nos dois lados) e `contact_damage` no smoke: dano de
 segundo toque bloqueado na invulnerabilidade e 89 depois dela, e morte com retorno ao spawn
 (256, 1176), energia cheia e pool de inimigos recomposto. **Limites:** não há efeito visual de dano
 nem SFX de dano (8.2/3.6, fora desta etapa).
+
+**5.4 Drops** ✅ (2026-11-05). O tiro que zera a vida do inimigo deixa um drop no centro da caixa
+dele (`mm_drop_spawn` alterna energia/míssil; sem capacidade de míssil sai energia), que dura
+600 ticks e pisca nos últimos 2 s. Tocar recolhe: `+5` de energia e `+2` mísseis, ambos até o
+limite, e o HUD acompanha pelo estado já recalculado quando muda. A arte é provisória (esferas
+8×8 verde/vermelha de `scripts/build_drop_sprite.py` com cores da PAL2, sem banco novo) e os
+valores/alternância/duração ainda não são as tabelas do original. Validação: `drops` no host e
+`drops_on_screen` no smoke — matar um Zoomer agachado (o feixe em pé voa por cima do corpo
+16×16), sprite visível no centro do inimigo com quadro/posição/profundidade da sala, pegar
+energia até o teto (97 → 99) e míssil até a capacidade (4 → 5) com o sprite sumindo, e o
+terceiro drop expirando.
 
 ### Fase 6 — Salas, portas e mundo
 

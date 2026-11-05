@@ -996,6 +996,89 @@ static int contact_damage(Game *g)
     return failed;
 }
 
+/* Etapa 5.4: a shot kills a Zoomer (the crouch beam meets the 16x16 body), the dead enemy
+   leaves its small drop (provisional 8x8 orbs in PAL2) on screen at the enemy centre, and
+   touching it collects it: energy heals to the cap and missiles rise to the capacity.
+   Kills alternate energy and missile, and the third drop expires. */
+static int drops_on_screen(Game *g)
+{
+    int failed = 0, kill, frame, slot, dx, dy;
+    MmEnemy *e;
+    if (g->room_index != ROOM_CRATERIA_1 || g->enemies.count == 0) {
+        if (!game_change_room(g, ROOM_CRATERIA_1, room_crateria_1.player_initial_pos, -1)) return 2048;
+        SYS_doVBlankProcess();
+    }
+    mm_health_init(&g->health);
+    mm_weapon_init(&g->weapon);
+    mm_drop_init(&g->drops);
+    mm_samus_init(&g->player, 256, 1176);
+    idle(g, 40);
+    if (!g->player.grounded) failed |= 2048;
+    e = &g->enemies.enemies[0];
+    for (kill = 0; kill < 3; ++kill) {
+        int kind = kill % 2 ? MM_DROP_MISSILE : MM_DROP_ENERGY;
+        int count = 0, killed = 0;
+        MmDrop *drop;
+        Sprite *sprite;
+        e->active = 1; e->health = 15; e->damage = 5; e->kind = MM_ENEMY_ZOOMER;
+        e->facing_left = 0; e->state = 0; e->timer = 0;
+        e->x = (mm_pixel(g->player.x) + 60) * MM_UNIT; e->y = 1216 * MM_UNIT;
+        e->vx = e->vy = 0; e->grounded = 1;
+        /* A standing beam flies over a ground Zoomer; crouching puts the cannon at its body. */
+        game_update(g, (MmInput){.aim_y = 1, .down_pressed = 1});
+        SYS_doVBlankProcess();
+        if (!g->player.crouching) failed |= 2048;
+        game_update(g, (MmInput){.aim_y = 1, .shoot_pressed = 1, .shoot_held = 1});
+        SYS_doVBlankProcess();
+        for (frame = 0; frame < 60 && !killed; ++frame) {
+            game_update(g, (MmInput){0});
+            SYS_doVBlankProcess();
+            killed = !e->active;
+        }
+        if (!killed) { failed |= 2048; continue; }
+        slot = -1;
+        for (frame = 0; frame < MM_DROP_MAX; ++frame) {
+            if (!g->drops.drops[frame].active) continue;
+            ++count;
+            slot = frame;
+            if (g->drops.drops[frame].kind != kind ||
+                g->drops.drops[frame].life > MM_DROP_LIFE_TICKS || g->drops.drops[frame].life <= 0) failed |= 2048;
+        }
+        if (count != 1 || slot < 0) failed |= 2048;
+        if (slot >= 0) {
+            drop = &g->drops.drops[slot];
+            sprite = g->drop_sprites[slot];
+            dx = drop->x; dy = drop->y;
+            if (!sprite || sprite->definition != &drop_sprite ||
+                SPR_getVisibility(sprite) != AUTO_FAST || sprite->frameInd != kind ||
+                sprite->x != dx - g->camera.x + 0x80 || sprite->y != dy - g->camera.y + 0x80 ||
+                sprite->depth >= g->sprite->depth) failed |= 4096;
+            if (kill < 2) {
+                /* Pick it up: energy reaches the cap, missiles rise up to the capacity. */
+                if (!kind) g->health.energy = g->health.energy_max - 2;
+                else g->weapon.missiles = g->weapon.missiles_max - 1;
+                mm_samus_init(&g->player, dx - 20, 1184);
+                game_update(g, (MmInput){0});
+                SYS_doVBlankProcess();
+                if (drop->active || SPR_getVisibility(sprite) != HIDDEN) failed |= 8192;
+                if (!kind && g->health.energy != g->health.energy_max) failed |= 8192;
+                if (kind && g->weapon.missiles != g->weapon.missiles_max) failed |= 8192;
+            } else {
+                /* The third drop ages out of its 600 ticks and disappears. */
+                drop->life = 2;
+                idle(g, 5);
+                if (drop->active || SPR_getVisibility(sprite) != HIDDEN) failed |= 16384;
+            }
+        }
+        idle(g, 20);
+        if (!g->player.grounded) failed |= 2048;
+    }
+    mm_health_init(&g->health);
+    mm_weapon_init(&g->weapon);
+    idle(g, 20);
+    return failed;
+}
+
 int main(bool hardReset)
 {
     static Game g;
@@ -1193,6 +1276,7 @@ int main(bool hardReset)
     if (missile_weapon(&g)) failed |= 1UL << 27;
     mm_smoke_enemy_failure |= enemy_walker(&g);
     mm_smoke_enemy_failure |= contact_damage(&g);
+    mm_smoke_enemy_failure |= drops_on_screen(&g);
     /* CPU text writes must not race the sprite/scroll DMA in VBlank. */
     SYS_disableInts();
     /* Window plane keeps the result on screen; plane A scrolls with the camera. */

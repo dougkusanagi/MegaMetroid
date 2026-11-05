@@ -33,16 +33,17 @@ cores, ROM de até 4 MB sem mapper). Na prática:
 Landing Site e Crateria 2 jogáveis como no original: inimigos que causam dano, morte e
 reinício, drops, portas e HUD fiéis, sem quadros perdidos.
 
-**Próxima tarefa:**
+**Próximas tarefas, em ordem:**
 
-1. **5.4 Drops** — lógica e sprites provisórios prontos (`core/drop.c`); falta o cenário de smoke
-   (matar, ver e pegar), a arte e as tabelas de drop do original (hoje provisórias).
+1. **Geemer andando em paredes e teto (B3)** — hoje reusa a IA de solo do Zoomer.
+2. **Paleta do míssil (B2)** — o míssil selecionado sobrescreve os tons da nave na PAL3.
+3. **3.3 Animações completas** — moonwalk diagonal e no salto, pouco HP, space jump, screw attack.
 
-Depois: Geemer andando em paredes e teto (B3), a paleta do míssil (B2) e a 3.3.
+Fora do marco: a arte dos drops e as tabelas de drop do original seguem provisórias.
 
 ## Etapas pendentes
 
-Concluídas: fases 0, 1 e 2; 3.1, 3.2, 3.4; 4.1–4.3; 5.1–5.3; 6.0–6.5; 7.1.1; 8.1, 8.4 (B1).
+Concluídas: fases 0, 1 e 2; 3.1, 3.2, 3.4; 4.1–4.3; 5.1–5.4; 6.0–6.5; 7.1.1; 8.1, 8.4 (B1).
 Detalhes em `HISTORICO.md`.
 
 | # | Etapa | Falta | Teste |
@@ -51,7 +52,6 @@ Detalhes em `HISTORICO.md`.
 | 3.5 | Orçamento de VRAM | Alocação automática / streaming dos tiles do sprite | `SPR_showVRAMUsage` dentro do orçamento |
 | 3.6 | Paletas da Samus | Varia/Gravity e ciclos (carga, speed booster, screw, dano), separando a barra do HUD da PAL2 | Ciclos sem trocar tiles |
 | 4.4 | Beams | Charge, ice, wave | Cada beam altera sprite e dano |
-| 5.4 | Drops | Energia e míssil pequenos | Pegar aumenta os contadores |
 | 5.5 | Limite de sprites | Culling fora da tela | Sala cheia sem flicker excessivo |
 | 6.6 | Portas e blocos | Blocos destrutíveis; destino das outras portas; portas verticais | Abrir com o tiro correto |
 | 7.1 | HUD | Mini-mapa | HUD estável durante o scroll |
