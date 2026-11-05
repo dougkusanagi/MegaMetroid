@@ -687,6 +687,33 @@ static void enemy_contact(Game *g)
     }
 }
 
+/* A shot that overlaps an active enemy hurts it and ends in an impact; at 0 health the enemy dies.
+   The impact starts one tick old so door_shots, which reads fresh impacts only, ignores it. */
+static void shot_enemies(Game *g)
+{
+    int i, j;
+    for (i = 0; i < MM_BEAM_COUNT; ++i) {
+        MmBeam *b = &g->weapon.beams[i];
+        int bx, by;
+        if (!b->active) continue;
+        bx = mm_pixel(b->x); by = mm_pixel(b->y);
+        for (j = 0; j < g->enemies.count; ++j) {
+            MmEnemy *e = &g->enemies.enemies[j];
+            MmRect r;
+            if (!e->active) continue;
+            r = mm_enemy_rect(e);
+            if (r.left >= bx + MM_BEAM_RADIUS || r.right <= bx - MM_BEAM_RADIUS ||
+                r.top >= by + MM_BEAM_RADIUS || r.bottom <= by - MM_BEAM_RADIUS) continue;
+            e->health -= b->damage;
+            if (e->health <= 0) e->active = 0;
+            b->active = 0;
+            b->impact_ticks = MM_IMPACT_TICKS - 1;
+            b->impact_x = bx; b->impact_y = by;
+            break;
+        }
+    }
+}
+
 /* Energy reached 0: the room restarts at its entrance with full energy. */
 static void restart_after_death(Game *g)
 {
@@ -757,6 +784,7 @@ void game_update(Game *g, MmInput input)
         if (g->weapon.selected != selected_before)
             XGM2_playPCMEx(select_sfx, sizeof(select_sfx), SOUND_PCM_CH3, 15, FALSE, FALSE);
         /* A beam that stopped on a door cap is that door's shot. */
+        shot_enemies(g);
         door_shots(g);
         play_sounds(g, pose_before);
         /* Presses count once, even when a PAL frame runs two ticks. */
