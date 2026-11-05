@@ -22,8 +22,8 @@ static SpriteDefinition beam_definition;
 
 /* Window text while Samus is at a door: a shut door that leads somewhere, and an open door whose
    room is not built yet (the original's room behind it is not in the port). */
-#define DOOR_SHOOT_TEXT "A: SHOOT TO OPEN"
-#define DOOR_NOT_BUILT_TEXT "ROOM NOT BUILT YET"
+#define DOOR_SHOOT_TEXT "A: ATIRE PARA ABRIR"
+#define DOOR_NOT_BUILT_TEXT "SALA AINDA EM CONSTRUCAO"
 
 #if MM_DEBUG_OVERLAY
 /* Q24.8 as fixed-width signed text with two decimals, e.g. "+ 2.75". */
@@ -155,12 +155,12 @@ static void sync_shot_palette(Game *g)
     PAL_setPalette(PAL3, missiles ? missile_sprite.palette->data : beam_sprite.palette->data, DMA_QUEUE);
 }
 
-/* The bar is drawn in the Power Suit palette (PAL2), the only one that is the same in every room.
+/* The bar uses reserved duplicate/unused terrain colors (PAL0) in both built rooms.
    High priority puts it over the sprites, as in the original; the sprites stay low so they still
    draw over both (low priority) room planes. */
 static u16 hud_attr(const Game *g, u16 cell)
 {
-    return TILE_ATTR_FULL(PAL2, TRUE, FALSE, FALSE, g->hud_tile + cell);
+    return TILE_ATTR_FULL(PAL0, TRUE, FALSE, FALSE, g->hud_tile + cell);
 }
 
 /* Rows 0-1 follow energy, ammo and the selected weapon; only changed cells are written. */
@@ -193,6 +193,7 @@ static void draw_message(Game *g, const char *text)
     SYS_disableInts();
     VDP_fillTileMapRect(WINDOW, hud_attr(g, MM_HUD_BLANK), 0, MM_HUD_MESSAGE_ROW, MM_HUD_COLUMNS, 1);
     if (text) VDP_drawText(text, 1, MM_HUD_MESSAGE_ROW);
+    VDP_setWindowVPos(FALSE, text ? MM_HUD_MESSAGE_ROW + 1 : MM_HUD_ROWS);
     SYS_enableInts();
 }
 
@@ -338,9 +339,11 @@ static void render(Game *g)
             if (body.left < opening.right && body.right > opening.left &&
                 body.top < opening.bottom && body.bottom > opening.top) prompt = DOOR_SHOOT_TEXT;
         }
+        if (g->door_prompt_ticks && !--g->door_prompt_ticks) draw_message(g, NULL);
         if (prompt != g->door_prompt) {
             draw_message(g, prompt);
             g->door_prompt = prompt;
+            g->door_prompt_ticks = prompt ? 120 : 0;
         }
     }
     for (i = 0; i < MM_BEAM_COUNT; ++i) {
@@ -458,7 +461,7 @@ bool game_init(Game *g, u16 room_index)
     const room_def *room = room_get(room_index);
     if (!room || room->door_count > MM_ROOM_MAX_DOORS) return FALSE;
     g->input.previous = 0; g->pal_phase = 0; g->frame = 0;
-    g->door_prompt = NULL;
+    g->door_prompt = NULL; g->door_prompt_ticks = 0;
     g->music_looping = FALSE;
     mm_health_init(&g->health);
     mm_weapon_init(&g->weapon);
@@ -468,7 +471,7 @@ bool game_init(Game *g, u16 room_index)
     VDP_setScreenHeight224();
     VDP_setWindowVPos(FALSE, MM_HUD_ROWS);
     VDP_setTextPlane(WINDOW);
-    VDP_setTextPalette(PAL2);
+    VDP_setTextPalette(PAL0);
     VDP_setTextPriority(TRUE);
     JOY_init();
     SPR_init();

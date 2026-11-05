@@ -1,5 +1,27 @@
 # Pipeline de sprites
 
+## HUD: correção visual de 04/11/2026
+
+`python scripts/build_hud.py` reserva seis posições na PAL0: preto (1), azul (2),
+branco (3), rosa (4), rosa escuro (8) e claro (13). Landing Site usa entradas
+duplicadas sem pixels; Crateria 2 reindexa o terreno em entradas livres. O teste
+por hash RGB/32 conserva a cor de cada pixel na precisão do VDP. PAL1/2/3 não mudam.
+O gerador do Landing Site aplica a reserva após quantizar, sem usar as novas
+cores para escolher os pixels do terreno. A reserva é idempotente.
+
+ENERGY mantém 32×8, números 8×8 e ícones 24×16/16×16; sem escala. O separador
+verde da prancha ENERGY não faz parte das letras. Fundo preto, glifos branco/azul,
+ícones e tanques rosa. Ícones ocupam linhas 1–2, contadores e energia a linha 3,
+tanques a linha 2. Avisos em português expandem a janela de 32 para 40 px por
+120 quadros, sem substituir os indicadores; reaparecem apenas ao voltar à porta.
+
+Continuam 37 tiles / 1.184 bytes VRAM e 96 glifos no lugar da fonte SGDK;
+nenhum sprite adicional. Cache de células cresce 64 bytes e o aviso usa dois bytes.
+Cache por estado e traçado otimizado de disparo permanecem. Novas salas precisam
+reservar as mesmas cores PAL0. Mini-mapa e progressão de tanques ficam pendentes.
+A captura original versionada confirma o pequeno ENERGY na linha inferior;
+não se alegam medidas precisas da imagem ampliada nem fidelidade completa.
+
 As pranchas originais ficam em `res/images/original-references/` (só na máquina local, ignoradas pelo Git). Os scripts em `scripts/` extraem delas PNGs prontos para o `rescomp` do SGDK. O resultado é versionado em `res/images/*-original-sgdk/`.
 
 Requisitos: Python 3 e Pillow (`python -m pip install "Pillow>=9.1"`). Execute os scripts na raiz do projeto.

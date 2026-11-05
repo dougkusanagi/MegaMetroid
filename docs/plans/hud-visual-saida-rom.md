@@ -14,6 +14,7 @@ sem gerar `build.bin` na raiz.
 - [x] Conferir thread anterior e causa da cópia de build.bin na raiz.
 - [x] Corrigir pipeline, referências operacionais e testar build padrão.
 - [ ] Investigar e corrigir visual do HUD com especialista de fidelidade.
+- [ ] Correção distinta: reproduzir e corrigir oclusão da Samus pela moldura/túnel à esquerda (seta vermelha), entrada e saída nos dois sentidos, sem ocultar o sprite inteiro nem priorizar toda a sala.
 - [ ] Revisar diff, testes locais, smoke GDB e inspeção visual da ROM.
 - [ ] Documentar limites reais, commit/push por etapa e rebuild padrão.
 

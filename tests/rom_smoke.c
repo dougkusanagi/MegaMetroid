@@ -369,10 +369,14 @@ static int room_transitions(Game *g)
     for (trip = 0; trip < 3; ++trip) {
         for (i = 0; i < 90; ++i) { game_update(g, (MmInput){.axis = 1}); SYS_doVBlankProcess(); }
         if (g->room != room_get(ROOM_CRATERIA_1) || !g->door_prompt ||
-            strcmp(g->door_prompt, "ROOM NOT BUILT YET") ||
-            mm_pixel(g->player.x) + g->player.hitbox.right != 2304) failed |= 8192;
+            strcmp(g->door_prompt, "SALA AINDA EM CONSTRUCAO") ||
+            mm_pixel(g->player.x) + g->player.hitbox.right != 2304 ||
+            VDP_getReg(18) != MM_HUD_MESSAGE_ROW + 1) failed |= 8192;
+        idle(g, 130);
+        if (g->door_prompt_ticks || !g->door_prompt || VDP_getReg(18) != MM_HUD_ROWS) failed |= 8192;
         for (i = 0; i < 60; ++i) { game_update(g, (MmInput){.axis = -1}); SYS_doVBlankProcess(); }
-        if (g->door_prompt || g->room != room_get(ROOM_CRATERIA_1)) failed |= 8192;
+        if (g->door_prompt || g->room != room_get(ROOM_CRATERIA_1) ||
+            VDP_getReg(18) != MM_HUD_ROWS) failed |= 8192;
     }
     mm_smoke_memory[7] = MEM_getLargestFreeBlock();
     return failed;
@@ -428,7 +432,7 @@ static void room_video(Game *g)
         mm_smoke_video_header[73] = *data;
         mm_smoke_video_header[74] = *data;
         /* Window table (a multiple of 0x800 in H32) with its row count in the low bits. */
-        mm_smoke_video_header[75] = VDP_getWindowAddress() | MM_HUD_ROWS;
+        mm_smoke_video_header[75] = VDP_getWindowAddress() | (VDP_getReg(18) & 0x1F);
         for (chunk = 0; chunk < 8; ++chunk) {
             *control = VDP_READ_VRAM_ADDR((u32)chunk * 8192);
             for (i = 0; i < 4096; ++i) mm_smoke_video[i] = *data;
@@ -641,7 +645,7 @@ static int hud_on_screen(const Game *g)
     mm_hud_cells(&state, cells);
     for (y = 0; y < MM_HUD_ICON_ROWS; ++y)
         for (x = 0; x < MM_HUD_COLUMNS; ++x)
-            if (window_cell(x, y) != TILE_ATTR_FULL(PAL2, TRUE, FALSE, FALSE, g->hud_tile + cells[y][x]))
+            if (window_cell(x, y) != TILE_ATTR_FULL(PAL0, TRUE, FALSE, FALSE, g->hud_tile + cells[y][x]))
                 return 0;
     return 1;
 }
@@ -658,13 +662,13 @@ static int hud_status(const Game *g)
     for (i = 0; i < 16; ++i)
         if (smoke_color(32 + i) != pal_samus_power_suit.data[i] || smoke_color(48 + i) != beam_sprite.palette->data[i])
             failed |= 2;
-    if (!hud_on_screen(g) || window_cell(MM_HUD_ENERGY_DIGITS_COLUMN, 1) !=
-        TILE_ATTR_FULL(PAL2, TRUE, FALSE, FALSE, g->hud_tile + MM_HUD_DIGIT0 + 9) ||
-        window_cell(MM_HUD_MISSILE_COLUMN, 0) != TILE_ATTR_FULL(PAL2, TRUE, FALSE, FALSE, g->hud_tile + MM_HUD_MISSILE_OFF) ||
-        window_cell(MM_HUD_SUPER_COLUMN, 0) != TILE_ATTR_FULL(PAL2, TRUE, FALSE, FALSE, g->hud_tile + MM_HUD_BLANK))
+    if (!hud_on_screen(g) || window_cell(MM_HUD_ENERGY_DIGITS_COLUMN, 3) !=
+        TILE_ATTR_FULL(PAL0, TRUE, FALSE, FALSE, g->hud_tile + MM_HUD_DIGIT0 + 9) ||
+        window_cell(MM_HUD_MISSILE_COLUMN, 1) != TILE_ATTR_FULL(PAL0, TRUE, FALSE, FALSE, g->hud_tile + MM_HUD_MISSILE_OFF) ||
+        window_cell(MM_HUD_SUPER_COLUMN, 1) != TILE_ATTR_FULL(PAL0, TRUE, FALSE, FALSE, g->hud_tile + MM_HUD_BLANK))
         failed |= 4;
     /* Opaque message row, and the sprites stay under the high-priority bar. */
-    if (window_cell(0, MM_HUD_MESSAGE_ROW) != TILE_ATTR_FULL(PAL2, TRUE, FALSE, FALSE, g->hud_tile + MM_HUD_BLANK) ||
+    if (window_cell(0, MM_HUD_MESSAGE_ROW) != TILE_ATTR_FULL(PAL0, TRUE, FALSE, FALSE, g->hud_tile + MM_HUD_BLANK) ||
         (g->sprite->attribut & TILE_ATTR_PRIORITY_MASK) || (g->door_sprites[0]->attribut & TILE_ATTR_PRIORITY_MASK) ||
         (g->beam_sprites[0]->attribut & TILE_ATTR_PRIORITY_MASK)) failed |= 8;
     return failed;
@@ -702,7 +706,7 @@ static int missile_weapon(Game *g)
     if (g->weapon.selected != MM_WEAPON_MISSILE || g->weapon.missiles != MM_START_MISSILES ||
         smoke_color(49) != missile_sprite.palette->data[1]) failed = 1;
     /* 7.1: the lit missile icon. */
-    if (!hud_on_screen(g) || g->hud_cells[0][MM_HUD_MISSILE_COLUMN] != MM_HUD_MISSILE_ON)
+    if (!hud_on_screen(g) || g->hud_cells[1][MM_HUD_MISSILE_COLUMN] != MM_HUD_MISSILE_ON)
         mm_smoke_hud_failure |= 16;
     /* One press fires one missile, without advancing on its spawn tick. */
     game_update(g, (MmInput){.shoot_pressed = 1, .shoot_held = 1});
@@ -730,8 +734,8 @@ static int missile_weapon(Game *g)
     game_update(g, (MmInput){.weapon_pressed = 1});
     SYS_doVBlankProcess();
     if (g->weapon.selected != MM_WEAPON_SUPER) failed = 1;
-    if (!hud_on_screen(g) || g->hud_cells[0][MM_HUD_SUPER_COLUMN] != MM_HUD_SUPER_ON ||
-        g->hud_cells[1][MM_HUD_MISSILE_COUNT_COLUMN + 2] != MM_HUD_DIGIT0 + MM_START_MISSILES - 1)
+    if (!hud_on_screen(g) || g->hud_cells[1][MM_HUD_SUPER_COLUMN] != MM_HUD_SUPER_ON ||
+        g->hud_cells[3][MM_HUD_MISSILE_COUNT_COLUMN + 2] != MM_HUD_DIGIT0 + MM_START_MISSILES - 1)
         mm_smoke_hud_failure |= 16;
     game_update(g, (MmInput){.shoot_pressed = 1, .shoot_held = 1});
     SYS_doVBlankProcess();

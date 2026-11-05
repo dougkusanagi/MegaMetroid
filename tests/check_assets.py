@@ -57,14 +57,25 @@ for x,y in [(0,608),(0,1120),(2272,352),(2272,1120)]:
     assert np.all(fg[y:y+64,x:x+32][cap] == 0), 'Closed cap remains baked in map'
 print('PASS full door frames, transparent masks and preserved room underlay')
 
-# Etapa 7.1: the status bar uses only Power Suit colors (PAL2), in the tile order of
-# inc/core/hud.h, and the font keeps SGDK's 96 glyphs with an opaque background.
-suit = Image.open(root / 'res/images/samus-original-sgdk/palettes/pal_samus_power_suit.png').getpalette()[:48]
+# The HUD reserves PAL0 slots without changing the room's hardware colors.
+from hud_palette import HUD_COLORS, reserve
+from build_hud import build_tiles
 hud = Image.open(root / 'res/images/hud/hud_tiles.png')
 font = Image.open(root / 'res/images/hud/hud_font.png')
-assert 'MM_HUD_TILE_COUNT = MM_HUD_SUPER_ON + 4' in (root / 'inc/core/hud.h').read_text()
-assert hud.size == (37 * 8, 8) and hud.getpalette()[:48] == suit
-assert set(np.unique(np.array(hud)).tolist()) <= {3, 4, 6, 7, 8, 13}, 'HUD color outside the bar set'
-assert np.all(np.array(hud)[:, :8] == 3), 'Tile 0 must be the opaque bar background'
-assert font.size == (128, 48) and set(np.unique(np.array(font)).tolist()) == {3, 6}
-print('PASS status bar tiles and opaque font in the Power Suit palette')
+assert hud.size == (37 * 8, 8)
+assert np.array_equal(np.array(hud), np.array(build_tiles())), 'HUD source glyphs changed'
+for room in ('landing_site/foreground.png', 'crateria/tilemap2.png'):
+    image = Image.open(root / 'res/images/maps' / room)
+    for i, color in HUD_COLORS.items():
+        assert tuple(image.getpalette()[i*3:i*3+3]) == color
+    assert np.array_equal(np.array(image), np.array(reserve(image)))
+assert set(np.unique(np.array(hud))) <= set(HUD_COLORS)
+assert np.all(np.array(hud)[:, :8] == 1)
+assert font.size == (128, 48) and set(np.unique(np.array(font))) == {1, 3}
+print('PASS original-size HUD glyphs and reserved PAL0 slots in both rooms')
+
+# Palette repacking must preserve every room pixel at 3-bit VDP precision.
+import hashlib
+for room, expected in [('landing_site/foreground.png', 'a5d12c36b9f6410c1e5dc3a36d929829999c509ef813c582ddd821f38c828a67'), ('crateria/tilemap2.png', 'd4f72a15addcff2dd3047564b88f88b19b32b49168a928138daba2241038eac6')]:
+    pixels = np.array(Image.open(root / "res/images/maps" / room).convert("RGB")) // 32
+    assert hashlib.sha256(pixels.tobytes()).hexdigest() == expected, room + ": terrain hardware colors changed"

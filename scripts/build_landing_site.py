@@ -130,6 +130,8 @@ def main():
     fg=indexed[inverse].reshape(h//8,w//8,8,8).transpose(0,2,1,3).reshape(h,w)
     colors=[tuple(int(v)*32 for v in c) for c in banks.reshape(-1,3)]
     save_indexed(fg,colors,OUT/'foreground.png')
+    from hud_palette import reserve
+    reserve(Image.open(OUT/'foreground.png')).save(OUT/'foreground.png', transparency=0)
     bg_indices=np.array([bank1.index(hardware(c)) for c in bg.reshape(-1,3)]).reshape(512,256)
     # Opaque black must not use the transparent index.
     bg_indices[bg_indices==0]=1

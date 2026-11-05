@@ -2,6 +2,8 @@
 
 Powered by  <a href="https://github.com/Stephane-D/SGDK">SGDK</a>
 
+![Tela principal do Mega Metroid](.github/preview.png)
+
 Build instructions: [`docs/BUILD.md`](docs/BUILD.md).
 
 Instruções de contribuição com agentes: [`AGENTS.md`](AGENTS.md). O
@@ -12,9 +14,8 @@ Modelos, esforço e seleção de subagentes: [`docs/AGENTES.md`](docs/AGENTES.md
 Entrada no T3 Code: **Claude / Sonnet 5.5 / low** ou
 **Codex / GPT-6.1 Sol / low / service tier default**, conforme a assinatura usada.
 
-Os smoke tests mostram o BlastEm no monitor secundário sem retirar o foco.
-Use `python scripts/smoke_test.py --hidden` para mantê-lo oculto; sem monitor secundário,
-a execução fica oculta automaticamente.
+Os smoke tests usam BlastEm acelerado, sem áudio e headless por padrão.
+Use `python scripts/smoke_test.py --capture-scenes` para reconstruir capturas via GDB.
 
 Pipeline de extração e importação de sprites: [`docs/SPRITES.md`](docs/SPRITES.md).
 
@@ -32,13 +33,12 @@ quatro paletas do Mega Drive. Regeneração e capturas da ROM em `docs/BUILD.md`
 
 A porta leste superior do Landing Site leva à Crateria 2. A leste inferior ainda
 não tem sala de destino: depois de abri-la e chegar à borda, o jogo mostra
-`ROOM NOT BUILT YET`; afastar-se da porta remove o aviso.
+`SALA AINDA EM CONSTRUCAO` por 120 quadros; afastar-se também remove o aviso.
 
-A barra de status fica no alto da tela, como no Super Metroid: tanques de energia,
-`ENERGY 99`, o ícone do míssil com o contador e, quando houver supers, o ícone deles. O ícone
-da arma escolhida fica verde. A barra cobre os 24 px do topo e fica na frente dos sprites; a
-terceira linha mostra os avisos das portas. Energia e dano entram na 5.3, e o mini-mapa ainda
-não existe.
+A barra de status tem fundo preto e glifos pequenos branco/azul, com tanques acima
+da energia e contadores abaixo dos ícones. A seleção usa realce rosa/branco.
+Ocupa 32 px no topo; avisos em português aparecem abaixo por 120 quadros.
+O mini-mapa e a progressão de tanques continuam pendentes.
 
 A Samus usa animações originais de movimento, pulo, agachar, bola, mira e virada.
 A virada tem três quadros, tanto no chão quanto no ar, preservando a física do movimento.

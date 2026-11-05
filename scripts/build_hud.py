@@ -1,14 +1,4 @@
-"""Build the status bar tiles and the opaque HUD font (etapa 7.1).
-
-The HUD lives on the window plane in PAL2, the Power Suit palette, which is the same
-in every room. No palette has a free entry (PAL3 holds the shots and the ship's
-tones), so every HUD pixel, background included, maps to a suit color: the bar is
-opaque near-black like the original, and the original's blue becomes dark green.
-
-Tile order must match the MM_HUD_* enum in inc/core/hud.h:
-blank, digits 0-9, ENERGY (4), tank empty, tank full, missile off (3x2),
-missile on (3x2), super off (2x2), super on (2x2). Icons are row-major.
-"""
+"""Build original-size HUD tiles in reserved PAL0 slots (see hud_palette.py)."""
 import argparse
 from pathlib import Path
 from PIL import Image
@@ -16,19 +6,18 @@ from PIL import Image
 ROOT = Path(__file__).resolve().parents[1]
 BAR = ROOT / 'res/images/status-bar-original-sgdk'
 OUT = ROOT / 'res/images/hud'
-SUIT = ROOT / 'res/images/samus-original-sgdk/palettes/pal_samus_power_suit.png'
-# Power Suit indices: (40,0,40) near black, (32,64,32) dark green, (0,248,112) green,
-# (248,224,168) cream, (144,176,144) and (112,144,112) grey-greens.
-BLACK, BLUE, GREEN, WHITE, GREY_LIGHT, GREY = 3, 13, 4, 6, 7, 8
+PALETTE = ROOT / 'res/images/maps/landing_site/foreground.png'
+# Reserved PAL0 colors; terrain pixels retain their hardware colors.
+BLACK, BLUE, WHITE, GREY_LIGHT, GREY = 1, 2, 3, 13, 8
 TILE_COUNT = 37
 
 # Source index -> HUD index, per sheet. Index 0 is the bar's black background.
 DIGIT_MAP = {0: BLACK, 1: BLUE, 2: WHITE}
-ENERGY_MAP = {0: BLACK, 1: BLUE, 2: GREEN, 3: WHITE}
-TANK_MAP = {0: BLACK, 2: BLUE, 5: WHITE}
-# Selected icons are green with a cream highlight; the others stay grey-green, as the
-# original's dim pink. The dark outline is the bar's black in both.
-ICON_ON_MAP = {0: BLACK, 1: BLACK, 2: GREEN, 3: WHITE}
+ENERGY_MAP = {0: BLACK, 1: BLUE, 2: BLACK, 3: WHITE}
+TANK_MAP = {0: BLACK, 2: BLUE, 5: 4}
+# Selected icons use pink/white; inactive icons use muted pink.
+# ENERGY index 2 is the sheet's green separator, not part of the glyph.
+ICON_ON_MAP = {0: BLACK, 1: BLACK, 2: 4, 3: WHITE}
 ICON_OFF_MAP = {0: BLACK, 1: BLACK, 2: GREY, 3: GREY_LIGHT}
 
 
@@ -49,7 +38,7 @@ def tiles_of(image):
 
 
 def palette():
-    flat = Image.open(SUIT).getpalette()[:48]
+    flat = Image.open(PALETTE).getpalette()[:48]
     return flat + [0] * (768 - len(flat))
 
 
@@ -100,10 +89,14 @@ def main():
     parser.add_argument('--font', default='D:/apps/sgdk/res/image/font_default.png',
                         help="SGDK's res/image/font_default.png")
     args = parser.parse_args()
+    from hud_palette import reserve
+    for path in (ROOT / 'res/images/maps/landing_site/foreground.png',
+                 ROOT / 'res/images/maps/crateria/tilemap2.png'):
+        reserve(Image.open(path)).save(path, transparency=0)
     OUT.mkdir(parents=True, exist_ok=True)
     build_tiles().save(OUT / 'hud_tiles.png')
     build_font(args.font).save(OUT / 'hud_font.png')
-    print(f'{(OUT / "hud_tiles.png").relative_to(ROOT)}: {TILE_COUNT} tiles in the Power Suit palette (PAL2)')
+    print(f'{(OUT / "hud_tiles.png").relative_to(ROOT)}: {TILE_COUNT} tiles in the reserved PAL0 palette')
     print(f'{(OUT / "hud_font.png").relative_to(ROOT)}: opaque font, 96 glyphs')
 
 

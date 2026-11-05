@@ -46,6 +46,7 @@ typedef struct {
     Sprite *beam_sprites[MM_BEAM_COUNT];
     bool missile_palette; /* PAL3 holds missile_sprite's palette instead of the beam's. */
     const char *door_prompt; /* Text on the HUD message row while Samus is at a door; NULL otherwise. */
+    u16 door_prompt_ticks; /* Transient notice: 120 rendered frames, rearmed after leaving. */
     MmHealth health; /* Energy, tanks and hit invulnerability (5.3); damage sources come with the enemies (5.2). */
     MmEnemyPool enemies; /* Simulated enemies; art and animation arrive in 5.2. */
     Sprite *enemy_sprites[MM_ENEMY_MAX]; /* NULL for enemies without art yet. */

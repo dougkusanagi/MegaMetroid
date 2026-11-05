@@ -10,6 +10,23 @@ O registro detalhado começa em 18/10/2026. A entrada anterior abaixo foi
 reconstituída do commit indicado; o histórico anterior completo permanece no Git
 (`git log`) e as entregas por etapa estão em [docs/PLANO.md](docs/PLANO.md).
 
+## 2026-11-04 21:29:55 −03:00 (America/Sao_Paulo) — Fidelidade visual do HUD
+
+### Melhorado
+
+- HUD com fundo preto, glifos originais branco/azul, energia separada dos números
+  e contadores abaixo dos ícones. A seleção usa os tons rosa/branco disponíveis.
+- Avisos de portas em português, exibidos por 120 quadros e rearmados após sair
+  da condição. Indicadores permanecem visíveis; cache por estado preservado.
+- Reserva de seis posições PAL0 sem mudar cores efetivas ou transparência do
+  terreno das duas salas, sem novo banco/sprite e com os mesmos 37 tiles.
+
+**Validação:** revisão independente; suíte local completa; smoke BlastEm GDB
+acelerado/headless com nove capturas VDP; teste da configuração Window ao mostrar,
+expirar e rearmar avisos (espelho SGDK do registrador, sem leitura direta de
+registradores VDP write-only). Mini-mapa/progressão seguem pendentes.
+Decisão de paleta registrada no ADR 0001.
+
 ## 2026-11-04 21:11:57 −03:00 (America/Sao_Paulo) — ROM padrão somente em out
 
 ### Corrigido

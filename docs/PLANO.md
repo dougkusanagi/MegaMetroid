@@ -560,7 +560,18 @@ Blocos destrutíveis e demais limitações da 6.6 continuam pendentes.
 | 7.3 | Upgrades | Morph Ball, Bombas, Varia, High Jump | Habilidades liberam trechos do mapa |
 | 7.4 | Save em SRAM | Itens, posição e flags | Salvar, resetar, continuar |
 
-**7.1.1 Barra de status** ✅ (2026-10-28). O plano WINDOW cobre as três primeiras
+**Atualização visual de 04/11/2026:** WINDOW agora cobre quatro linhas (32 px).
+Ícones nas linhas 1–2, tanques na linha 2, energia/contadores na linha 3.
+Glifos pequenos branco/azul e fundo preto, sem o separador verde da prancha.
+Avisos em português aparecem abaixo durante 120 quadros, sem substituir indicadores.
+A PAL0 reserva seis posições; o terreno das duas salas mantém cada cor na precisão
+do VDP, verificada por hash. PAL1/2/3 permanecem intactas. Mantidos os 37 tiles
+(1.184 bytes), sem novos sprites; RAM: +64 bytes de células e +2 bytes do aviso.
+O cache por estado e o traçado otimizado de disparo permanecem. Novas salas precisam
+reservar essas cores; detalhes em `docs/SPRITES.md`. Mini-mapa segue pendente.
+
+**Registro original da 7.1.1 Barra de status** ✅ (2026-10-28; leia a atualização acima).
+O plano WINDOW cobria as três primeiras
 linhas (24 px). Linha 0: tanques de energia (até 7); linha 1: `ENERGY` e os dois dígitos
 de energia; ícones de míssil (3×2) e super (2×2) nas linhas 0–1, com os contadores ao lado
 (3 e 2 dígitos); linha 2: avisos das portas. O ícone aparece quando a capacidade (ou o
