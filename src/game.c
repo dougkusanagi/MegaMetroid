@@ -309,15 +309,29 @@ static void render(Game *g)
     for (i = 0; i < g->enemies.count && i < MM_ENEMY_MAX; ++i) {
         const MmEnemy *enemy = &g->enemies.enemies[i];
         const EnemyArt *art = &enemy_art[enemy->kind];
+        const SpriteDefinition *definition = art->definition;
         Sprite *sprite = g->enemy_sprites[i];
+        s16 draw_x = art->draw_x, draw_y = art->draw_y;
+        bool vflip = FALSE;
         if (!sprite) continue;
         if (!enemy->active) { SPR_setVisibility(sprite, HIDDEN); continue; }
+        if (enemy->kind == MM_ENEMY_GEEMER) {
+            /* Wall: the rotated strip, mirrored for the other wall. Ceiling: the floor
+               strip upside down. Both definitions hold 12 tiles, so the swap fits. */
+            if (enemy->surf == MM_SURF_WALL) {
+                definition = &geemer_wall_sprite;
+                draw_x = GEEMER_WALL_DRAW_X;
+                draw_y = GEEMER_WALL_DRAW_Y;
+            } else if (enemy->surf == MM_SURF_CEILING) vflip = TRUE;
+        }
+        if (sprite->definition != definition) SPR_setDefinition(sprite, definition);
         SPR_setVisibility(sprite, AUTO_FAST);
         SPR_setAutoAnimation(sprite, FALSE);
         SPR_setFrame(sprite, enemy_frame(enemy, art));
+        SPR_setVFlip(sprite, vflip);
         SPR_setHFlip(sprite, !enemy->facing_left);
-        SPR_setPosition(sprite, mm_pixel(enemy->x) - g->camera.x - art->draw_x,
-                        mm_pixel(enemy->y) - g->camera.y - art->draw_y);
+        SPR_setPosition(sprite, mm_pixel(enemy->x) - g->camera.x - draw_x,
+                        mm_pixel(enemy->y) - g->camera.y - draw_y);
     }
     for (i = 0; i < MM_DROP_MAX; ++i) {
         const MmDrop *drop = &g->drops.drops[i];

@@ -29,8 +29,8 @@ Cada etapa é pequena, testável no emulador e termina em **commit + push** (ver
 - As portas azuis abrem com um tiro, vermelhas com cinco mísseis (ou um super) e verdes só com
   super, com a tampa animada nos cinco quadros originais (6.6.3). Mísseis e supers já são
   selecionáveis por START desde a 4.3; o contador na HUD entra na 7.1.
-- Zoomer, Skree, Ripper e Geemer têm arte, animação e spawn em sala (5.2); o Geemer ainda reusa
-  a IA de solo do Zoomer, sem andar em paredes e teto como no original.
+- Zoomer, Skree, Ripper e Geemer têm arte, animação e spawn em sala (5.2); o Geemer anda em
+  chão, paredes e teto (B3).
 - A exportação de mapa e colisão ainda não é automática (6.2); mapas maiores pedem avaliação de RAM, ROM e streaming (6.4).
 - A nave segue decorativa, sem plataforma, save/recarga ou escotilha interativa (fases 6/7).
 
@@ -342,8 +342,8 @@ enterra no chão. O sprite 32x32 foi remapeado para a mesma PAL1. O Ripper tamb�
 200 HP, 5 de dano, corpo 8x4 e os valores do cabeçalho original; voa em altura fixa e vira nas
 paredes, com sprite 24x16 de 3 quadros no ciclo A, B, A, C e spawn no corredor da Crateria 1.
 O Geemer também está completo: 15 HP, 5 de dano, corpo 16x16, sprite 24x32 de 3 quadros
-remapeado para a mesma PAL1 e spawn no alto da Crateria 2. Ele reusa a IA de solo do Zoomer;
-andar em paredes e teto, como no original, fica para uma etapa futura.
+remapeado para a mesma PAL1 e spawn no alto da Crateria 2. Na B3 ele ganhou IA própria de
+superfície (chão, parede e teto); o relato fica no fim desta seção.
 Validação: `enemy_zoomer`, `enemy_geemer`, `enemy_skree` e `enemy_ripper` no host;
 `enemy_zoomer_art`, `enemy_geemer_art`, `enemy_skree_art` e `enemy_ripper_art` no smoke.
 
@@ -372,6 +372,20 @@ valores/alternância/duração ainda não são as tabelas do original. Validaç�
 16×16), sprite visível no centro do inimigo com quadro/posição/profundidade da sala, pegar
 energia até o teto (97 → 99) e míssil até a capacidade (4 → 5) com o sprite sumindo, e o
 terceiro drop expirando.
+
+**B3 Geemer em paredes e teto** ✅ (2026-11-05). O Geemer saiu da IA de solo do Zoomer e ganhou
+`geemer()` (`src/core/enemy.c`): patrulha no sentido rotacional chão → parede → teto → parede →
+chão, a 0,5 px/tick. Um canto côncavo (célula bloqueada à frente) vira de superfície; uma borda
+convexa (superfície que acaba sob o pé da frente) vira na mesma, como o Zoomer. Só a queda
+inicial usa a física completa (`mm_move`); as corridas são retas e rampas não são seguidas.
+A arte de parede (`res/images/enemies/geemer_wall.png`) é a folha do chão girada 90° por
+`scripts/build_geemer_sprite.py`, espelhada para a outra parede; no teto a folha do chão usa
+`VFlip`. Os dois sprites têm 12 tiles, então a troca de definição no render não pede VRAM maior.
+Custo: 8 bytes de RAM por inimigo (`surf`/`surf_dir`), 12 tiles de VRAM e a folha de parede na ROM.
+Validação: `enemy_geemer` no host (circuito completo e virada em buraco) e `enemy_geemer_art`
+no smoke (definição e `VFlip` por superfície). **Limites:** sem medição do original em paredes e
+teto: velocidade e transições valem a hipótese da patrulha neste porte, e a arte de parede é uma
+rotação da folha do chão, não os quadros originais de parede (que não vieram na extração).
 
 ### Fase 6 — Salas, portas e mundo
 

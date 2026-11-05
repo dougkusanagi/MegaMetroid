@@ -35,9 +35,8 @@ reinício, drops, portas e HUD fiéis, sem quadros perdidos.
 
 **Próximas tarefas, em ordem:**
 
-1. **Geemer andando em paredes e teto (B3)** — hoje reusa a IA de solo do Zoomer.
-2. **Paleta do míssil (B2)** — o míssil selecionado sobrescreve os tons da nave na PAL3.
-3. **3.3 Animações completas** — moonwalk diagonal e no salto, pouco HP, space jump, screw attack.
+1. **Paleta do míssil (B2)** — o míssil selecionado sobrescreve os tons da nave na PAL3.
+2. **3.3 Animações completas** — moonwalk diagonal e no salto, pouco HP, space jump, screw attack.
 
 Fora do marco: a arte dos drops e as tabelas de drop do original seguem provisórias.
 

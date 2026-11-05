@@ -847,11 +847,12 @@ static int enemy_ripper_art(Game *g)
     return failed;
 }
 
-/* Etapa 5.2: the Geemer spawned by the room is drawn with its purple sheet in PAL1,
-   follows its simulated position and advances its three-frame walk cycle. */
+/* Etapa 5.2 + B3: the Geemer spawned by the room is drawn with its purple sheet in PAL1,
+   follows its simulated position and advances its three-frame walk cycle; on a wall it uses
+   the rotated strip, and on the ceiling the floor strip upside down. */
 static int enemy_geemer_art(Game *g)
 {
-    const MmEnemy *enemy = NULL;
+    MmEnemy *enemy = NULL;
     Sprite *sprite = NULL;
     int i, failed = 0;
     for (i = 0; i < g->enemies.count; ++i)
@@ -871,6 +872,35 @@ static int enemy_geemer_art(Game *g)
         SYS_doVBlankProcess();
     }
     if (sprite->frameInd != (enemy->age / GEEMER_FRAME_TICKS) % GEEMER_FRAME_COUNT) failed = 1;
+    /* Surface art without disturbing the room: one tick per surface, then restore the crawl.
+       The direction is pinned so the forced tick cannot turn back onto another surface. */
+    {
+        int x = enemy->x, y = enemy->y, vx = enemy->vx, vy = enemy->vy;
+        int surf = enemy->surf, surf_dir = enemy->surf_dir, left = enemy->facing_left;
+        int grounded = enemy->grounded;
+        enemy->grounded = 1;
+        enemy->surf = MM_SURF_WALL;
+        enemy->surf_dir = -1;
+        game_update(g, (MmInput){0});
+        SYS_doVBlankProcess();
+        enemy->grounded = 1;
+        if (sprite->definition != &geemer_wall_sprite ||
+            sprite->x != mm_pixel(enemy->x) - g->camera.x - GEEMER_WALL_DRAW_X + 0x80 ||
+            sprite->y != mm_pixel(enemy->y) - g->camera.y - GEEMER_WALL_DRAW_Y + 0x80) failed = 1;
+        enemy->surf = MM_SURF_CEILING;
+        enemy->surf_dir = 1;
+        game_update(g, (MmInput){0});
+        SYS_doVBlankProcess();
+        enemy->grounded = 1;
+        if (sprite->definition != &geemer_sprite ||
+            !(sprite->attribut & TILE_ATTR_VFLIP_MASK)) failed = 1;
+        enemy->x = x; enemy->y = y; enemy->vx = vx; enemy->vy = vy;
+        enemy->surf = surf; enemy->surf_dir = surf_dir; enemy->facing_left = left;
+        enemy->grounded = grounded;
+        game_update(g, (MmInput){0});
+        SYS_doVBlankProcess();
+        if (sprite->definition != &geemer_sprite || (sprite->attribut & TILE_ATTR_VFLIP_MASK)) failed = 1;
+    }
     return failed;
 }
 

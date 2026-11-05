@@ -33,6 +33,9 @@
 #define GEEMER_FRAME_TICKS 8
 #define GEEMER_DRAW_X 4
 #define GEEMER_DRAW_Y 8
+/* The wall strip is 32x24 (the floor frames rotated); the body stays centred on the hitbox. */
+#define GEEMER_WALL_DRAW_X 8
+#define GEEMER_WALL_DRAW_Y 4
 
 typedef struct {
     const room_def *room;

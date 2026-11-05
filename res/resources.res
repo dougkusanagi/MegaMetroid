@@ -29,6 +29,9 @@ SPRITE ripper_sprite "images/enemies/ripper.png" 3 2 FAST 8 NONE
 # Geemer: purple Geemer/Zoomer variant remapped to the same PAL1 background palette
 # by scripts/build_geemer_sprite.py; its three frames loop as a walk cycle.
 SPRITE geemer_sprite "images/enemies/geemer.png" 3 4 FAST 8 NONE
+# Geemer wall strip: the floor frames rotated 90 degrees by the same script, so the legs
+# point at the wall. The other wall is served by the horizontal flip.
+SPRITE geemer_wall_sprite "images/enemies/geemer_wall.png" 4 3 FAST 8 NONE
 WAV				beam_sfx				"sound/Sound-Effects/beam_shot.wav"							XGM2
 WAV				missile_sfx				"sound/Sound-Effects/ammo_missile_shot.wav"					XGM2
 WAV				super_sfx				"sound/Sound-Effects/ammo_supermissile_shot.wav"			XGM2

@@ -231,7 +231,8 @@ O Zoomer, o Skree, o Ripper e o Geemer já têm folhas remapeadas para a PAL1 em
 `scripts/build_skree_sprite.py`, `scripts/build_ripper_sprite.py` e
 `scripts/build_geemer_sprite.py`. No Skree, os quadros 0..3 mostram as asas girando pendurado e
 os quadros 4..7 o mergulho. O Ripper usa os quadros A, B, A, C. O Geemer usa a tira de 3
-quadros de 24x32; a tira de 24x40 (paredes e teto) ainda fica de fora.
+quadros de 24x32; a folha de parede (`geemer_wall.png`, 3 quadros de 32x24) é essa mesma tira
+girada 90°, feita pelo mesmo script, e o teto usa a folha do chão invertida verticalmente.
 
 Ficam como referência em RGB, sem entrada no `.res` (`sgdk_ready = no` no manifesto):
 

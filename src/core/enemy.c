@@ -98,6 +98,101 @@ static void skree(const MmWorld *w, const MmBody *player, MmEnemy *e)
     }
 }
 
+/* Hitbox at a Q24.8 position, for the geemer surface probes. */
+static int geemer_blocked(const MmWorld *w, const MmEnemy *e, int x, int y)
+{
+    MmRect r = { mm_pixel(x) + e->hitbox.left, mm_pixel(y) + e->hitbox.top,
+                 mm_pixel(x) + e->hitbox.right, mm_pixel(y) + e->hitbox.bottom };
+    return mm_rect_blocked(w, r);
+}
+
+/* Geemer crawls along the room's surfaces: floor, then up the wall, then the ceiling, then
+   down the other side, always in the same rotational sense. A blocked cell ahead is a concave
+   corner and turns it onto the next surface; a missing surface at the front foot is a convex
+   ledge and it turns around on the current one. Vertical and horizontal runs are straight;
+   slopes are not followed (only the initial fall uses the full physics). */
+static void geemer(const MmWorld *w, const MmBody *player, MmEnemy *e)
+{
+    int speed = mm_enemy_defs[e->kind].speed, dir;
+    int x = mm_pixel(e->x), y = mm_pixel(e->y);
+    int height = e->hitbox.bottom - e->hitbox.top;
+    (void)player;
+    if (!e->grounded) {
+        MmBody body = {0};
+        e->vy += MM_GRAVITY;
+        if (e->vy > MM_MAX_FALL) e->vy = MM_MAX_FALL;
+        body.x = e->x; body.y = e->y; body.vy = e->vy;
+        body.hitbox = e->hitbox;
+        mm_move(w, &body);
+        e->x = body.x; e->y = body.y; e->vx = body.vx; e->vy = body.vy;
+        e->grounded = body.grounded;
+        if (e->grounded) {
+            e->surf = MM_SURF_FLOOR;
+            e->surf_dir = e->facing_left ? -1 : 1;
+            e->vx = e->vy = 0;
+        }
+        return;
+    }
+    if (e->surf == MM_SURF_FLOOR || e->surf == MM_SURF_CEILING) {
+        int is_ceiling = e->surf == MM_SURF_CEILING;
+        int nx = e->x + e->surf_dir * speed;
+        MmRect probe;
+        if (geemer_blocked(w, e, nx, e->y)) {
+            e->surf = MM_SURF_WALL;
+            e->surf_dir = is_ceiling ? 1 : -1;
+            e->vx = e->vy = 0;
+            return;
+        }
+        dir = e->surf_dir;
+        probe.left = dir > 0 ? x + e->hitbox.right : x + e->hitbox.left - 1;
+        probe.right = probe.left + 1;
+        probe.top = is_ceiling ? y + e->hitbox.top - 1 : y + e->hitbox.bottom;
+        probe.bottom = probe.top + 1;
+        if (!mm_rect_blocked(w, probe)) {
+            e->surf_dir = -dir;
+            e->facing_left = e->surf_dir < 0;
+            return;
+        }
+        e->x = nx; e->vx = e->surf_dir * speed; e->vy = 0;
+        e->facing_left = e->surf_dir < 0;
+        return;
+    }
+    {
+        int side, dy, ny;
+        int right = mm_rect_blocked(w, (MmRect){x + e->hitbox.right, y, x + e->hitbox.right + 1, y + height});
+        int left = mm_rect_blocked(w, (MmRect){x + e->hitbox.left - 1, y, x + e->hitbox.left, y + height});
+        side = right && !left ? 1 : left && !right ? -1 : (e->facing_left ? 1 : -1);
+        dy = e->surf_dir * speed;
+        ny = e->y + dy;
+        if (geemer_blocked(w, e, e->x, ny)) {
+            if (dy < 0) {
+                e->surf = MM_SURF_CEILING;
+                e->surf_dir = side > 0 ? -1 : 1;
+            } else {
+                e->surf = MM_SURF_FLOOR;
+                e->surf_dir = side > 0 ? -1 : 1;
+            }
+            e->facing_left = e->surf_dir < 0;
+            e->vx = e->vy = 0;
+            return;
+        }
+        {
+            MmRect probe;
+            int front = dy < 0 ? y + e->hitbox.top : y + e->hitbox.bottom - 1;
+            probe.left = side > 0 ? x + e->hitbox.right : x + e->hitbox.left - 1;
+            probe.right = probe.left + 1;
+            probe.top = front; probe.bottom = front + 1;
+            if (!mm_rect_blocked(w, probe)) {
+                e->surf_dir = -e->surf_dir;
+                return;
+            }
+        }
+        e->y = ny; e->vx = 0; e->vy = dy;
+        /* facing_left encodes the wall side for the mirrored wall sprite. */
+        e->facing_left = side > 0;
+    }
+}
+
 /* Ripper flies horizontally at a fixed height and reverses when its body would enter a wall. */
 static void ripper(const MmWorld *w, const MmBody *player, MmEnemy *e)
 {
@@ -121,8 +216,8 @@ const MmEnemyDef mm_enemy_defs[MM_ENEMY_KIND_COUNT] = {
     {skree, 15, 10, {0, 0, 8, 12}, 0, 0},
     /* Ripper starts left, as the original Crateria mainstreet placement does. */
     {ripper, 200, 5, {0, 0, 8, 4}, MM_ENEMY_RIPPER_SPEED, 1},
-    /* Geemer is the purple Geemer/Zoomer variant; it shares the crawling AI. */
-    {walker, 15, 5, {0, 0, 16, 16}, MM_ENEMY_ZOOMER_SPEED, 0}
+    /* Geemer is the purple variant. Unlike the Zoomer it does not turn at a wall: it crawls up it. */
+    {geemer, 15, 5, {0, 0, 16, 16}, MM_ENEMY_GEEMER_SPEED, 0}
 };
 
 void mm_enemy_pool_init(MmEnemyPool *pool)
@@ -147,6 +242,8 @@ int mm_enemy_spawn(MmEnemyPool *pool, int kind, int x, int y)
     e->grounded = 0;
     e->facing_left = def->facing_left;
     e->state = e->timer = 0;
+    e->surf = MM_SURF_FLOOR;
+    e->surf_dir = def->facing_left ? -1 : 1;
     e->age = e->frame = 0;
     e->active = 1;
     return pool->count++;

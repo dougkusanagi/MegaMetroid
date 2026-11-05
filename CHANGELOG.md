@@ -10,6 +10,20 @@ O registro detalhado começa em 18/10/2026. A entrada anterior abaixo foi
 reconstituída do commit indicado; o histórico anterior completo permanece no Git
 (`git log`) e as entregas por etapa estão em [docs/PLANO.md](docs/PLANO.md).
 
+## 2026-11-05 15:42:00 −03:00 (America/Sao_Paulo) — B3: Geemer anda em paredes e teto
+
+### Adicionado
+
+- O Geemer saiu da IA de solo do Zoomer: patrulha no sentido rotacional chão → parede → teto →
+  parede → chão, virando de superfície no canto e na borda. A folha girada de 90° serve à parede
+  (espelhada para o outro lado) e a folha do chão invertida serve ao teto.
+
+### Validação
+
+- `scripts/test.ps1` completo e smoke do BlastEm (`SMOKE PASS`, acelerado, sem áudio, headless:
+  circuito completo no host e definição/`VFlip` por superfície no smoke). Sem medição do
+  original em paredes e teto: velocidade, transições e arte de parede valem a hipótese deste porte.
+
 ## 2026-11-05 15:06:00 −03:00 (America/Sao_Paulo) — 5.4 validada no BlastEm (matar, ver e pegar)
 
 ### Adicionado

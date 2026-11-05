@@ -22,6 +22,7 @@ extern const SpriteDefinition skree_sprite;
 extern const SpriteDefinition drop_sprite;
 extern const SpriteDefinition ripper_sprite;
 extern const SpriteDefinition geemer_sprite;
+extern const SpriteDefinition geemer_wall_sprite;
 extern const TileSet hud_tiles;
 extern const TileSet hud_font;
 

@@ -1931,32 +1931,59 @@ static void enemy_zoomer(void) {
     assert(e->grounded && mm_pixel(e->y) == 224 && e->facing_left && mm_pixel(e->x) < 176);
     puts("PASS Zoomer: 15 HP, 5 damage, 16x16 body; falls, crawls and turns at a wall");
 }
-/* Etapa 5.2: Geemer is the purple Geemer/Zoomer variant; it keeps the same 15 HP,
-   5 damage and 16x16 body and reuses the shared ground behavior. */
+/* Etapa 5.2 + B3: Geemer keeps the 15 HP, 5 damage and 16x16 body, but does not turn at a wall
+   like the Zoomer: it crawls up it, across the ceiling, down the other side and back along the
+   floor, turning only at a convex ledge. */
 static void enemy_geemer(void) {
     MmEnemyPool pool;
     MmEnemy *e;
     MmBody player;
-    int i;
+    int i, phase = 0;
     assert(mm_enemy_defs[MM_ENEMY_GEEMER].health == 15);
     assert(mm_enemy_defs[MM_ENEMY_GEEMER].damage == 5);
     assert(mm_enemy_defs[MM_ENEMY_GEEMER].hitbox.left == 0 &&
            mm_enemy_defs[MM_ENEMY_GEEMER].hitbox.top == 0 &&
            mm_enemy_defs[MM_ENEMY_GEEMER].hitbox.right == 16 &&
            mm_enemy_defs[MM_ENEMY_GEEMER].hitbox.bottom == 16);
-    assert(mm_enemy_defs[MM_ENEMY_GEEMER].speed == MM_ENEMY_ZOOMER_SPEED);
+    assert(mm_enemy_defs[MM_ENEMY_GEEMER].speed == MM_ENEMY_GEEMER_SPEED);
     reset(); floor_at(30);
     mm_samus_init(&player, 0, 0);
-    for (i = 27; i < 30; ++i) tiles[i * 64 + 24] = 0;
+    for (i = 0; i < 30; ++i) tiles[i * 64 + 24] = 0;
     mm_enemy_pool_init(&pool);
     assert(mm_enemy_spawn(&pool, MM_ENEMY_GEEMER, 40, 200) == 0);
     e = &pool.enemies[0];
     assert(e->kind == MM_ENEMY_GEEMER && e->health == 15 && e->damage == 5);
+    assert(e->surf == MM_SURF_FLOOR && e->surf_dir == 1);
     for (i = 0; i < 60; ++i) mm_enemy_tick(&world, &player, &pool);
-    assert(e->grounded && mm_pixel(e->y) == 224);
-    for (i = 0; i < 320; ++i) mm_enemy_tick(&world, &player, &pool);
-    assert(e->grounded && mm_pixel(e->y) == 224 && e->facing_left && mm_pixel(e->x) < 176);
-    puts("PASS Geemer: 15 HP, 5 damage, 16x16 body; falls, crawls and turns at a wall");
+    assert(e->grounded && mm_pixel(e->y) == 224 && e->surf == MM_SURF_FLOOR);
+    /* The full circuit in order: floor, wall up, ceiling, wall down, floor again. */
+    for (i = 0; i < 4000 && phase < 4; ++i) {
+        mm_enemy_tick(&world, &player, &pool);
+        if (phase == 0 && e->surf == MM_SURF_WALL) {
+            assert(e->surf_dir == -1 && mm_pixel(e->x) == 176);
+            ++phase;
+        } else if (phase == 1 && e->surf == MM_SURF_CEILING) {
+            assert(mm_pixel(e->y) == 0 && e->surf_dir == -1);
+            ++phase;
+        } else if (phase == 2 && e->surf == MM_SURF_WALL) {
+            assert(e->surf_dir == 1 && mm_pixel(e->x) == 0);
+            ++phase;
+        } else if (phase == 3 && e->surf == MM_SURF_FLOOR) {
+            assert(e->surf_dir == 1 && mm_pixel(e->y) == 224);
+            ++phase;
+        }
+    }
+    assert(phase == 4);
+    /* A gap in the floor turns it around before the front foot leaves the ground. */
+    reset(); floor_at(30);
+    for (i = 30; i < 32; ++i) { tiles[i * 64 + 14] = 1; tiles[i * 64 + 15] = 1; tiles[i * 64 + 16] = 1; }
+    mm_enemy_pool_init(&pool);
+    assert(mm_enemy_spawn(&pool, MM_ENEMY_GEEMER, 40, 224) == 0);
+    e = &pool.enemies[0];
+    for (i = 0; i < 300; ++i) mm_enemy_tick(&world, &player, &pool);
+    assert(e->grounded && mm_pixel(e->y) == 224 && e->surf == MM_SURF_FLOOR);
+    assert(e->surf_dir == -1 && mm_pixel(e->x) <= 112);
+    puts("PASS Geemer: 15 HP, 5 damage, 16x16 body; floor, wall, ceiling and floor again");
 }
 /* Etapa 5.2: Skree hangs until Samus is under it, prepares, dives diagonally toward her and
    burrows into the floor. The 15 HP, 10 damage and 8x12 body are the original header values. */

@@ -7,12 +7,17 @@
 /* Pool size for one room; enter_room spawns up to this many and ignores extra room spawns. */
 #define MM_ENEMY_MAX 16
 
-/* Kinds index mm_enemy_defs. Geemer is the purple crawler that shares the Zoomer AI. */
+/* Kinds index mm_enemy_defs. Geemer is the purple crawler that walks floors, walls and ceilings. */
 enum { MM_ENEMY_WALKER, MM_ENEMY_ZOOMER, MM_ENEMY_SKREE, MM_ENEMY_RIPPER, MM_ENEMY_GEEMER, MM_ENEMY_KIND_COUNT };
 
 /* Behavior state shared by the enemies that need more than walking. */
 enum {
     MM_ENEMY_STATE_IDLE, MM_ENEMY_STATE_PREPARE, MM_ENEMY_STATE_ATTACK, MM_ENEMY_STATE_BURROW
+};
+
+/* Surface a Geemer crawls on. Floor and ceiling move horizontally, a wall vertically. */
+enum {
+    MM_SURF_FLOOR, MM_SURF_WALL, MM_SURF_CEILING
 };
 
 /* Placeholder until 5.2 measures each original enemy: 0.5 px/tick, slow enough to read on screen. */
@@ -31,6 +36,8 @@ enum {
 /* Ripper flies horizontally and turns at walls. The original linear speed table entry is
    1.0 px/tick; its 8x4 body, 200 HP and 5 damage are the original header values. */
 #define MM_ENEMY_RIPPER_SPEED 256
+/* Geemer crawls along any surface at the Zoomer's provisional 0.5 px/tick. */
+#define MM_ENEMY_GEEMER_SPEED MM_ENEMY_ZOOMER_SPEED
 
 typedef struct {
     int x, y; /* Q24.8 world position of the hitbox origin (its left/top pixel). */
@@ -40,6 +47,7 @@ typedef struct {
     int health, damage; /* damage is the contact damage applied in 5.3. */
     int grounded, facing_left;
     int state, timer; /* Behavior state and its countdown, set by the enemy behavior. */
+    int surf, surf_dir; /* Geemer surface (MM_SURF_*) and travel sign along it. */
     int age, frame; /* Ticks alive and the animation frame chosen by the game layer. */
     int active;
 } MmEnemy;
