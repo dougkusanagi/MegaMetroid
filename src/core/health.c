@@ -21,6 +21,8 @@ int mm_health_hit(MmHealth *h, MmBody *body, int damage, int from_left)
     body->vx = from_left ? MM_HIT_KNOCK_VX : -MM_HIT_KNOCK_VX;
     body->vy = MM_HIT_KNOCK_VY;
     body->grounded = 0;
+    body->stun = MM_HIT_STUN_TICKS;
+    body->speed = body->run_extra = body->turn = body->slide = body->walking = 0;
     return 1;
 }
 

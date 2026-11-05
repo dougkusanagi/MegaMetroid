@@ -10,6 +10,25 @@ O registro detalhado começa em 18/10/2026. A entrada anterior abaixo foi
 reconstituída do commit indicado; o histórico anterior completo permanece no Git
 (`git log`) e as entregas por etapa estão em [docs/PLANO.md](docs/PLANO.md).
 
+## 2026-11-05 15:05:00 −03:00 (America/Sao_Paulo) — 5.3 validada no BlastEm e knockback corrigido
+
+### Corrigido
+
+- O arremesso do dano não movia a Samus: o `mm_tick` seguinte recalculava o `vx` a partir da
+  direção e cortava a subida quando o pulo não estava segurado. Agora o corpo guarda o stun
+  (8 ticks) e o tick ignora a direção e preserva `vx/vy` durante ele, sem tocar na física normal.
+
+### Adicionado
+
+- `contact_damage` no smoke: dano de contato (99 → 94), velocidade e timers do knockback,
+  deslocamento com a direção contrária segurada, invulnerabilidade de 96 ticks, segundo dano
+  (→ 89) e morte com reinício na entrada da sala e energia cheia. Teste `knockback` no host.
+
+### Validação
+
+- `scripts/test.ps1` completo e smoke do BlastEm (`SMOKE PASS`, acelerado, sem áudio, headless).
+  Efeito visual e som de dano seguem pendentes (3.6/8.2).
+
 ## 2026-11-05 04:00:00 −03:00 (America/Sao_Paulo) — 5.4 Drops visíveis (arte provisória)
 
 ### Adicionado

@@ -33,18 +33,16 @@ cores, ROM de até 4 MB sem mapper). Na prática:
 Landing Site e Crateria 2 jogáveis como no original: inimigos que causam dano, morte e
 reinício, drops, portas e HUD fiéis, sem quadros perdidos.
 
-**Próximas tarefas, em ordem:**
+**Próxima tarefa:**
 
-1. **5.3 Dano e vida** — implementado (contato, knockback, morte e reinício); falta o cenário
-   de validação no smoke do BlastEm (dano, morte, vx do knockback).
-2. **5.4 Drops** — lógica e sprites provisórios prontos (`core/drop.c`); falta o cenário de smoke
+1. **5.4 Drops** — lógica e sprites provisórios prontos (`core/drop.c`); falta o cenário de smoke
    (matar, ver e pegar), a arte e as tabelas de drop do original (hoje provisórias).
 
 Depois: Geemer andando em paredes e teto (B3), a paleta do míssil (B2) e a 3.3.
 
 ## Etapas pendentes
 
-Concluídas: fases 0, 1 e 2; 3.1, 3.2, 3.4; 4.1–4.3; 5.1, 5.2; 6.0–6.5; 7.1.1; 8.1, 8.4 (B1).
+Concluídas: fases 0, 1 e 2; 3.1, 3.2, 3.4; 4.1–4.3; 5.1–5.3; 6.0–6.5; 7.1.1; 8.1, 8.4 (B1).
 Detalhes em `HISTORICO.md`.
 
 | # | Etapa | Falta | Teste |
@@ -53,7 +51,6 @@ Detalhes em `HISTORICO.md`.
 | 3.5 | Orçamento de VRAM | Alocação automática / streaming dos tiles do sprite | `SPR_showVRAMUsage` dentro do orçamento |
 | 3.6 | Paletas da Samus | Varia/Gravity e ciclos (carga, speed booster, screw, dano), separando a barra do HUD da PAL2 | Ciclos sem trocar tiles |
 | 4.4 | Beams | Charge, ice, wave | Cada beam altera sprite e dano |
-| 5.3 | Dano e vida | Fonte de dano, knockback, morte e reinício | Morrer e reiniciar a sala |
 | 5.4 | Drops | Energia e míssil pequenos | Pegar aumenta os contadores |
 | 5.5 | Limite de sprites | Culling fora da tela | Sala cheia sem flicker excessivo |
 | 6.6 | Portas e blocos | Blocos destrutíveis; destino das outras portas; portas verticais | Abrir com o tiro correto |

@@ -1832,6 +1832,40 @@ static void health_rules(void) {
     assert(mm_health_hit(&h, &b, 500, 0) == 1 && h.dead && h.energy == 0);
     assert(mm_health_hit(&h, &b, 5, 0) == 0 && mm_health_heal(&h, 5) == 0);
 }
+/* Etapa 5.3: the knockback really moves the body. The hit sets vx/vy and the stun; the following
+   ticks must keep that velocity even though mm_tick would otherwise recompute vx from the input
+   and cancel the rise when jump is not held, and control returns only after the stun. */
+static void knockback(void) {
+    MmHealth h; MmBody b; int i, x0, y0;
+    MmInput left = {.axis = -1}, right = {.axis = 1};
+    reset(); floor_at(30);
+    mm_samus_init(&b, 200, 192);
+    mm_tick(&world, &b, idle);
+    assert(b.grounded);
+    mm_health_init(&h);
+    x0 = b.x; y0 = b.y;
+    assert(mm_health_hit(&h, &b, 5, 1) == 1);
+    assert(b.vx == MM_HIT_KNOCK_VX && b.vy == MM_HIT_KNOCK_VY && !b.grounded);
+    assert(b.stun == MM_HIT_STUN_TICKS && h.stun == MM_HIT_STUN_TICKS);
+    assert(b.speed == 0 && b.run_extra == 0 && b.walking == 0);
+    /* Hold the way back without jump: the throw still carries the body right and up. */
+    for (i = 0; i < MM_HIT_STUN_TICKS; ++i) { mm_health_tick(&h); mm_tick(&world, &b, left); }
+    assert(h.stun == 0 && b.stun == 0);
+    assert(!b.grounded && b.vx == MM_HIT_KNOCK_VX && b.y < y0);
+    assert(b.x - x0 >= 8 * MM_UNIT);
+    /* Control is back, still in the air: steering accelerates from rest instead of the knock speed. */
+    mm_tick(&world, &b, right);
+    assert(b.vx == MM_AIR_ACCEL);
+    /* A hit from the right throws left, as the mirror. */
+    mm_samus_init(&b, 200, 192);
+    mm_tick(&world, &b, idle);
+    mm_health_init(&h);
+    x0 = b.x; y0 = b.y;
+    assert(mm_health_hit(&h, &b, 5, 0) == 1 && b.vx == -MM_HIT_KNOCK_VX);
+    for (i = 0; i < MM_HIT_STUN_TICKS; ++i) mm_tick(&world, &b, right);
+    assert(b.x < x0 - 8 * MM_UNIT && b.y < y0);
+    puts("PASS knockback: the throw keeps its velocity through the stun and control returns after");
+}
 /* Etapa 5.1: the enemy core reuses the swept collision. A placeholder walker falls to the floor,
    walks into a wall, turns around and stops before a ledge. */
 static void enemy_walker(void) {
@@ -2003,6 +2037,6 @@ int main(void) {
     missile_loadout();
     movement(); air_steering(); collisions(); jump_and_ledge(); states(); physics(); variable_jump(); ledge_jump();
     slopes(); slope_sweep(); tunnels(); wall_climb(); wall_jump_rules(); wall_jump_animation(); moonwalk(); poses(); crouch_poses(); crouch_tap(); double_tap(); ball_poses(); aiming(); beam_from_muzzle(); cannon_trace_matches_formula(); beam_flight_matches_pixel_walk(); morph_rules(); ball_stands_on_slope();
-    ball_stand_real(); camera_and_input(); doors(); world_map(); door_locks(); hud_cells(); health_rules(); drops(); enemy_walker(); enemy_zoomer(); enemy_geemer(); enemy_skree(); enemy_ripper(); real_levels();
+    ball_stand_real(); camera_and_input(); doors(); world_map(); door_locks(); hud_cells(); health_rules(); knockback(); drops(); enemy_walker(); enemy_zoomer(); enemy_geemer(); enemy_skree(); enemy_ripper(); real_levels();
     puts("All core regression tests passed."); return 0;
 }

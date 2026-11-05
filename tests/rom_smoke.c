@@ -909,6 +909,93 @@ static int enemy_walker(Game *g)
     return failed;
 }
 
+/* Etapa 5.3: contact damage on the real room. A touch removes Zoomer damage, throws Samus with
+   the knockback velocity and invulnerability; the throw survives the stun even holding the way
+   back, the same touch during invulnerability costs nothing, and a lethal touch restarts the
+   room at the entrance with full energy. */
+static int contact_damage(Game *g)
+{
+    int failed = 0, i, x_hit, y_hit;
+    MmEnemy *e;
+    if (g->room_index != ROOM_CRATERIA_1 || g->enemies.count == 0) {
+        if (!game_change_room(g, ROOM_CRATERIA_1, room_crateria_1.player_initial_pos, -1)) return 16;
+        SYS_doVBlankProcess();
+    }
+    mm_health_init(&g->health);
+    mm_weapon_init(&g->weapon);
+    mm_samus_init(&g->player, 256, 1176);
+    idle(g, 40);
+    if (!g->player.grounded) failed |= 16;
+    e = &g->enemies.enemies[0];
+    e->active = 1; e->damage = 5; e->health = 15;
+    e->x = (mm_pixel(g->player.x) + 5) * MM_UNIT; e->y = 1216 * MM_UNIT;
+    e->vx = e->vy = 0; e->grounded = 1; e->facing_left = 0;
+    game_update(g, (MmInput){0});
+    SYS_doVBlankProcess();
+    if (g->health.energy != 94 || g->health.invulnerable != MM_HIT_INVULNERABLE_TICKS ||
+        g->health.stun != MM_HIT_STUN_TICKS || g->player.stun != MM_HIT_STUN_TICKS ||
+        g->player.vx != MM_HIT_KNOCK_VX || g->player.vy != MM_HIT_KNOCK_VY ||
+        g->player.grounded) failed |= 16;
+    x_hit = g->player.x; y_hit = g->player.y;
+    for (i = 0; i < MM_HIT_STUN_TICKS; ++i) {
+        game_update(g, (MmInput){.axis = -1});
+        SYS_doVBlankProcess();
+    }
+    if (g->health.energy != 94 || g->player.x < x_hit + 8 * MM_UNIT || g->player.y >= y_hit) failed |= 32;
+    /* Touching again inside the invulnerability costs nothing. */
+    for (i = 0; i < 5; ++i) {
+        e->active = 1; e->damage = 5; e->health = 15;
+        e->x = (mm_pixel(g->player.x) + 5) * MM_UNIT;
+        e->y = (mm_pixel(g->player.y) + g->player.hitbox.top + 8) * MM_UNIT;
+        e->vx = e->vy = 0; e->grounded = 1; e->facing_left = 0;
+        game_update(g, (MmInput){0});
+        SYS_doVBlankProcess();
+    }
+    if (g->health.energy != 94) failed |= 32;
+    /* The invulnerability is spent with the enemy cleared away; the next touch hurts again,
+       this time from the right, throwing Samus left. */
+    e->active = 0;
+    for (i = 0; i < 70; ++i) {
+        game_update(g, (MmInput){0});
+        SYS_doVBlankProcess();
+    }
+    if (g->health.energy != 94) failed |= 32;
+    idle(g, 40);
+    if (!g->player.grounded) failed |= 16;
+    e->active = 1; e->damage = 5; e->health = 15;
+    e->x = (mm_pixel(g->player.x) + 19) * MM_UNIT; e->y = 1216 * MM_UNIT;
+    e->vx = e->vy = 0; e->grounded = 1; e->facing_left = 1;
+    game_update(g, (MmInput){0});
+    SYS_doVBlankProcess();
+    if (g->health.energy != 89 || g->player.vx != -MM_HIT_KNOCK_VX) failed |= 64;
+    x_hit = g->player.x;
+    for (i = 0; i < MM_HIT_STUN_TICKS + 10; ++i) {
+        game_update(g, (MmInput){.axis = -1});
+        SYS_doVBlankProcess();
+    }
+    if (g->player.x >= x_hit || g->health.energy != 89) failed |= 64;
+    /* Almost dead, the same enemy touches Samus and the room restarts at its entrance.
+       Park the enemy while settling, or it walks into the teleport spot and the lethal hit
+       happens early, inside the idle. */
+    g->health.energy = 4; g->health.invulnerable = 0; g->health.stun = 0;
+    e->active = 0;
+    mm_samus_init(&g->player, 256, 1176);
+    idle(g, 40);
+    if (!g->player.grounded) failed |= 16;
+    e->active = 1; e->damage = 5; e->health = 15;
+    e->x = (mm_pixel(g->player.x) + 5) * MM_UNIT; e->y = 1216 * MM_UNIT;
+    e->vx = e->vy = 0; e->grounded = 1; e->facing_left = 0;
+    game_update(g, (MmInput){0});
+    SYS_doVBlankProcess();
+    if (g->health.energy != 99 || g->health.dead) failed |= 128;
+    if (g->room_index != ROOM_CRATERIA_1 || g->room != room_get(ROOM_CRATERIA_1)) failed |= 256;
+    if (g->player.x != 256 * MM_UNIT || g->player.y != 1176 * MM_UNIT) failed |= 512;
+    if (g->enemies.count != g->room->enemy_spawn_count) failed |= 1024;
+    idle(g, 40);
+    if (!g->player.grounded) failed |= 16;
+    return failed;
+}
+
 int main(bool hardReset)
 {
     static Game g;
@@ -1105,6 +1192,7 @@ int main(bool hardReset)
     room_video(&g);
     if (missile_weapon(&g)) failed |= 1UL << 27;
     mm_smoke_enemy_failure |= enemy_walker(&g);
+    mm_smoke_enemy_failure |= contact_damage(&g);
     /* CPU text writes must not race the sprite/scroll DMA in VBlank. */
     SYS_disableInts();
     /* Window plane keeps the result on screen; plane A scrolls with the camera. */

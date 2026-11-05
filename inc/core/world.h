@@ -78,6 +78,7 @@ typedef struct {
     int falling; /* In the air without a jump: walked off a ledge. */
     int moonwalk_enabled, moonwalk_ticks; /* Option; active cycle 1..96, zero outside moonwalk. */
     int spin_jumping;
+    int stun; /* Ticks left thrown by a hit: steering is ignored and vx/vy are preserved. */
     int shoot_pose_timer; /* Ticks the shooting pose still shows; refilled while the shot is held. */
     int ball, crouching; /* Toggled by down/up presses and the d-pad. */
     int crouch_latch; /* Crouch persists after down; jump, direction or a new up press ends it. */

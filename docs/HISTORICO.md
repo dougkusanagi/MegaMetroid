@@ -316,7 +316,7 @@ super e persistência na troca de sala) e `measured_missiles`/`missile_loadout` 
 |---|-------|---------|-------|
 | 5.1 ✅ | Entidade de inimigo | Struct + tabela de comportamentos (ponteiro de função) | Inimigo andando e colidindo com o chão |
 | 5.2 ✅ | Inimigos de Crateria | Zoomer, Skree, Ripper, Geemer (nesta ordem) | Cada um com IA e animação |
-| 5.3 (núcleo ✅; falta fonte de dano, morte e reinício) | Dano e vida | HP, invencibilidade, knockback, energia da Samus | Morrer e reiniciar a sala |
+| 5.3 ✅ | Dano e vida | HP, invencibilidade, knockback, energia da Samus | Morrer e reiniciar a sala |
 | 5.4 | Drops | Energia/míssil pequenos | Pegar aumenta contadores |
 | 5.5 | Limite de sprites | Culling fora da tela; ≤80 sprites e ≤20 por scanline | Sala cheia sem flicker excessivo |
 
@@ -346,6 +346,21 @@ remapeado para a mesma PAL1 e spawn no alto da Crateria 2. Ele reusa a IA de sol
 andar em paredes e teto, como no original, fica para uma etapa futura.
 Validação: `enemy_zoomer`, `enemy_geemer`, `enemy_skree` e `enemy_ripper` no host;
 `enemy_zoomer_art`, `enemy_geemer_art`, `enemy_skree_art` e `enemy_ripper_art` no smoke.
+
+**5.3 Dano e vida** ✅ (2026-11-05). O contato com inimigos ativos tira sua energia
+(`mm_health_hit`, 96 ticks de invulnerabilidade), joga a Samus para longe (2 px/tick na horizontal
+e 3 px/tick para cima, 8 ticks de stun sem direção) e, a 0, reinicia a sala na entrada com a
+energia cheia (`restart_after_death`).
+**Correção encontrada na validação:** o arremesso não se movia — o `mm_tick` seguinte recalculava
+o `vx` a partir da direção e cortava a subida quando o pulo não estava segurado. O `MmBody` ganhou
+`stun` (4 bytes): enquanto ele dura, o `mm_tick` ignora a direção, preserva `vx/vy` e deixa a
+gravidade agir, e o dano zera o estado de corrida para o controle voltar do repouso. Teste
+`knockback` no host (deslocamento durante o stun segurando o lado contrário, velocidade preservada
+e controle de volta depois, nos dois lados) e `contact_damage` no smoke: dano de 5 (99 → 94),
+`vx/vy` e timers no tick do impacto, deslocamento à direita com o direcional esquerdo segurado,
+segundo toque bloqueado na invulnerabilidade e 89 depois dela, e morte com retorno ao spawn
+(256, 1176), energia cheia e pool de inimigos recomposto. **Limites:** não há efeito visual de dano
+nem SFX de dano (8.2/3.6, fora desta etapa).
 
 ### Fase 6 — Salas, portas e mundo
 
