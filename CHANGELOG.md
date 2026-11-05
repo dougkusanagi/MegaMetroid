@@ -10,6 +10,20 @@ O registro detalhado começa em 18/10/2026. A entrada anterior abaixo foi
 reconstituída do commit indicado; o histórico anterior completo permanece no Git
 (`git log`) e as entregas por etapa estão em [docs/PLANO.md](docs/PLANO.md).
 
+## 2026-11-04 23:30:00 −03:00 (America/Sao_Paulo) — 5.3 Dano de contato, knockback e morte
+
+### Adicionado
+
+- Inimigos que tocam a Samus tiram energia, a jogam para longe e dão invulnerabilidade
+  de 96 ticks; durante o arremesso o direcional é ignorado.
+- Ao chegar a 0 de energia, a sala reinicia na entrada com a energia cheia.
+
+### Validação
+
+- Build da ROM e `scripts/test.ps1` passam; smoke do BlastEm sem regressão (perfil 4 com
+  os 2 VInts perdidos já conhecidos, B1). Dano e morte **não** têm cenário no smoke:
+  falta validar no BlastEm (conferir também o knockback, pois `mm_tick` pode alterar o vx).
+
 ## 2026-11-05 01:00:00 −03:00 (America/Sao_Paulo) — Plano enxuto, histórico e lista de defeitos
 
 ### Melhorado

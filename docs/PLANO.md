@@ -35,8 +35,8 @@ reinício, drops, portas e HUD fiéis, sem quadros perdidos.
 
 **Próximas tarefas, em ordem:**
 
-1. **5.3 Dano e vida** — fonte de dano dos inimigos, knockback, morte e reinício da sala
-   (o núcleo de energia e invulnerabilidade já existe).
+1. **5.3 Dano e vida** — implementado (contato, knockback, morte e reinício); falta o cenário
+   de validação no smoke do BlastEm (dano, morte, vx do knockback).
 2. **5.4 Drops** — energia e míssil pequenos, com os contadores do HUD.
 3. **8.4 Desempenho** — eliminar os 2 VInts perdidos no giro atirando do Landing Site
    (`plans/desempenho-saltos.md`).
