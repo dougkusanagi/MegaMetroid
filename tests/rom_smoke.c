@@ -1032,9 +1032,9 @@ static int contact_damage(Game *g)
 }
 
 /* Etapa 5.4: a shot kills a Zoomer (the crouch beam meets the 16x16 body), the dead enemy
-   leaves its small drop (provisional 8x8 orbs in PAL2) on screen at the enemy centre, and
-   touching it collects it: energy heals to the cap and missiles rise to the capacity.
-   Kills alternate energy and missile, and the third drop expires. */
+   leaves its small drop (the purple energy orb spinning through its original frames in PAL2)
+   on screen at the enemy centre, and touching it collects it: energy heals to the cap and
+   missiles rise to the capacity. Kills alternate energy and missile, and the third drop expires. */
 static int drops_on_screen(Game *g)
 {
     int failed = 0, kill, frame, slot, dx, dy;
@@ -1085,7 +1085,8 @@ static int drops_on_screen(Game *g)
             sprite = g->drop_sprites[slot];
             dx = drop->x; dy = drop->y;
             if (!sprite || sprite->definition != &drop_sprite ||
-                SPR_getVisibility(sprite) != AUTO_FAST || sprite->frameInd != kind ||
+                SPR_getVisibility(sprite) != AUTO_FAST ||
+                sprite->frameInd != (kind ? 4 : ((MM_DROP_LIFE_TICKS - drop->life) / 8) % 4) ||
                 sprite->x != dx - g->camera.x + 0x80 || sprite->y != dy - g->camera.y + 0x80 ||
                 sprite->depth >= g->sprite->depth) failed |= 4096;
             if (kill < 2) {

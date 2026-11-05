@@ -37,7 +37,7 @@ reinício, drops, portas e HUD fiéis, sem quadros perdidos.
 
 1. **3.3 Animações completas** — moonwalk diagonal e no salto, pouco HP, space jump, screw attack.
 
-Fora do marco: a arte dos drops e as tabelas de drop do original seguem provisórias.
+Fora do marco: a arte do drop de míssil e as tabelas de drop do original seguem provisórias (a energia já usa a orbe roxa original animada).
 
 ## Etapas pendentes
 

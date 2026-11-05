@@ -10,6 +10,19 @@ O registro detalhado começa em 18/10/2026. A entrada anterior abaixo foi
 reconstituída do commit indicado; o histórico anterior completo permanece no Git
 (`git log`) e as entregas por etapa estão em [docs/PLANO.md](docs/PLANO.md).
 
+## 2026-11-05 16:11:00 −03:00 (America/Sao_Paulo) — Drops de energia originais e míssil no X
+
+### Adicionado
+
+- A orbe verde provisória da energia virou a orbe roxa original animada (quadros de
+  `objects_item_r04`, remapeados para a PAL2, oito ticks por quadro). O **X** do controle de
+  6 botões alterna a arma como o **START**, para o míssil ser achável.
+
+### Validação
+
+- `scripts/test.ps1` completo e smoke do BlastEm (`SMOKE PASS`, acelerado, sem áudio, headless:
+  quadro animado da energia e míssil no quadro 4). O drop de míssil segue provisório (vermelho).
+
 ## 2026-11-05 15:55:00 −03:00 (America/Sao_Paulo) — B2: míssil não tinge a nave na PAL3
 
 ### Corrigido

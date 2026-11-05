@@ -365,13 +365,22 @@ nem SFX de dano (8.2/3.6, fora desta etapa).
 **5.4 Drops** ✅ (2026-11-05). O tiro que zera a vida do inimigo deixa um drop no centro da caixa
 dele (`mm_drop_spawn` alterna energia/míssil; sem capacidade de míssil sai energia), que dura
 600 ticks e pisca nos últimos 2 s. Tocar recolhe: `+5` de energia e `+2` mísseis, ambos até o
-limite, e o HUD acompanha pelo estado já recalculado quando muda. A arte é provisória (esferas
-8×8 verde/vermelha de `scripts/build_drop_sprite.py` com cores da PAL2, sem banco novo) e os
-valores/alternância/duração ainda não são as tabelas do original. Validação: `drops` no host e
+limite, e o HUD acompanha pelo estado já recalculado quando muda. A arte do míssil segue
+provisória (esfera vermelha de `scripts/build_drop_sprite.py` com cores da PAL2, sem banco novo);
+a de energia passou a ser a orbe roxa original animada (`objects_item_r04`, quadros 3..6, oito
+ticks por quadro). Os valores/alternância/duração ainda não são as tabelas do original. Validação: `drops` no host e
 `drops_on_screen` no smoke — matar um Zoomer agachado (o feixe em pé voa por cima do corpo
 16×16), sprite visível no centro do inimigo com quadro/posição/profundidade da sala, pegar
 energia até o teto (97 → 99) e míssil até a capacidade (4 → 5) com o sprite sumindo, e o
 terceiro drop expirando.
+
+**Ajuste de playtest (2026-11-05).** A orbe verde provisória da energia virou a orbe roxa original
+animada descrita acima (o usuário a reconheceu do original; o míssil segue provisório). O HUD já
+mostrava a arma ativa, mas o jogador não achou o botão do míssil: o **X** do controle de 6 botões
+passou a alternar a arma como o **START** (`game_frame`), e o `README.md` passou a dizer isso,
+dizendo também que **A** dispara a arma selecionada. A impressão de que a cor de um inimigo da
+área inicial mudou virou a B9 no `BUGS.md` (a arte é remapeada para a PAL1 da sala; conferir em
+jogo contra o original).
 
 **B3 Geemer em paredes e teto** ✅ (2026-11-05). O Geemer saiu da IA de solo do Zoomer e ganhou
 `geemer()` (`src/core/enemy.c`): patrulha no sentido rotacional chão → parede → teto → parede →

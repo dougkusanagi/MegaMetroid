@@ -54,11 +54,11 @@ Update: simple tile collision system implemented.
 
 Controles da build atual (Mega Drive): direcional para andar, **B segurado**
 para correr, **C** para pular (soltar C na subida para a subida na hora, como no Super Metroid; não dá para pular depois de sair de uma borda), **C** durante o pulo
-giratório, encostado numa parede e com o direcional apontando para longe dela, faz pulo de parede, e **A** para o Power Beam básico. **START** troca a arma: Power Beam,
+giratório, encostado numa parede e com o direcional apontando para longe dela, faz pulo de parede, e **A** para atirar. **START** (ou **X**) troca a arma: Power Beam,
 míssil e super míssil (os compartimentos vazios são pulados). No teclado
 do Fusion configurado nesta máquina: A = tecla A, B = tecla S, C = tecla D.
-No controle de 6 botões, a mira de L/R do SNES fica em Z (baixo) e Y (cima); X fica livre para
-cancelar item. Nas portas conectadas, aproxime-se e use **A** para atirar na porta; atravesse
+No controle de 6 botões, a mira de L/R do SNES fica em Z (baixo) e Y (cima); X alterna a arma como o START e fica livre para
+cancelar item. Depois de selecionar o míssil, **A** o dispara; o ícone destacado na barra mostra a arma ativa. Nas portas conectadas, aproxime-se e use **A** para atirar na porta; atravesse
 quando a animação terminar. O jogo mostra esse comando ao chegar perto. Segure Y para mirar na diagonal acima ou Z para a diagonal abaixo, inclusive
 parado e agachado; soltar retorna à mira do direcional. Y+Z juntos deixam a mira no direcional. Para jogar com um controle Xbox no layout do SNES, veja o
 remap do RetroArch descrito em `docs/BUILD.md`.

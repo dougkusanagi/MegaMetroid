@@ -336,11 +336,15 @@ static void render(Game *g)
     for (i = 0; i < MM_DROP_MAX; ++i) {
         const MmDrop *drop = &g->drops.drops[i];
         Sprite *sprite = g->drop_sprites[i];
+        int frame;
         if (!sprite) continue;
         /* Blinks for the last two seconds, like the original's fading drops. */
         if (!drop->active || (drop->life < 120 && (drop->life & 4))) { SPR_setVisibility(sprite, HIDDEN); continue; }
+        /* The energy orb spins through its four original frames; the missile orb is fixed. */
+        frame = drop->kind == MM_DROP_ENERGY ?
+            ((MM_DROP_LIFE_TICKS - drop->life) / 8) % 4 : 4;
         SPR_setVisibility(sprite, AUTO_FAST);
-        SPR_setFrame(sprite, drop->kind);
+        SPR_setFrame(sprite, frame);
         SPR_setPosition(sprite, drop->x - g->camera.x, drop->y - g->camera.y);
     }
     {
@@ -867,6 +871,7 @@ void game_frame(Game *g)
     input.jump_held = (buttons & BUTTON_C) != 0;
     input.down_pressed = (pressed & BUTTON_DOWN) != 0;
     input.up_pressed = (pressed & BUTTON_UP) != 0;
-    input.weapon_pressed = (pressed & BUTTON_START) != 0;
+    /* START (Super Metroid's SELECT) cycles the weapon; X is an alternative on six-button pads. */
+    input.weapon_pressed = (pressed & (BUTTON_START | BUTTON_X)) != 0;
     game_update(g, input);
 }
