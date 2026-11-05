@@ -1,7 +1,7 @@
 # Física da Samus
 
 Constantes do núcleo (`inc/core/world.h`), o que elas significam e como foram medidas.
-Etapa 2.2 do [plano](PLANO.md).
+Etapa 2.2 do [plano](PLANO.md) (detalhes em [HISTORICO.md](HISTORICO.md)).
 
 ## Unidades
 

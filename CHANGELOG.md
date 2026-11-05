@@ -10,6 +10,25 @@ O registro detalhado começa em 18/10/2026. A entrada anterior abaixo foi
 reconstituída do commit indicado; o histórico anterior completo permanece no Git
 (`git log`) e as entregas por etapa estão em [docs/PLANO.md](docs/PLANO.md).
 
+## 2026-11-05 01:00:00 −03:00 (America/Sao_Paulo) — Plano enxuto, histórico e lista de defeitos
+
+### Melhorado
+
+- `docs/PLANO.md` passa de 651 para 89 linhas: objetivo do porte (jogabilidade e
+  aparência o mais semelhantes possível ao original), marco atual com as próximas
+  tarefas em ordem e só as etapas pendentes. Menos leitura e menos tokens por conversa.
+- O registro detalhado das etapas foi movido sem perdas para `docs/HISTORICO.md`.
+
+### Adicionado
+
+- `docs/BUGS.md`: defeitos e pendências conhecidos, com prioridade e etapa, incluindo
+  os já anotados no plano (paleta do míssil, Geemer, VInts perdidos e outros).
+- Fluxo em `AGENTS.md`/`CLAUDE.md`: ler plano e lista de defeitos antes de continuar,
+  registrar defeitos fora do escopo e pedir playtest ao fechar cada marco.
+
+**Validação:** referências a `docs/PLANO.md` em README, docs, agentes e scripts conferidas
+e apontadas para o arquivo certo; sem mudança no jogo.
+
 ## 2026-11-04 21:31:34 −03:00 (America/Sao_Paulo) — Samus coberta pelas bordas do túnel
 
 ### Corrigido

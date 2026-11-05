@@ -3,7 +3,7 @@
 ## Objetivo
 
 Eliminar os quadros perdidos ao saltar, sem mudar a física, e registrar o que foi medido antes e depois.
-Parte da etapa 8.4 de [PLANO.md](../PLANO.md). Relato original: "slowdowns durante os saltos".
+Parte da etapa 8.4 de [PLANO.md](../PLANO.md) (defeito B1 em [BUGS.md](../BUGS.md)). Relato original: "slowdowns durante os saltos".
 
 ## Como medir
 

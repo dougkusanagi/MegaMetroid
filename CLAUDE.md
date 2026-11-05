@@ -21,7 +21,7 @@ Tarefas triviais ficam no coordenador. Não delegue novamente dentro de um filho
 
 ## Estudar → implementar → comparar → corrigir
 
-1. Leia o fluxo afetado e a etapa correspondente de `docs/PLANO.md`. Preserve
+1. Leia o fluxo afetado, `docs/PLANO.md` e `docs/BUGS.md` (e, se precisar de detalhe, só a seção da etapa em `docs/HISTORICO.md`). Preserve
    alterações já existentes. Para pedidos amplos de correção, reproduza os
    defeitos e escolha uma correção verificável por vez, começando pelos bloqueios
    de execução e desempenho; registre o restante no plano da tarefa.

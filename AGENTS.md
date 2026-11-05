@@ -5,7 +5,7 @@ Instruções para agentes (e contribuidores) que trabalham neste repositório.
 ## Projeto
 
 Port de Super Metroid para Mega Drive / Genesis usando o [SGDK](https://github.com/Stephane-D/SGDK).
-O plano de trabalho está em [`docs/PLANO.md`](docs/PLANO.md) — siga as etapas na ordem, salvo orientação em contrário.
+O plano ativo está em [`docs/PLANO.md`](docs/PLANO.md) e os defeitos abertos em [`docs/BUGS.md`](docs/BUGS.md): leia os dois antes de continuar e siga a ordem indicada no plano, salvo orientação em contrário. O registro detalhado das etapas fica em [`docs/HISTORICO.md`](docs/HISTORICO.md); leia só a seção da etapa em andamento.
 
 ## Escopo e avaliação de tarefas
 
@@ -32,7 +32,7 @@ O plano de trabalho está em [`docs/PLANO.md`](docs/PLANO.md) — siga as etapas
    - Em trabalho delegado, esta etapa cabe exclusivamente ao coordenador; os filhos retornam alterações e evidências, sem commit/push.
    - Mensagem de commit clara, descrevendo a etapa (ex.: `Etapa 0.3: corrige recursão em stopSoundJump`).
    - Depois do commit, execute `git push`.
-4. Marque a etapa como concluída em `docs/PLANO.md` e atualize o `README.md` quando a mudança afetar o uso.
+4. Marque a etapa como concluída em `docs/PLANO.md` (mantendo-o enxuto), registre o relato detalhado em `docs/HISTORICO.md`, atualize o `docs/BUGS.md` (feche o que foi corrigido e registre defeitos encontrados fora do escopo) e o `README.md` quando a mudança afetar o uso.
    - Atualize também `CHANGELOG.md` a cada entrega, com data e hora em `America/Sao_Paulo` (inclua o fuso), categorias aplicáveis (Adicionado, Melhorado, Corrigido, Removido), efeito da mudança e validação. Mantenha as entradas mais recentes no topo; use o mesmo arquivo, sem criar um por commit.
 5. Depois de cada alteração testada e commitada, rebuilde a ROM padrão, para que `out/rom.bin` reflita o código: `./scripts/build.ps1 -Sgdk D:/apps/sgdk -Java D:/apps/jre/bin/java.exe`. Não crie `build.bin` na raiz: `out/` é o destino padrão para jogar. Não use `-SmokeTest` nem `-Define` nesse passo, pois eles geram ROMs de teste em `tests/out/`.
 

@@ -79,7 +79,7 @@ A build `-SmokeTest` valida o cache original e gera as expectativas de animaçã
 em `tests/out/sm_wall.h`, sem iniciar o Mesen. O smoke compara os 80 quadros
 arquivados do wall jump com a tira e o quadro do sprite após cada VBlank.
 Ao fim, o smoke imprime também as métricas de orçamento (`VRAM_TILES_*`, `HEAP_*`;
-ver 6.4 em `docs/PLANO.md`) e falha se uma sala não couber na VRAM, a troca vazar heap ou
+ver 6.4 em `docs/HISTORICO.md`) e falha se uma sala não couber na VRAM, a troca vazar heap ou
 uma porta fechada deixar passar (6.6.2).
 O log também imprime `MM_SMOKE_FAILURE`, uma máscara dos grupos que falharam
 (zero quando todos passaram). Os bits são definidos junto às verificações em
