@@ -35,18 +35,18 @@ reinício, drops, portas e HUD fiéis, sem quadros perdidos.
 
 **Próxima tarefa:**
 
-1. **3.3 Animações completas** — moonwalk diagonal e no salto, pouco HP, space jump, screw attack.
+1. **3.3 Animações completas** — moonwalk no salto (BF/C0 sem arte extraída), pouco HP, space jump e screw attack (dependem de upgrades da 7.3). Moonwalk diagonal (3.3.6) concluído em 2026-11-05.
 
 Fora do marco: a arte do drop de míssil e as tabelas de drop do original seguem provisórias (a energia já usa a orbe roxa original animada).
 
 ## Etapas pendentes
 
-Concluídas: fases 0, 1 e 2; 3.1, 3.2, 3.4; 4.1–4.3; 5.1–5.4; 6.0–6.5; 7.1.1; 8.1, 8.4 (B1).
+Concluídas: fases 0, 1 e 2; 3.1, 3.2, 3.4, 3.3.6 (moonwalk diagonal); 4.1–4.3; 5.1–5.4; 6.0–6.5; 7.1.1; 8.1, 8.4 (B1).
 Detalhes em `HISTORICO.md`.
 
 | # | Etapa | Falta | Teste |
 |---|-------|-------|-------|
-| 3.3 | Animações completas | Moonwalk diagonal e no salto, pouco HP, space jump, screw attack | Todas visíveis em sequência |
+| 3.3 | Animações completas | Moonwalk no salto (sem arte BF/C0), pouco HP, space jump, screw attack (diagonal feito) | Todas visíveis em sequência |
 | 3.5 | Orçamento de VRAM | Alocação automática / streaming dos tiles do sprite | `SPR_showVRAMUsage` dentro do orçamento |
 | 3.6 | Paletas da Samus | Varia/Gravity e ciclos (carga, speed booster, screw, dano), separando a barra do HUD da PAL2 | Ciclos sem trocar tiles |
 | 4.4 | Beams | Charge, ice, wave | Cada beam altera sprite e dano |

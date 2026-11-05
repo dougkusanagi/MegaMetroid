@@ -403,15 +403,15 @@ static void steer(MmBody *b, int direction, int run_held)
     b->vx = b->facing_left ? -moved : moved;
 }
 
-/* The original option is enabled for production Samus. This first slice covers frontal
-   grounded moonwalk; diagonal and jumping transitions still use the ordinary controls. */
+/* The original option is enabled for production Samus. Grounded moonwalk keeps the
+   measured frontal speed and cycle also when aiming diagonally (poses 75-78);
+   jumping transitions still use the ordinary controls. */
 static void steer_moonwalk(MmBody *b, int direction, MmInput input)
 {
     int previous = b->moonwalk_ticks, vx = b->vx;
     int facing = b->facing_left ? -1 : 1;
     int active = b->moonwalk_enabled && b->grounded && !b->jumped && !b->ball &&
-        !b->crouching && !b->turn && input.shoot_held && !input.aim_y &&
-        !input.aim_diagonal && direction == -facing;
+        !b->crouching && !b->turn && input.shoot_held && direction == -facing;
     if (active) {
         b->moonwalk_ticks = previous % (6 * MM_MOONWALK_FRAME_TICKS) + 1;
         b->vx = previous ? -facing * MM_MOONWALK_SPEED : 0;

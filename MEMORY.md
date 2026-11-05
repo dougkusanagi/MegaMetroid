@@ -11,3 +11,4 @@ Fatos operacionais duráveis que o código não mostra. Uma linha por fato.
 - O SGDK não tem `memcmp`/libc completa (`-fno-builtin`); compare buffers à mão.
 - No 68000, `*`, `/` e `%` de `int` (32 bits) por valor variável chamam a libgcc (~1.000 ciclos, ~2 linhas de varredura cada): evite-os em laços por quadro; o traçado do canhão custava ~8 linhas por passo por isso.
 - Para cronometrar trechos, leia `GET_VCOUNTER` dentro da área visível (linhas 0–223, sem VInt no meio); o contador repete 0xE5–0xEA no VBlank, então não meça através dele. Um quadro NTSC tem 262 linhas (~488 ciclos cada).
+- SGDK quebrou em 2026-11-05 (`Couldn't reserve space for cygwin's heap`, 0x60EA0000): as DLLs de `D:/apps/sgdk/bin` foram rebaseadas para 0x10000000 com `C:/msys64/usr/bin/rebase.exe -4` (backup `msys-1.0.dll.orig`), e o make antigo roda com `SHELL=C:/msys64/usr/bin/bash.exe` (o `sh` antigo segfaulta no fork sob ASLR moderno); pad ROM à mão com `sizebnd.jar` + `finalize_rom.py`.

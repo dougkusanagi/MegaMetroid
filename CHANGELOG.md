@@ -10,6 +10,25 @@ O registro detalhado começa em 18/10/2026. A entrada anterior abaixo foi
 reconstituída do commit indicado; o histórico anterior completo permanece no Git
 (`git log`) e as entregas por etapa estão em [docs/PLANO.md](docs/PLANO.md).
 
+## 2026-11-05 17:15:00 −03:00 (America/Sao_Paulo) — Moonwalk diagonal (3.3.6)
+
+### Adicionado
+
+- Moonwalk mirando em diagonal no chão: poses 75–78 (para cima/baixo), com a
+  mesma velocidade e o mesmo ciclo do moonwalk frontal. Vale nos dois controles
+  (cima/baixo com direção, ou Y/Z); soltar a mira volta ao frontal sem parar.
+
+### Validação
+
+- `scripts/test.ps1` completo no host (núcleo com os dois lados, as duas miras
+  e a volta ao frontal), build `-SmokeTest` e smoke do BlastEm (`SMOKE PASS`,
+  acelerado, sem áudio, headless, incluindo as tiras diagonais na ROM).
+- ROM padrão rebuildada em `out/rom.bin` (1.572.864 bytes, checksum 5B58).
+- Ambiente: Cygwin do SGDK corrigido por rebase 32-bit das DLLs de
+  `D:/apps/sgdk/bin` (backup `msys-1.0.dll.orig`) e build com
+  `SHELL=C:/msys64/usr/bin/bash.exe`; detalhes em `docs/HISTORICO.md` (3.3.6).
+  Sem campo novo de RAM nem aumento de VRAM.
+
 ## 2026-11-05 16:48:00 −03:00 (America/Sao_Paulo) — Orbe de energia roxa (PAL0) no lugar da vermelha
 
 ### Corrigido

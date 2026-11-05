@@ -36,7 +36,8 @@ GROUND_ROW = 58
 GROUNDED = {'STAND', 'WALK', 'LAND', 'SPIN_LAND', 'CROUCH_DOWN', 'CROUCH', 'STAND_UP',
             'MORPH', 'BALL', 'UNMORPH', 'AIM_UP', 'WALK_SHOOT', 'WALK_AIM_UP', 'WALK_AIM_DOWN',
             'CROUCH_AIM_UP', 'TURN', 'AIM_DIAG_UP', 'AIM_DIAG_DOWN',
-            'CROUCH_AIM_DIAG_UP', 'CROUCH_AIM_DIAG_DOWN', 'LAND_SHOOT', 'MOONWALK'}
+             'CROUCH_AIM_DIAG_UP', 'CROUCH_AIM_DIAG_DOWN', 'LAND_SHOOT', 'MOONWALK',
+             'MOONWALK_AIM_UP', 'MOONWALK_AIM_DOWN'}
 # Actions aligned frame by frame instead of as a whole. The extracted ball frames drift up and down by
 # a pixel from the sheet grid; a rolling ball must not bounce.
 ALIGN_EACH_FRAME = {'BALL'}
@@ -58,6 +59,9 @@ ANIMATIONS = [
     ('SPIN_LAND', 'A6', 'A7'),
     ('LAND_SHOOT', 'E6', 'E7'),
     ('MOONWALK', '4A', '49'),
+    # 3.3.6: labels name the facing, so the right row is 76/78 and the left 75/77.
+    ('MOONWALK_AIM_UP', '76', '75', 'DU'),
+    ('MOONWALK_AIM_DOWN', '78', '77', 'DD'),
     ('WALL_KICK', '83', '84'),
     ('CROUCH_DOWN', '35', '36'),
     ('CROUCH', '27', '28'),

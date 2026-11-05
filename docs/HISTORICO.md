@@ -263,6 +263,39 @@ só na ROM de teste. **Limites:** diagonais e transições BF/C0 de salto/virada
 continuam pendentes; entrada com velocidade prévia, rampas e outras combinações
 não foram comprovadas pela amostra de chão plano.
 
+**3.3.6 Moonwalk diagonal no chão** ✅ (2026-11-05). As poses 75–78 (moonwalk mirando para cima/baixo em
+diagonal) entram na folha como `MOONWALK_AIM_UP` (76/75) e `MOONWALK_AIM_DOWN`
+(78/77), com os mesmos seis quadros e o mesmo ciclo de 16 ticks do frontal. O
+`steer_moonwalk` aceita mira diagonal por qualquer um dos dois controles
+(cima/baixo com direção, ou Y/Z de seis botões); soltar a mira volta à tira
+frontal sem parar. O render escolhe a tira pela mira, com a boca do canhão
+gerada por pose. Host cobre os dois lados, as duas miras, a troca de mira sem
+parar e a volta ao frontal; o smoke confere as duas tiras diagonais e o quadro
+na ROM. Custo: quatro linhas na folha (24 desenhos de 64×64 na ROM), sem campo
+novo na struct do jogo e sem aumentar a reserva de VRAM (máximo da folha
+inalterado). **Limites:** velocidade e ciclo do diagonal reaproveitam a medida
+do frontal sem medição própria no original (o save state do Mesen não está
+nesta máquina); transições de salto/virada BF/C0/C1–C4 não têm arte extraída
+(não entram na folha) e continuam pendentes. Pouco HP, space jump e screw
+attack também continuam pendentes: space jump e screw dependem de upgrades
+(7.3) ainda não implementados, e pouco HP usa tiras `xx` sem número de pose na
+prancha, que o extrator não endereça por pose.
+
+**Ambiente SGDK (2026-11-05).** O Cygwin do SGDK parou de iniciar nesta máquina
+(`VirtualAlloc ... Win32 error 487`, `Couldn't reserve space for cygwin's heap`,
+também em `make --version` fora do projeto): o MSYS do SGDK quer reservar o heap
+em 0x60EA0000, endereço ocupado após uma mudança do Windows. Correção aplicada
+nesta máquina (fora do repositório): backup de `D:/apps/sgdk/bin/msys-1.0.dll.orig`
+e rebase 32-bit de todas as DLLs de `D:/apps/sgdk/bin` para 0x10000000 com o
+rebase do MSYS2 (`C:/msys64/usr/bin/rebase.exe -4 -b 0x10000000 -T lista.txt`).
+Além disso, o `sh` antigo segfaulta ao ser chamado pelo make antigo (fork com ASLR
+moderno); a build roda com `SHELL=C:/msys64/usr/bin/bash.exe` no make, e o
+padROM (`D:`) é feito à mão com `sizebnd.jar` + `finalize_rom.py`. Validação
+desta etapa: `scripts/test.ps1` completo no host, build `-SmokeTest` pela via
+acima e `SMOKE PASS` no BlastEm (acelerado, sem áudio, headless, 15,3 s,
+0 VInts perdidos, incluindo as verificações das tiras diagonais), e ROM padrão
+rebuildada em `out/rom.bin` (1.572.864 bytes, checksum 5B58).
+
 **Lacunas da prancha.**
 - A pose `16` (pulo parado, esquerda, mirando para cima) não tem faixa própria: são os quadros 2–3 da tira `15`.
 - A faixa da `69` diz "Facing left - aiming up-right", provável erro de digitação ("Facing right").

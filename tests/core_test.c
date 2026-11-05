@@ -1110,6 +1110,30 @@ static void moonwalk(void) {
           assert(fell);
         }
     }
+    /* Diagonal moonwalk (3.3.6): poses 75-78 reuse the measured frontal speed and
+       cycle. Both aim inputs (up/down with direction, Y/Z) keep moonwalking, and
+       releasing the aim returns to the frontal strip without stopping. */
+    for (side = 0; side < 2; ++side) {
+        int direction = side ? 1 : -1, diagonal;
+        for (diagonal = 0; diagonal < 2; ++diagonal) {
+            reset(); floor_at(20);
+            mm_samus_init(&b, 200, 112); mm_tick(&world, &b, idle);
+            b.facing_left = side;
+            for (frame = 0; frame < 20; ++frame) {
+                MmInput in = {.axis = direction, .shoot_held = 1};
+                if (diagonal) in.aim_diagonal = diagonal < 2 ? (frame % 2 ? -1 : 1) : 0;
+                else in.aim_y = frame % 2 ? -1 : 1;
+                mm_tick(&world, &b, in);
+                assert(b.moonwalk_ticks && b.grounded && !b.crouching);
+                assert(b.aim == (diagonal ? (in.aim_diagonal < 0 ? MM_AIM_DIAG_UP : MM_AIM_DIAG_DOWN) :
+                    (in.aim_y < 0 ? MM_AIM_DIAG_UP : MM_AIM_DIAG_DOWN)));
+                assert((b.moonwalk_ticks - 1) / MM_MOONWALK_FRAME_TICKS == frame / MM_MOONWALK_FRAME_TICKS);
+                assert(b.x == 200 * MM_UNIT + direction * frame * MM_MOONWALK_SPEED);
+            }
+            mm_tick(&world, &b, (MmInput){.axis = direction, .shoot_held = 1});
+            assert(b.moonwalk_ticks && b.aim == MM_AIM_FORWARD);
+        }
+    }
     puts("PASS moonwalk: 110 archived displacements/frames both facings, stop, fire release, option and walls");
 }
 

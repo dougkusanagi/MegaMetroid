@@ -584,6 +584,18 @@ static int moonwalk(Game *g)
                 g->animation != PLAYER_ANIM_MOONWALK_R + side ||
                 g->sprite->frameInd != reference_moonwalk[frame][1]) failed = 1;
         }
+        /* Diagonal moonwalk (3.3.6): poses 75-78 keep the frontal cycle; Y/Z and
+           up/down with direction select the diagonal strips on screen. */
+        for (frame = 0; frame < 20; ++frame) {
+            MmInput in = {.axis = direction, .shoot_held = 1};
+            int row;
+            if (frame < 10) { in.aim_diagonal = -1; row = PLAYER_ANIM_MOONWALK_AIM_UP_R + side; }
+            else { in.aim_y = 1; row = PLAYER_ANIM_MOONWALK_AIM_DOWN_R + side; }
+            game_update(g, in);
+            SYS_doVBlankProcess();
+            if (!g->player.moonwalk_ticks || g->animation != row ||
+                g->sprite->frameInd != (g->player.moonwalk_ticks - 1) / MM_MOONWALK_FRAME_TICKS) failed = 1;
+        }
         game_update(g, (MmInput){.axis = direction}); SYS_doVBlankProcess();
         if (g->player.moonwalk_ticks || !g->player.turn_pose_ticks) failed = 1;
         idle(g, 15);

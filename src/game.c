@@ -91,7 +91,10 @@ static u16 player_row(const MmBody *p)
     };
     u16 side = p->facing_left ? 1 : 0, row;
     bool up = p->aim == MM_AIM_UP || p->aim == MM_AIM_DIAG_UP;
-    if (p->moonwalk_ticks) return PLAYER_ANIM_MOONWALK_R + side;
+    if (p->moonwalk_ticks)
+        return (p->aim == MM_AIM_DIAG_UP ? PLAYER_ANIM_MOONWALK_AIM_UP_R :
+                p->aim == MM_AIM_DIAG_DOWN ? PLAYER_ANIM_MOONWALK_AIM_DOWN_R :
+                PLAYER_ANIM_MOONWALK_R) + side;
     if (p->pose == MM_POSE_LAND && p->aim == MM_AIM_FORWARD && p->shoot_pose_timer)
         return PLAYER_ANIM_LAND_SHOOT_R + side;
     /* Turn strips are indexed by the OLD facing. Aim/shoot keep their cannon pose,

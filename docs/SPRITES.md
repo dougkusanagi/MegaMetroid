@@ -412,6 +412,17 @@ dois sentidos. Sem nova medição para os testes rotineiros. Diagonais 75–78 e
 transições BF/C0/C1–C4 ainda não são usadas; salto e mira diagonal seguem os
 controles comuns. A entrada em movimento e as rampas precisam de cobertura.
 
+### Moonwalk diagonal (3.3.6)
+
+As tiras 76/75 (mira para cima em diagonal) e 78/77 (para baixo) entram como
+`MOONWALK_AIM_UP` e `MOONWALK_AIM_DOWN`, seis desenhos cada, com os pés
+alinhados na linha 58 como o frontal. Os rótulos da prancha nomeiam o lado de
+cada pose, então a linha da direita é 76/78 e a da esquerda 75/77 (o `+1` da
+esquerda vale como nas demais ações). O render usa `moonwalk_ticks` para o
+quadro `(ticks - 1) / 16`, o mesmo relógio do frontal, e a boca do canhão vem
+do primeiro quadro de cada tira (diagonais DU/DD). A reserva de tiles do sprite
+continua determinada pelo máximo da folha; nenhum sprite, paleta ou campo novo.
+
 ### Zoomer (5.2)
 
 `scripts/build_zoomer_sprite.py` remapeia `enemies_left_r00` para a PAL1 da
