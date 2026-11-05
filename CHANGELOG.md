@@ -10,6 +10,19 @@ O registro detalhado começa em 18/10/2026. A entrada anterior abaixo foi
 reconstituída do commit indicado; o histórico anterior completo permanece no Git
 (`git log`) e as entregas por etapa estão em [docs/PLANO.md](docs/PLANO.md).
 
+## 2026-11-05 02:00:00 −03:00 (America/Sao_Paulo) — Tiros ferem e matam inimigos (base da 5.4)
+
+### Adicionado
+
+- Feixe, míssil e super que tocam um inimigo ativo tiram a vida dele (`damage` do tiro) e terminam
+  em impacto; a 0 de vida o inimigo some. O Ripper (200 HP) segue a mesma regra por ora: o
+  comportamento do original contra tiros ainda não foi medido.
+
+### Validação
+
+- Build e smoke do BlastEm sem regressão (0 VInts perdidos nos 8 cenários). Dano e morte de inimigos
+  **não** têm cenário no smoke; ainda não foram vistos em execução.
+
 ## 2026-11-05 00:30:00 −03:00 (America/Sao_Paulo) — B1: fim dos VInts perdidos no giro atirando
 
 ### Corrigido
