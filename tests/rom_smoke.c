@@ -128,6 +128,53 @@ static int jump_performance(Game *g)
     }
     return failed;
 }
+static void idle(Game *g, int frames);
+
+/* B8: alternating the d-pad mid spin jump must keep the spin state, pose and rendered row
+   until landing, and the spin rotation itself must keep progressing across direction
+   changes (a facing flip must not restart the strip at frame 0). Details of the first
+   failing frame go to mm_smoke_perf[8]/[9]. */
+static int spin_alternate(Game *g)
+{
+    static const int periods[] = {1, 5};
+    int p, frame, failed = 0;
+    for (p = 0; p < 2; ++p) {
+        int period = periods[p], saw_spin = 0, landed = 0, max_frame = 0;
+        mm_samus_init(&g->player, 256, 1176);
+        mm_weapon_init(&g->weapon);
+        for (frame = 0; frame < 20; ++frame) {
+            game_update(g, (MmInput){.axis = 1});
+            SYS_doVBlankProcess();
+        }
+        for (frame = 0; frame < 140; ++frame) {
+            MmInput input = {.axis = (frame / period) % 2 ? 1 : -1,
+                             .jump_pressed = frame == 0, .jump_held = 1};
+            game_update(g, input);
+            SYS_doVBlankProcess();
+            if (g->player.spin_jumping) saw_spin = 1;
+            if (g->player.grounded) { landed = 1; break; }
+            if (!g->player.spin_jumping || g->player.pose != MM_POSE_SPIN ||
+                (g->animation != PLAYER_ANIM_SPIN_R && g->animation != PLAYER_ANIM_SPIN_L)) {
+                if (!failed) {
+                    mm_smoke_perf[8] = (u16)(p * 1000 + frame);
+                    mm_smoke_perf[9] = g->animation;
+                }
+                failed = 1;
+                break;
+            }
+            if (g->sprite->frameInd > max_frame) max_frame = g->sprite->frameInd;
+        }
+        if (!saw_spin || !landed || max_frame < 4) {
+            if (!failed) {
+                mm_smoke_perf[8] = (u16)(p * 1000 + 900);
+                mm_smoke_perf[9] = (u16)max_frame;
+            }
+            failed = 1;
+        }
+        idle(g, 120);
+    }
+    return failed;
+}
 /* Scanlines left before the next VBlank once the game logic of a frame has finished. In the
    224-line picture, lines 0..223 are drawn and anything later is still in VBlank, where the
    work is early (the headroom is then a whole frame); a VInt already taken shows as missed. */
@@ -1348,6 +1395,7 @@ int main(bool hardReset)
         if (impact_frames != 31 || g.weapon.beams[0].impact_ticks) failed |= 8192;
     }
     if (jump_performance(&g)) failed |= 65536;
+    if (spin_alternate(&g)) failed |= 1UL << 25;
     frame_profile(&g);
     failed |= room_transitions(&g) << 17; /* Bits 17-30: which room/door check failed. */
     room_video(&g);

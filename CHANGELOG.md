@@ -10,6 +10,28 @@ O registro detalhado começa em 18/10/2026. A entrada anterior abaixo foi
 reconstituída do commit indicado; o histórico anterior completo permanece no Git
 (`git log`) e as entregas por etapa estão em [docs/PLANO.md](docs/PLANO.md).
 
+## 2026-11-05 19:03:11 −03:00 (America/Sao_Paulo) — Giro do pulo giratório não reinicia na troca de direção (B8)
+
+### Corrigido
+
+- Alternar esquerda/direita no meio do pulo giratório congelava a rotação no
+  primeiro quadro da tira: cada virada trocava a linha da tira (direita/esquerda)
+  e o `SPR_setAnim` do SGDK reiniciava o quadro e o temporizador, então a
+  animação nunca avançava. Agora os quadros do giro são pilotados pelo relógio
+  da simulação no `render()` (como já eram os do moonwalk), na mesma cadência
+  anterior (cinco ticks por quadro), e a rotação progride através das trocas de
+  direção. Estado, pose e velocidade do giro já se mantinham no núcleo; só a
+  apresentação quebrava.
+
+### Validação
+
+- `scripts/test.ps1` completo no host. Smoke do BlastEm (`SMOKE PASS`,
+  acelerado, sem áudio, headless) com cenário novo `spin_alternate`
+  (`tests/rom_smoke.c`): pulo giratório alternando a cada tick e a cada 5 ticks
+  na Crateria 1, conferindo estado, pose, linha renderizada e avanço da rotação;
+  antes da correção o quadro do sprite nunca passava de 0 na alternância. ROM
+  padrão rebuildada em `out/rom.bin` (1.572.864 bytes, checksum D3ED).
+
 ## 2026-11-05 18:23:00 −03:00 (America/Sao_Paulo) — Troca de arma no MODE (SELECT do SNES)
 
 ### Corrigido

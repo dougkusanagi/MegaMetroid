@@ -299,6 +299,28 @@ própria (o save state do Mesen não está nesta máquina); física de Moonfall
 (queda sem teto) fora do escopo; transição do moonwalk diagonal (C1–C4)
 continua pendente.
 
+**B8 Giro reiniciando na troca de direção** ✅ (2026-11-05). Relato do usuário:
+alternar esquerda/direita no pulo giratório parecia trocar para o pulo comum e
+encerrava o giro. Sondas no núcleo (piso plano e mapa real da Crateria 1, com
+`mm_body_init` e `mm_samus_init`, alternância a cada 1–30 ticks) nunca perderam
+`spin_jumping` nem a pose `SPIN` no ar: estado, pose e velocidade já estavam
+certos. A reprodução veio na ROM, com o cenário `spin_alternate` no smoke
+(`tests/rom_smoke.c`): pulo giratório alternando a cada tick e a cada 5 ticks na
+Crateria 1, conferindo estado, pose, linha renderizada e avanço do quadro do
+sprite. Antes da correção, o quadro nunca passava de 0 na alternância. Causa: a
+virada troca a linha da tira (19/1A, nove quadros cada) e o `SPR_setAnim` do
+SGDK reinicia quadro e temporizador; como a virada ocorre a cada ~4 ticks e o
+quadro dura 5, a rotação congelava no quadro 0. Correção no `render()`
+(`src/game.c`): os quadros do giro são pilotados pelo relógio da simulação
+(`spin_frame`/`spin_ticks` em `Game`, `inc/game.h`), como já eram os do
+moonwalk, na mesma cadência do sprite (cinco ticks por quadro, lidos do
+`frame->timer` da definição) e sem divisão por variável no 68000. Host e ROM
+passam; ROM padrão rebuildada em `out/rom.bin` (1.572.864 bytes, checksum
+D3ED). **Limites:** o relato dizia "pulo comum", mas a apresentação congelada
+era o quadro 0 da tira do giro (pose embutida), não a pose 4D; estado e pose
+nunca trocaram em nenhuma sonda. Sem medição no original da cadência do giro
+com troca de direção (o save state do Mesen não está nesta máquina).
+
 **Ambiente SGDK (2026-11-05).** O Cygwin do SGDK parou de iniciar nesta máquina
 (`VirtualAlloc ... Win32 error 487`, `Couldn't reserve space for cygwin's heap`,
 também em `make --version` fora do projeto): o MSYS do SGDK quer reservar o heap

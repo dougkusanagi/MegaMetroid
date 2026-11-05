@@ -133,6 +133,12 @@ static bool walk_row(u16 row)
            row == PLAYER_ANIM_WALK_AIM_UP_R || row == PLAYER_ANIM_WALK_AIM_DOWN_R;
 }
 
+/* The spin rows are one strip per facing (poses 19/1A, nine frames each). */
+static bool spin_row(u16 row)
+{
+    return (row & ~1) == PLAYER_ANIM_SPIN_R;
+}
+
 /* Source order of every shot strip: up-left, up, up-right, left, right, down-left, down, down-right. */
 static int shot_direction(const MmBeam *beam)
 {
@@ -261,6 +267,7 @@ static void render(Game *g)
             SPR_setAnim(g->sprite, animation);
         g->animation = animation;
     }
+    if (!spin_row(animation)) g->spin_frame = g->spin_ticks = 0;
     if (g->player.moonwalk_ticks) {
         SPR_setAutoAnimation(g->sprite, FALSE);
         SPR_setFrame(g->sprite, (g->player.moonwalk_ticks - 1) / MM_MOONWALK_FRAME_TICKS);
@@ -282,6 +289,16 @@ static void render(Game *g)
         /* These frames follow the simulation, including PAL's extra ticks, rather than looping. */
         SPR_setAutoAnimation(g->sprite, FALSE);
         SPR_setFrame(g->sprite, g->player.jump_frame);
+    } else if (spin_row(animation)) {
+        /* The spin strip is driven by the simulation clock, not the sprite timer: a facing
+           flip swaps rows, and SPR_setAnim would restart the rotation from frame 0 (B8). */
+        SPR_setAutoAnimation(g->sprite, FALSE);
+        SPR_setFrame(g->sprite, g->spin_frame);
+        if (++g->spin_ticks >= g->sprite->frame->timer) {
+            g->spin_ticks = 0;
+            if (++g->spin_frame >= g->sprite->definition->animations[animation]->numFrame)
+                g->spin_frame = 0;
+        }
     } else if (rolling) {
         /* The ball only turns while it moves, and a turn takes about the time it rolls its own
            circumference (16 px * pi at 2.75 px/tick): 2 ticks a frame. */

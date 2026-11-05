@@ -65,6 +65,8 @@ typedef struct {
     MmRect door_solids[MM_ROOM_MAX_DOORS]; /* Caps that still block; world.solids points here. */
     u16 door_lock_count;
     u16 animation;
+    u16 spin_frame; /* Spin strip frame, driven from render() so a facing flip does not restart it (B8). */
+    u16 spin_ticks; /* Render ticks in the current spin frame. */
     bool music_looping; /* The music intro has ended and the loop body is playing. */
     u16 pal_phase;
     u32 frame; /* 60 Hz simulation ticks since game_init, same on NTSC and PAL. */
