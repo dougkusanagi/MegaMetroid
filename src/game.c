@@ -667,6 +667,39 @@ static void door_shots(Game *g)
     }
 }
 
+/* Contact damage: the first active enemy touching Samus hurts her (invulnerability and the
+   knockback live in mm_health_hit). */
+static void enemy_contact(Game *g)
+{
+    int x = mm_pixel(g->player.x), y = mm_pixel(g->player.y), i;
+    MmRect body = {x + g->player.hitbox.left, y + g->player.hitbox.top,
+                   x + g->player.hitbox.right, y + g->player.hitbox.bottom};
+    if (g->health.dead || g->health.invulnerable > 0) return;
+    for (i = 0; i < g->enemies.count; ++i) {
+        const MmEnemy *e = &g->enemies.enemies[i];
+        MmRect r;
+        if (!e->active || e->damage <= 0) continue;
+        r = mm_enemy_rect(e);
+        if (r.left >= body.right || r.right <= body.left || r.top >= body.bottom || r.bottom <= body.top)
+            continue;
+        mm_health_hit(&g->health, &g->player, e->damage, (r.left + r.right) < (body.left + body.right));
+        return;
+    }
+}
+
+/* Energy reached 0: the room restarts at its entrance with full energy. */
+static void restart_after_death(Game *g)
+{
+    const room_def *room = g->room;
+    u16 index = g->room_index;
+    g->health.energy = g->health.energy_max;
+    g->health.dead = g->health.invulnerable = g->health.stun = 0;
+    if (!game_change_room(g, index, room->player_initial_pos, -1)) {
+        VDP_drawText("Unable to load room", 1, 1);
+        while (1) SYS_doVBlankProcess();
+    }
+}
+
 /* PCM sound effects from res/sound/Sound-Effects. XGM2 has three PCM channels: channel 1 stays
    free for the music, channel 3 carries every shot and the weapon click, and the spin loop and the
    landing share channel 2, since a landing ends the spin. */
@@ -712,8 +745,10 @@ void game_update(Game *g, MmInput input)
         mm_health_tick(&g->health);
         for (i = 0; i < g->door_lock_count; ++i) mm_lock_tick(&g->door_locks[i]);
         sync_door_solids(g);
+        if (g->health.stun > 0) input.axis = 0; /* Thrown by a hit: no steering. */
         mm_tick(&g->world, &g->player, input);
         mm_enemy_tick(&g->world, &g->player, &g->enemies);
+        enemy_contact(g);
         if (input.weapon_pressed) mm_weapon_cycle(&g->weapon);
         /* The shot leaves from the cannon of the pose that will be on screen. */
         row = player_row(&g->player);
@@ -732,6 +767,7 @@ void game_update(Game *g, MmInput input)
         input.weapon_pressed = 0;
     }
     update_music(g);
+    if (g->health.dead) { restart_after_death(g); return; }
     {
         int door = door_touched(g);
         if (door >= 0) {
