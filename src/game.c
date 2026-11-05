@@ -402,6 +402,7 @@ static void enter_room(Game *g, const room_def *room, u16 room_index, int x, int
     sync_door_solids(g);
     mm_samus_init(&g->player, x, y);
     mm_enemy_pool_init(&g->enemies);
+    mm_drop_init(&g->drops);
     for (i = 0; i < room->enemy_spawn_count && i < MM_ENEMY_MAX; ++i)
         mm_enemy_spawn(&g->enemies, room->enemy_spawns[i].kind,
                        room->enemy_spawns[i].position.x, room->enemy_spawns[i].position.y);
@@ -705,7 +706,7 @@ static void shot_enemies(Game *g)
             if (r.left >= bx + MM_BEAM_RADIUS || r.right <= bx - MM_BEAM_RADIUS ||
                 r.top >= by + MM_BEAM_RADIUS || r.bottom <= by - MM_BEAM_RADIUS) continue;
             e->health -= b->damage;
-            if (e->health <= 0) e->active = 0;
+            if (e->health <= 0) { e->active = 0; mm_drop_spawn(&g->drops, &g->weapon, r); }
             b->active = 0;
             b->impact_ticks = MM_IMPACT_TICKS - 1;
             b->impact_x = bx; b->impact_y = by;
@@ -785,6 +786,13 @@ void game_update(Game *g, MmInput input)
             XGM2_playPCMEx(select_sfx, sizeof(select_sfx), SOUND_PCM_CH3, 15, FALSE, FALSE);
         /* A beam that stopped on a door cap is that door's shot. */
         shot_enemies(g);
+        mm_drop_tick(&g->drops);
+        {
+            int px = mm_pixel(g->player.x), py = mm_pixel(g->player.y);
+            MmRect body = {px + g->player.hitbox.left, py + g->player.hitbox.top,
+                           px + g->player.hitbox.right, py + g->player.hitbox.bottom};
+            mm_drop_collect(&g->drops, body, &g->health, &g->weapon);
+        }
         door_shots(g);
         play_sounds(g, pose_before);
         /* Presses count once, even when a PAL frame runs two ticks. */

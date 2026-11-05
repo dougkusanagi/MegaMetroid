@@ -37,7 +37,8 @@ reinício, drops, portas e HUD fiéis, sem quadros perdidos.
 
 1. **5.3 Dano e vida** — implementado (contato, knockback, morte e reinício); falta o cenário
    de validação no smoke do BlastEm (dano, morte, vx do knockback).
-2. **5.4 Drops** — energia e míssil pequenos, com os contadores do HUD.
+2. **5.4 Drops** — lógica pronta (`core/drop.c`); falta a arte e a paleta dos drops, o cenário
+   de smoke e as tabelas de drop do original (hoje provisórias).
 
 Depois: Geemer andando em paredes e teto (B3), a paleta do míssil (B2) e a 3.3.
 

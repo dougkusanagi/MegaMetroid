@@ -10,6 +10,25 @@ O registro detalhado começa em 18/10/2026. A entrada anterior abaixo foi
 reconstituída do commit indicado; o histórico anterior completo permanece no Git
 (`git log`) e as entregas por etapa estão em [docs/PLANO.md](docs/PLANO.md).
 
+## 2026-11-05 03:00:00 −03:00 (America/Sao_Paulo) — 5.4 Drops (lógica, sem arte)
+
+### Adicionado
+
+- Inimigo morto por tiro deixa um drop de energia (+5) ou de míssil (+2), alternando; sem
+  capacidade de míssil, só energia. O drop some em 600 ticks. Tocar nele recolhe: a energia sobe
+  até o máximo e os mísseis até a capacidade, e o HUD acompanha.
+- Valores, alternância e duração são **provisórios**: as tabelas de drop do original não foram medidas.
+
+### Pendente
+
+- Os drops ainda **não aparecem na tela**: falta escolher a arte (`res/images/objects-original-sgdk`)
+  e a paleta, pois não há banco livre. Ao tocar, o contador sobe mesmo assim.
+
+### Validação
+
+- `scripts/test.ps1` (teste `drops`) e smoke do BlastEm sem regressão (0 VInts perdidos).
+  Pegar drops não tem cenário no smoke.
+
 ## 2026-11-05 02:00:00 −03:00 (America/Sao_Paulo) — Tiros ferem e matam inimigos (base da 5.4)
 
 ### Adicionado

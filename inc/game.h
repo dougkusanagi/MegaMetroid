@@ -5,6 +5,7 @@
 #include "core/weapon.h"
 #include "core/hud.h"
 #include "core/health.h"
+#include "core/drop.h"
 #include "core/enemy.h"
 
 /* More than any current room; the exporter refuses rooms that would overflow these tables. */
@@ -47,6 +48,7 @@ typedef struct {
     bool missile_palette; /* PAL3 holds missile_sprite's palette instead of the beam's. */
     const char *door_prompt; /* Text on the HUD message row while Samus is at a door; NULL otherwise. */
     u16 door_prompt_ticks; /* Transient notice: 120 rendered frames, rearmed after leaving. */
+    MmDropPool drops; /* Small energy and missile drops from dead enemies (5.4). */
     MmHealth health; /* Energy, tanks and hit invulnerability (5.3); damage sources come with the enemies (5.2). */
     MmEnemyPool enemies; /* Simulated enemies; art and animation arrive in 5.2. */
     Sprite *enemy_sprites[MM_ENEMY_MAX]; /* NULL for enemies without art yet. */

@@ -9,6 +9,7 @@
 #include "core/hud.h"
 #include "core/health.h"
 #include "core/enemy.h"
+#include "core/drop.h"
 #include "world_map.h"
 #include "out/maps.h"
 #include "out/sm_hitboxes.h"
@@ -1784,6 +1785,34 @@ static void hud_cells(void) {
     puts("PASS HUD: energy digits and tanks, ammo icons lit by selection, counts, hidden empty bins");
 }
 
+static void drops(void) {
+    MmDropPool pool; MmHealth h; MmWeapon w; MmBody b; MmRect dead_box = {100, 100, 116, 116}, touch, away;
+    int i;
+    mm_drop_init(&pool); mm_health_init(&h); mm_weapon_init(&w); memset(&b, 0, sizeof b);
+    /* Kills alternate energy and missile; the drop is centered on the enemy. */
+    assert(mm_drop_spawn(&pool, &w, dead_box) == 0 && pool.drops[0].kind == MM_DROP_ENERGY);
+    assert(pool.drops[0].x == 104 && pool.drops[0].y == 104);
+    assert(mm_drop_spawn(&pool, &w, dead_box) == 1 && pool.drops[1].kind == MM_DROP_MISSILE);
+    /* Pickup: energy heals up to the cap, missiles stop at the capacity. */
+    mm_health_hit(&h, &b, 30, 1); h.invulnerable = 0;
+    touch = (MmRect){110, 110, 130, 130}; away = (MmRect){0, 0, 20, 20};
+    assert(mm_drop_collect(&pool, away, &h, &w) == 0);
+    w.missiles = w.missiles_max - 1;
+    assert(mm_drop_collect(&pool, touch, &h, &w) == 2);
+    assert(h.energy == 69 + MM_DROP_ENERGY_AMOUNT && w.missiles == w.missiles_max);
+    assert(mm_drop_collect(&pool, touch, &h, &w) == 0);
+    /* Without missile capacity, a missile drop is energy. */
+    w.missiles_max = 0; pool.kills = 1;
+    assert(mm_drop_spawn(&pool, &w, dead_box) >= 0);
+    for (i = 0; i < MM_DROP_MAX; ++i) if (pool.drops[i].active) assert(pool.drops[i].kind == MM_DROP_ENERGY);
+    /* Drops expire; a full pool refuses more. */
+    for (i = 0; i < MM_DROP_LIFE_TICKS; ++i) mm_drop_tick(&pool);
+    for (i = 0; i < MM_DROP_MAX; ++i) assert(!pool.drops[i].active);
+    for (i = 0; i < MM_DROP_MAX; ++i) assert(mm_drop_spawn(&pool, &w, dead_box) == i);
+    assert(mm_drop_spawn(&pool, &w, dead_box) == -1);
+    puts("PASS drops: alternate kinds, pickup caps, expiry, full pool");
+}
+
 static void health_rules(void) {
     MmHealth h; MmBody b; int i;
     mm_body_init(&b, 0, 0, box);
@@ -1974,6 +2003,6 @@ int main(void) {
     missile_loadout();
     movement(); air_steering(); collisions(); jump_and_ledge(); states(); physics(); variable_jump(); ledge_jump();
     slopes(); slope_sweep(); tunnels(); wall_climb(); wall_jump_rules(); wall_jump_animation(); moonwalk(); poses(); crouch_poses(); crouch_tap(); double_tap(); ball_poses(); aiming(); beam_from_muzzle(); cannon_trace_matches_formula(); beam_flight_matches_pixel_walk(); morph_rules(); ball_stands_on_slope();
-    ball_stand_real(); camera_and_input(); doors(); world_map(); door_locks(); hud_cells(); health_rules(); enemy_walker(); enemy_zoomer(); enemy_geemer(); enemy_skree(); enemy_ripper(); real_levels();
+    ball_stand_real(); camera_and_input(); doors(); world_map(); door_locks(); hud_cells(); health_rules(); drops(); enemy_walker(); enemy_zoomer(); enemy_geemer(); enemy_skree(); enemy_ripper(); real_levels();
     puts("All core regression tests passed."); return 0;
 }
