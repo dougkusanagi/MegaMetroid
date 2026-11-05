@@ -8,9 +8,13 @@ out/
 /tests/out/
 *.pyc
 __pycache__/
-# Pranchas originais de referência: ficam só na máquina local. O resultado
+# Pranchas originais de referência: ficam só na máquina local, EXCETO a
+# prancha da Samus (asset 182270 do Spriters Resource), versionada a pedido
+# do usuário para não ser apagada (ver README.md da pasta). O resultado
 # extraído para o SGDK (res/images/*-original-sgdk/) é versionado.
-/res/images/original-references/
+/res/images/original-references/*
+!/res/images/original-references/README.md
+!/res/images/original-references/SNES - Super Metroid - Playable Characters - Samus Aran.png
 # Trilha original em MP3 (~100 MB): fica local. scripts/convert_music.py gera os WAVs versionados
 # em res/sound/music/.
 /res/sound/musics/

@@ -44,7 +44,7 @@ também registra a ausência de readback específico da Crateria 2 e de uma
 sequência incremental de scrolling junto às portas; as travessias passam,
 mas não provam sozinhas todos os atributos visuais nesses casos.
 
-As pranchas originais ficam em `res/images/original-references/` (só na máquina local, ignoradas pelo Git). Os scripts em `scripts/` extraem delas PNGs prontos para o `rescomp` do SGDK. O resultado é versionado em `res/images/*-original-sgdk/`.
+As pranchas originais ficam em `res/images/original-references/` (só na máquina local e ignoradas pelo Git), **exceto** a prancha da Samus, versionada a pedido do usuário (ver `README.md` da pasta). Os scripts em `scripts/` extraem delas PNGs prontos para o `rescomp` do SGDK. O resultado é versionado em `res/images/*-original-sgdk/`.
 
 Requisitos: Python 3 e Pillow (`python -m pip install "Pillow>=9.1"`). Execute os scripts na raiz do projeto.
 
