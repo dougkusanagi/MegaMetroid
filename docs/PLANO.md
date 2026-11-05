@@ -556,7 +556,7 @@ Blocos destrutíveis e demais limitações da 6.6 continuam pendentes.
 | # | Etapa | Entrega | Teste |
 |---|-------|---------|-------|
 | 7.1 | HUD (7.1.1 barra ✅; mini-mapa pendente) | Energia, mísseis, mini-mapa mínimo (plano WINDOW) | HUD estável durante o scroll |
-| 7.2 | Itens coletáveis | Tanques de energia/míssil | Coletar persiste na sala |
+| 7.2 | Itens coletáveis | Tanques de energia/míssil; o HUD mostra um quadrado por tanque (cheio/vazio), comparado com `tests/reference/super_metroid/hud/` | Coletar persiste na sala; quadrados na posição e na cor da referência |
 | 7.3 | Upgrades | Morph Ball, Bombas, Varia, High Jump | Habilidades liberam trechos do mapa |
 | 7.4 | Save em SRAM | Itens, posição e flags | Salvar, resetar, continuar |
 
