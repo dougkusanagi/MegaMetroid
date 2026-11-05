@@ -15,6 +15,8 @@ Warped Caves convertida para o Mega Drive e sons próprios. O design está em
   que o código do jogo original não fique junto de recursos do Super Metroid.
 - **Licença do pack:** confirmar o arquivo do download (CC0 × CC-BY 3.0).
 - **Personagem:** usar a do pack com mudanças ou desenhar uma nova.
+- **Outros packs do ansimuz:** cada pack novo é uma decisão, não um item a mais
+  em cada passo. Candidato: Warped Sci-Fi Lab (fundo de parallax, ver passo 0).
 
 ## Passos
 
@@ -23,6 +25,15 @@ Warped Caves convertida para o Mega Drive e sons próprios. O design está em
       do build.
 - [ ] Guardar o arquivo de licença e anotar a origem em `LICENSES/`.
 - [ ] Inventário: tamanho dos tiles, número de cores, quadros por animação.
+- [ ] Opcional: Warped Sci-Fi Lab (https://ansimuz.itch.io/warped-sci-fi-lab) em
+      `assets_src/warped_scifi_lab/`. Conferido na página em 2026-11-04: só um
+      fundo de parallax em loop (~240 px de altura, zip de 39 kB) e uma música
+      OGG; sem tileset, personagens nem inimigos. Licença: só a frase "Use it for
+      Free on your personal or commercial projects", sem nome de licença nem
+      exigência de crédito. Guardar a página e o arquivo em `LICENSES/` e
+      creditar mesmo assim. A tela tem 224 px de altura: cortar ou reposicionar.
+      Uso possível: fundo de uma área de laboratório, com paleta de fundo própria
+      da área (passo 2). A música OGG não entra, porque a música é FM.
 
 ### 1. Separar motor e conteúdo
 - [ ] Mapear em `src/` e `inc/` o que é motor (física, salas, portas, câmera, pool
