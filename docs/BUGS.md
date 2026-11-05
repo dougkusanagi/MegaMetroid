@@ -7,7 +7,6 @@ Impressões de playtest do usuário também entram aqui.
 
 | # | Prioridade | Defeito | Etapa | Origem |
 |---|---|---|---|---|
-| B2 | média | Com o míssil selecionado, a paleta dele sobrescreve os tons da nave nos índices 10–15 da PAL3. Correção prevista: folha do míssil só com os índices 0–9 e os verdes que já coincidem com a nave | 4.3 | `HISTORICO.md`, Fase 7 |
 | B4 | média | Efeitos que trocarem a PAL2 (trajes, dano, carga) também tingem a barra do HUD | 3.6 | `HISTORICO.md`, 7.1.1 |
 | B5 | baixa | Oclusão da Samus nas bordas dos túneis: sem captura de validação em Crateria 2, nas portas verticais e em todas as poses | 6.6 | `HISTORICO.md`, Fase 7 |
 | B6 | baixa | Portas do Landing Site sem sala de destino e portas verticais sem ponto de chegada não fazem nada | 6.6 | `HISTORICO.md`, 6.5 |

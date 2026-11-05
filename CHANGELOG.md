@@ -10,6 +10,19 @@ O registro detalhado começa em 18/10/2026. A entrada anterior abaixo foi
 reconstituída do commit indicado; o histórico anterior completo permanece no Git
 (`git log`) e as entregas por etapa estão em [docs/PLANO.md](docs/PLANO.md).
 
+## 2026-11-05 15:55:00 −03:00 (America/Sao_Paulo) — B2: míssil não tinge a nave na PAL3
+
+### Corrigido
+
+- Com o míssil selecionado, a paleta dele sobrescrevia os tons da nave nos índices 10–15 da PAL3.
+  A folha do míssil agora usa só os índices 0–9 e os verdes da nave (14–15), sem mudar a
+  aparência dos mísseis.
+
+### Validação
+
+- `scripts/test.ps1` completo e smoke do BlastEm (`SMOKE PASS`, acelerado, sem áudio, headless:
+  CRAM conferida com o míssil selecionado). Sem custo de RAM/VRAM.
+
 ## 2026-11-05 15:42:00 −03:00 (America/Sao_Paulo) — B3: Geemer anda em paredes e teto
 
 ### Adicionado

@@ -39,6 +39,23 @@ for target, source in [('beam', 'weapons_power_beam.png'), ('beam_impact', 'weap
     assert np.array_equal(np.array(converted) != 0, visible), 'Changed beam transparency'
 print('PASS four palette banks and unchanged beam/impact hardware colors')
 
+# The missile sheet must keep PAL3's beam (and ship) tones in 10..15: its colors live in
+# indices 0..9, except the two greens, which share the beam palette's slots 14 and 15.
+beam = Image.open(root / 'res/images/player/beam.png')
+missile = Image.open(root / 'res/images/player/missile.png')
+beam_palette = [tuple(beam.getpalette()[i * 3:i * 3 + 3]) for i in range(16)]
+missile_palette = [tuple(missile.getpalette()[i * 3:i * 3 + 3]) for i in range(16)]
+assert missile_palette[10:16] == beam_palette[10:16], 'Missile palette recolors PAL3 ship tones in 10..15'
+assert set(np.unique(np.array(missile))) <= set(range(16)) - {10, 11, 12, 13}, 'Missile uses indices 10..13'
+original = [Image.open(root / f'res/images/weapons-original-sgdk/{name}').convert('RGB')
+            for name in ['weapons_missile.png', 'weapons_super_missile.png']]
+full = np.concatenate([np.array(image) for image in original], axis=1)
+converted = np.array(missile.convert('RGB'))
+visible = np.any(full != [0, 136, 255], axis=2)
+assert np.array_equal((full // 32)[visible], (converted // 32)[visible]), 'Changed missile hardware colors'
+assert np.array_equal(np.array(missile) != 0, visible), 'Changed missile transparency'
+print('PASS missile sheet keeps PAL3 ship tones and unchanged hardware colors')
+
 # A door must not paint black outside its shape or leave a closed cap in the map.
 from sys import path as module_path
 module_path.insert(0, str(root/'scripts'))

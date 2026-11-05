@@ -33,10 +33,9 @@ cores, ROM de até 4 MB sem mapper). Na prática:
 Landing Site e Crateria 2 jogáveis como no original: inimigos que causam dano, morte e
 reinício, drops, portas e HUD fiéis, sem quadros perdidos.
 
-**Próximas tarefas, em ordem:**
+**Próxima tarefa:**
 
-1. **Paleta do míssil (B2)** — o míssil selecionado sobrescreve os tons da nave na PAL3.
-2. **3.3 Animações completas** — moonwalk diagonal e no salto, pouco HP, space jump, screw attack.
+1. **3.3 Animações completas** — moonwalk diagonal e no salto, pouco HP, space jump, screw attack.
 
 Fora do marco: a arte dos drops e as tabelas de drop do original seguem provisórias.
 

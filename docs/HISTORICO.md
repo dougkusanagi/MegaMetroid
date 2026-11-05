@@ -387,6 +387,15 @@ no smoke (definição e `VFlip` por superfície). **Limites:** sem medição do 
 teto: velocidade e transições valem a hipótese da patrulha neste porte, e a arte de parede é uma
 rotação da folha do chão, não os quadros originais de parede (que não vieram na extração).
 
+**B2 Paleta do míssil** ✅ (2026-11-05). Com o míssil selecionado, a paleta dele tingia os tons
+da nave nos índices 10–15 da PAL3. `scripts/build_missile_sheet.py` agora parte da paleta do beam
+e põe as cores do míssil só nos índices 0–9, salvo os dois verdes, que vão para os slots 14 e 15
+do beam (as mesmas cores). Os índices 10–13 ficam iguais aos do beam/nave e a aparência do míssil
+não muda (as cores de hardware e a transparência são conferidas contra as folhas originais).
+Validação: `tests/check_assets.py` (PAL3 10–15 igual à do beam e índices proibidos) e
+`missile_weapon` no smoke (CRAM conferida com o míssil selecionado). Sem novos recursos; custo
+zero de RAM/VRAM.
+
 ### Fase 6 — Salas, portas e mundo
 
 | # | Etapa | Entrega | Teste |
@@ -644,9 +653,9 @@ e acima dos sprites.
 XGM2 não tem, e corrompia o driver do Z80. Isso travava o BlastEm conforme o tempo de cada
 quadro. Agora usa o canal 3.
 **Pendências da 7.1:** mini-mapa; energia real e tanques vêm com a 5.3 e a 7.2.
-**Bug antigo anotado:** com o míssil selecionado, a paleta dele sobrescreve os tons da nave
-nos índices 10–15 da PAL3. Para corrigir, a folha do míssil deve usar só os índices 0–9 e
-os verdes que já coincidem com a nave.
+**Bug antigo corrigido na B2:** com o míssil selecionado, a paleta dele sobrescrevia os tons da
+nave nos índices 10–15 da PAL3. A folha do míssil usa só os índices 0–9 e os verdes da nave
+(14–15). Ver o relato da B2 acima.
 
 ### Fase 8 — Áudio e polimento
 

@@ -708,6 +708,11 @@ static int missile_weapon(Game *g)
     SYS_doVBlankProcess();
     if (g->weapon.selected != MM_WEAPON_MISSILE || g->weapon.missiles != MM_START_MISSILES ||
         smoke_color(49) != missile_sprite.palette->data[1]) failed = 1;
+    /* B2: the missile palette must not overwrite the ship tones in PAL3 10..15. */
+    for (i = 10; i < 16; ++i)
+        if (smoke_color(48 + i) != beam_sprite.palette->data[i]) failed = 1;
+    for (i = 14; i < 16; ++i)
+        if (smoke_color(48 + i) != missile_sprite.palette->data[i]) failed = 1;
     /* 7.1: the lit missile icon. */
     if (!hud_on_screen(g) || g->hud_cells[1][MM_HUD_MISSILE_COLUMN] != MM_HUD_MISSILE_ON)
         mm_smoke_hud_failure |= 16;
