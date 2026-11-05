@@ -9,6 +9,8 @@ Instruções de contribuição com agentes: [`AGENTS.md`](AGENTS.md). O
 fidelidade e desempenho por evidências, sem mudar o objetivo do porte.
 Exemplos de pedidos e orientações para formulá-los: [`PROMPTS.md`](PROMPTS.md).
 Modelos, esforço e seleção de subagentes: [`docs/AGENTES.md`](docs/AGENTES.md).
+Entrada no T3 Code: **Claude / Sonnet 5.5 / low** ou
+**Codex / GPT-6.1 Sol / low / service tier default**, conforme a assinatura usada.
 
 Os smoke tests mostram o BlastEm no monitor secundário sem retirar o foco.
 Use `python scripts/smoke_test.py --hidden` para mantê-lo oculto; sem monitor secundário,

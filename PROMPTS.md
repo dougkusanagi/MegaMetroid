@@ -8,13 +8,18 @@ substituir as regras do provedor.
 
 ## Antes de pedir
 
-Configuração econômica: selecione **Claude Sonnet 5.5 / low** no T3 Code.
+Ao começar no T3 Code, use a entrada correspondente à sua assinatura:
+
+- **Claude → Sonnet 5.5 → low**.
+- **Codex → GPT-6.1 Sol → low → service tier default**.
+
 O `AGENTS.md` orienta a seleção dos especialistas; veja
 [`docs/AGENTES.md`](docs/AGENTES.md). Pedidos de desempenho e hardware vão para
-Sonnet high, sem exigir que toda a conversa use esse nível.
+Sonnet high ou Sol high, conforme o provedor da conversa, sem exigir que toda
+a conversa use esse nível. Não troque a família nem a assinatura automaticamente.
 
-- Inicie a sessão na raiz deste repositório e peça a leitura de `CLAUDE.md`,
-  `AGENTS.md` e `MEMORY.md`.
+- Inicie a sessão na raiz deste repositório e peça a leitura de `AGENTS.md` e
+  `MEMORY.md`; com Claude, inclua também `CLAUDE.md`.
 - Descreva o sintoma observado, a sala, a ação e o resultado esperado. Quando
   possível, informe como repetir. Se não souber a causa, diga isso.
 - Escolha uma entrega por vez. Para vários defeitos, peça triagem e priorização

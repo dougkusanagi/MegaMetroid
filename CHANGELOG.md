@@ -10,6 +10,28 @@ O registro detalhado começa em 18/10/2026. A entrada anterior abaixo foi
 reconstituída do commit indicado; o histórico anterior completo permanece no Git
 (`git log`) e as entregas por etapa estão em [docs/PLANO.md](docs/PLANO.md).
 
+## 2026-11-04 21:03:36 −03:00 (America/Sao_Paulo) — Agentes GPT e entradas por assinatura
+
+### Adicionado
+
+- Configuração Codex com Sol low na entrada, um filho nativo por vez e cinco
+  papéis: consulta Luna low, implementação Luna medium, problemas Sol high,
+  revisão Sol medium e decisão excepcional Astra low.
+- Alvos T3 com `reasoningEffort` e `serviceTier: default`, mantendo os filhos
+  no provedor escolhido, sem habilitar cobrança extra ou API paga.
+
+### Melhorado
+
+- README, guia e prompts explicitam as entradas T3: Claude/Sonnet 5.5 low ou
+  Codex/GPT-6.1 Sol low, conforme a assinatura usada. Entrega com commit/push
+  fica exclusivamente no coordenador quando houver delegação.
+
+**Validação:** TOML e campos verificados com `tomllib`, leitura de configuração
+por `codex features list`, conferência por Luna low via T3, suíte local
+`scripts/test.ps1` completa e `git diff --check`. O CLI não aceita
+`--strict-config` com `features`; essa checagem não foi usada como evidência.
+Os cinco papéis nativos ainda não foram exercitados de ponta a ponta.
+
 ## 2026-11-04 20:56:17 −03:00 (America/Sao_Paulo) — Agentes com uso controlado
 
 ### Adicionado

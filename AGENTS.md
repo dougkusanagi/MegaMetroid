@@ -28,6 +28,7 @@ O plano de trabalho está em [`docs/PLANO.md`](docs/PLANO.md) — siga as etapas
    - **Fidelidade ao Super Metroid:** consulte primeiro as medições versionadas em `tests/reference/super_metroid/` e as conclusões em `docs/FISICA.md` / `docs/SPRITES.md`. Reutilize os dados existentes; não execute o Mesen a cada alteração. Há um Mesen 2 com ROM e save state original neste ambiente: use `scripts/sm_reference.ps1` (`--testrunner`, sem interface) apenas quando faltar cobertura, houver dúvida/contradição ou mudar a referência. Preserve novas medições com `scripts/sm_reference_cache.py`, incluindo origem, cenário e limites de precisão. Caminhos e instruções em `docs/BUILD.md`. Não trate um conjunto finito de amostras como prova de todos os comportamentos do original.
    - **Os testes da ROM devem ser feitos no BlastEm via API/protocolo GDB**, usando `python scripts/smoke_test.py` após a build `-SmokeTest` (ver `docs/BUILD.md`). Não use skills de controle do computador, cliques, teclado ou automação da interface do emulador. **O padrão obrigatório é acelerado, sem áudio e headless** (`python scripts/smoke_test.py`, sem `--realtime`; `--hidden` é aceito explicitamente). A renderização VDP continua ligada para verificar VRAM/CRAM/SAT via API. Não use `--realtime` como contorno de erro GDB: corrija a conexão preservando o modo acelerado. Use tempo real somente para uma verificação de áudio/tempo de parede que o exija, ou a pedido explícito do usuário. Para uma inspeção visível necessária, use `--visible` exclusivamente no monitor secundário, sem ativar a janela nem roubar foco; sem esse monitor, informe o impedimento antes de executar a sessão visível. Nunca mostre a janela no monitor principal. Encerre apenas o processo iniciado pelo teste, sem interferir no uso do PC. Testes do núcleo no host complementam, mas não substituem, a validação da ROM no BlastEm.
 3. **A cada etapa testada e funcionando, faça commit e push.** Não acumule várias etapas em um único commit e não faça commit de etapa quebrada ou não testada.
+   - Em trabalho delegado, esta etapa cabe exclusivamente ao coordenador; os filhos retornam alterações e evidências, sem commit/push.
    - Mensagem de commit clara, descrevendo a etapa (ex.: `Etapa 0.3: corrige recursão em stopSoundJump`).
    - Depois do commit, execute `git push`.
 4. Marque a etapa como concluída em `docs/PLANO.md` e atualize o `README.md` quando a mudança afetar o uso.
@@ -42,17 +43,24 @@ O plano de trabalho está em [`docs/PLANO.md`](docs/PLANO.md) — siga as etapas
 
 ## Agentes e economia de uso
 
-Entrada recomendada: **Sonnet 5.5, esforço low**, para classificar o pedido,
-resolver tarefas triviais e coordenar uma etapa por vez. Os agentes Claude estão
-em `.claude/agents/`; instruções de configuração em [`docs/AGENTES.md`](docs/AGENTES.md).
+Ao começar a conversa no T3 Code, escolha uma destas entradas:
 
-| Agente | Modelo / esforço | Quando usar |
-|---|---|---|
-| `consulta` | Haiku / low | Localizar chamadas, testes e referências ou responder uma pergunta factual delimitada, sem editar. |
-| `implementacao` | Sonnet / low | Implementar uma etapa já definida, sem dúvida de arquitetura ou física. |
-| `problemas` | Sonnet / high | Investigar causa desconhecida, desempenho, VDP/DMA, VRAM/sprites, XGM2 e divergências de fidelidade. |
-| `revisao` | Sonnet / medium | Revisar um diff de comportamento e suas evidências, sem implementar. |
-| `decisao` | Opus / low | Impasse após diagnóstico do agente de problemas ou decisão de arquitetura com alternativas reais. Uso excepcional. |
+- **Claude → Sonnet 5.5 → low** para usar a assinatura Claude.
+- **Codex → GPT-6.1 Sol → low → service tier default** para usar a assinatura ChatGPT.
+
+Esses são os coordenadores definidos para este fluxo; não escolha qualquer modelo
+esperando o mesmo encaminhamento. Classificam o pedido, resolvem tarefas triviais
+e coordenam uma etapa por vez. Não altere automaticamente o provedor escolhido.
+Os agentes estão em `.claude/agents/` e `.codex/agents/`; instruções em
+[`docs/AGENTES.md`](docs/AGENTES.md). A tabela abaixo define as duas famílias:
+
+| Agente | Claude / esforço | GPT / esforço | Quando usar |
+|---|---|---|---|
+| `consulta` | Haiku 5.5 / low | GPT-6 Luna / low | Localizar chamadas, testes e referências ou responder uma pergunta factual delimitada, sem editar. |
+| `implementacao` | Sonnet 5.5 / low | GPT-6 Luna / medium | Implementar uma etapa já definida, sem dúvida de arquitetura ou física. |
+| `problemas` | Sonnet 5.5 / high | GPT-6.1 Sol / high | Investigar causa desconhecida, desempenho, VDP/DMA, VRAM/sprites, XGM2 e divergências de fidelidade. |
+| `revisao` | Sonnet 5.5 / medium | GPT-6.1 Sol / medium | Revisar um diff de comportamento e suas evidências, sem implementar. |
+| `decisao` | Opus 5.5 / low | GPT-6 Astra / low | Impasse após diagnóstico do agente de problemas ou decisão de arquitetura com alternativas reais. Uso excepcional. |
 
 - Escolha o papel pelo risco e pela incerteza, não só pelo tamanho do diff. Se
   não for necessário contexto separado, faça o trabalho no agente principal;
@@ -75,9 +83,12 @@ em `.claude/agents/`; instruções de configuração em [`docs/AGENTES.md`](docs
   diff. Use `problemas` para riscos de hardware/fidelidade; nos demais, `revisao`.
   Documentação e formatação não exigem revisor. Quem implementou não se apresenta
   como revisor independente; uma nova revisão usa outra invocação.
-- Não escale Opus, esforço ou provedor silenciosamente se o modelo estiver
+- Não escale Opus/Astra, esforço ou provedor silenciosamente se o modelo estiver
   indisponível. Informe a limitação e continue apenas trabalho independente.
-- Os modelos Claude usam a assinatura do usuário. Não habilite cobrança extra
-  nem adote outro provedor automaticamente. O DeepSeek antes recomendado fica
+- Mantenha filhos Claude na assinatura Claude e filhos GPT na assinatura
+  ChatGPT/Codex. Use service tier `default` no T3 para GPT; não habilite priority,
+  cobrança extra ou API paga. Não adote outro provedor automaticamente.
+  A presença de um modelo no catálogo não demonstra acesso ou cota na conta.
+  O DeepSeek antes recomendado fica
   como opção somente se o usuário pedir esse provedor; confirme capacidades e
   use a delegação do T3 Code, nunca o trate como modelo nativo do Claude.
