@@ -60,7 +60,7 @@ Os agentes estão em `.claude/agents/` e `.codex/agents/`; instruções em
 | `implementacao` | Sonnet 5.5 / low | GPT-6 Luna / medium | Implementar uma etapa já definida, sem dúvida de arquitetura ou física. |
 | `problemas` | Sonnet 5.5 / high | GPT-6.1 Sol / high | Investigar causa desconhecida, desempenho, VDP/DMA, VRAM/sprites, XGM2 e divergências de fidelidade. |
 | `revisao` | Sonnet 5.5 / medium | GPT-6.1 Sol / medium | Revisar um diff de comportamento e suas evidências, sem implementar. |
-| `decisao` | Opus 5.5 / low | GPT-6 Astra / low | Impasse após diagnóstico do agente de problemas ou decisão de arquitetura com alternativas reais. Uso excepcional. |
+| `decisao` | Opus 5.5 / low | GPT-6.1 Sol / high | Decisão delimitada de arquitetura com alternativas reais; não reinicia diagnóstico esgotado. Uso excepcional. |
 
 - Escolha o papel pelo risco e pela incerteza, não só pelo tamanho do diff. Se
   não for necessário contexto separado, faça o trabalho no agente principal;
@@ -78,17 +78,21 @@ Os agentes estão em `.claude/agents/` e `.codex/agents/`; instruções em
   de ser uma implementação já definida. Não repita tentativas sem nova evidência.
 - `problemas` trabalha em uma hipótese mensurável por vez. Após duas tentativas
   sem reduzir a incerteza, devolve evidências, tentativas e dúvida concreta ao
-  coordenador, que pode acionar `decisao` uma vez. Não crie ciclos de agentes.
+  coordenador. No Codex, encerre a investigação com o estado e a dúvida; não
+  abra outro Sol high só para repetir o diagnóstico. `decisao` cabe em uma
+  pergunta distinta e delimitada de arquitetura. No Claude, o coordenador pode
+  acionar `decisao` uma vez. Não crie ciclos de agentes.
 - Antes de concluir mudança de comportamento, peça uma revisão independente do
   diff. Use `problemas` para riscos de hardware/fidelidade; nos demais, `revisao`.
   Documentação e formatação não exigem revisor. Quem implementou não se apresenta
   como revisor independente; uma nova revisão usa outra invocação.
-- Não escale Opus/Astra, esforço ou provedor silenciosamente se o modelo estiver
+- Não escale modelo, esforço ou provedor silenciosamente se o modelo estiver
   indisponível. Informe a limitação e continue apenas trabalho independente.
 - Mantenha filhos Claude na assinatura Claude e filhos GPT na assinatura
   ChatGPT/Codex. Use service tier `default` no T3 para GPT; não habilite priority,
   cobrança extra ou API paga. Não adote outro provedor automaticamente.
   A presença de um modelo no catálogo não demonstra acesso ou cota na conta.
+  Astra fica fora da seleção automática: só use com pedido explícito do usuário.
   O DeepSeek antes recomendado fica
   como opção somente se o usuário pedir esse provedor; confirme capacidades e
   use a delegação do T3 Code, nunca o trate como modelo nativo do Claude.

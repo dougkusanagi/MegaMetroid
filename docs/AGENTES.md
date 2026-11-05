@@ -13,7 +13,7 @@ que quer usar:
 O coordenador classifica a tarefa e aciona o especialista quando isso justificar
 outra janela de contexto. Esses são os modelos de entrada definidos para este
 fluxo, não uma recomendação para escolher qualquer modelo. Não é necessário
-iniciar com Opus/Astra ou high para que um especialista use mais raciocínio.
+iniciar com o modelo mais caro ou high para que um especialista use mais raciocínio.
 
 `.claude/settings.json` define Sonnet 5.5 low no Claude Code;
 `.codex/config.toml` define GPT-6.1 Sol low no Codex e limita a um filho aberto
@@ -55,11 +55,14 @@ Para conversas Codex, os mesmos papéis usam esta família:
 | `implementacao` | GPT-6 Luna | medium |
 | `problemas` | GPT-6.1 Sol | high |
 | `revisao` | GPT-6.1 Sol | medium |
-| `decisao` | GPT-6 Astra | low |
+| `decisao` | GPT-6.1 Sol | high |
 
 Os papéis Codex estão em `.codex/agents/*.toml`, com `model`,
 `model_reasoning_effort` e `developer_instructions`. O Sol coordena o trabalho;
-Luna fica no escopo conhecido; high e Astra ficam nas exceções descritas abaixo.
+Luna fica no escopo conhecido; Sol high fica nas exceções descritas abaixo.
+Astra não faz parte da seleção automática e exige pedido explícito do usuário.
+Não medimos consumo por entrega nessa assinatura para justificar adotá-lo como
+escalada padrão; sua presença no catálogo não basta para essa decisão.
 Esta escolha aplica a política econômica do projeto, sem afirmar uma proporção
 de consumo entre modelos ou garantir que low/medium sempre custem menos por
 entrega. Se Luna deixar de avançar, use o critério de escalada em vez de insistir.
@@ -72,8 +75,11 @@ entrega. Se Luna deixar de avançar, use o critério de escalada em vez de insis
    contexto compensar; caso contrário, o coordenador implementa.
 4. Causa desconhecida ou risco de VDP/DMA, VRAM, sprites, XGM2 ou fidelidade:
    `problemas` diretamente. Não gastar tentativas de baixo esforço nesse caso.
-5. Duas tentativas sem reduzir a incerteza: devolver diagnóstico ao coordenador,
-   que pode acionar `decisao` com uma pergunta concreta e as evidências.
+5. Duas tentativas sem reduzir a incerteza: devolver diagnóstico ao coordenador.
+   No Codex, encerrar com evidências e dúvida concreta, sem abrir outro Sol high
+   para repetir a investigação. `decisao` só trata uma questão distinta e
+   delimitada de arquitetura. No Claude, o coordenador pode acionar `decisao`
+   uma vez com as evidências.
 6. Antes de concluir mudança de comportamento: uma revisão independente e
    delimitada, com `revisao` ou `problemas`, conforme o risco. Documentação e
    formatação não precisam desse custo adicional.
@@ -110,7 +116,7 @@ Em conversa Codex (sempre informe também `serviceTier: default`):
 | `implementacao` | `codex` | `gpt-6-luna` | `{"reasoningEffort":"medium","serviceTier":"default"}` |
 | `problemas` | `codex` | `gpt-6.1-sol` | `{"reasoningEffort":"high","serviceTier":"default"}` |
 | `revisao` | `codex` | `gpt-6.1-sol` | `{"reasoningEffort":"medium","serviceTier":"default"}` |
-| `decisao` | `codex` | `gpt-6-astra` | `{"reasoningEffort":"low","serviceTier":"default"}` |
+| `decisao` | `codex` | `gpt-6.1-sol` | `{"reasoningEffort":"high","serviceTier":"default"}` |
 
 No briefing, inclua a leitura de `.claude/agents/<papel>.md`, `AGENTS.md` e
 `MEMORY.md`, mais objetivo, arquivos, evidências, critério de conclusão e limites.

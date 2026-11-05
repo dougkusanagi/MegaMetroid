@@ -10,6 +10,20 @@ O registro detalhado começa em 18/10/2026. A entrada anterior abaixo foi
 reconstituída do commit indicado; o histórico anterior completo permanece no Git
 (`git log`) e as entregas por etapa estão em [docs/PLANO.md](docs/PLANO.md).
 
+## 2026-11-04 21:07:03 −03:00 (America/Sao_Paulo) — Escalada GPT sem Astra automático
+
+### Melhorado
+
+- Papel GPT `decisao` usa Sol high em questão delimitada de arquitetura. Astra
+  exige pedido explícito; não há medição de consumo nessa assinatura que
+  justifique sua inclusão automática como opção econômica.
+- Diagnóstico Sol high sem progresso encerra com evidências e dúvida concreta,
+  sem abrir outro agente para repetir a investigação.
+
+**Validação:** configuração TOML verificada, suíte local `scripts/test.ps1`
+completa e `git diff --check`. Nenhuma chamada adicional a modelos para revisar
+esta alteração de configuração.
+
 ## 2026-11-04 21:03:36 −03:00 (America/Sao_Paulo) — Agentes GPT e entradas por assinatura
 
 ### Adicionado
