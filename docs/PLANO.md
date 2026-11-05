@@ -561,6 +561,10 @@ Blocos destrutíveis e demais limitações da 6.6 continuam pendentes.
 | 7.4 | Save em SRAM | Itens, posição e flags | Salvar, resetar, continuar |
 
 **Atualização visual de 04/11/2026:** WINDOW agora cobre quatro linhas (32 px).
+Correção distinta de oclusão nas portas horizontais: faixas locais de BG_A
+cobrem a Samus nas bordas do túnel, sem priorizar toda a sala. Onze capturas
+VDP do Landing Site validadas; Crateria 2 não tem readback específico desta
+correção, e portas verticais/todas as poses permanecem sem cobertura visual.
 Ícones nas linhas 1–2, tanques na linha 2, energia/contadores na linha 3.
 Glifos pequenos branco/azul e fundo preto, sem o separador verde da prancha.
 Avisos em português aparecem abaixo durante 120 quadros, sem substituir indicadores.

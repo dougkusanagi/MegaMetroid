@@ -40,6 +40,9 @@ da energia e contadores abaixo dos ícones. A seleção usa realce rosa/branco.
 Ocupa 32 px no topo; avisos em português aparecem abaixo por 120 quadros.
 O mini-mapa e a progressão de tanques continuam pendentes.
 
+Nas portas horizontais, as faixas de terreno acima e abaixo da moldura cobrem
+a Samus durante entrada e saída do túnel, mantendo a abertura central visível.
+
 A Samus usa animações originais de movimento, pulo, agachar, bola, mira e virada.
 A virada tem três quadros, tanto no chão quanto no ar, preservando a física do movimento.
 O pulo de parede mantém a sequência de chute e giro até pousar ou interromper

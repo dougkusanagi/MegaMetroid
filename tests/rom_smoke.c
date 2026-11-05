@@ -391,19 +391,22 @@ static void room_video(Game *g)
 {
     static const s16 views[][2] = {{1024, 976}, {0, 1024}, {2048, 1024},
                                   {0, 512}, {2048, 256}, {1664, 1024},
-                                  {0, 1024}, {2048, 1024}, {256, 1024}};
+                                  {0, 1024}, {2048, 1024}, {256, 1024},
+                                  {0, 1024}, {2048, 1024}};
     vu32 *control = (vu32 *)VDP_CTRL_PORT;
     vu16 *data = (vu16 *)VDP_DATA_PORT;
     int scene, i, chunk;
     MmDoorLock saved_locks[MM_ROOM_MAX_DOORS];
     memcpy(saved_locks, g->door_locks, sizeof saved_locks);
-    for (scene = 0; scene < 9; ++scene) {
+    for (scene = 0; scene < 11; ++scene) {
         mm_samus_init(&g->player, views[scene][0] + 108, views[scene][1] + 84);
-        if (scene >= 6 && scene < 8) {
-            int door = scene == 6 ? 1 : 3;
+        if ((scene >= 6 && scene < 8) || scene >= 9) {
+            int west = scene == 6 || scene == 9;
+            int door = west ? 1 : 3;
             g->door_locks[door].state = MM_DOOR_OPEN;
             g->door_locks[door].ticks = 0;
-            mm_samus_init(&g->player, scene == 6 ? -8 : 2276, 1136);
+            mm_samus_init(&g->player, west ? -8 : 2276, 1136);
+            g->player.facing_left = scene < 9 ? west : !west;
         }
         if (scene == 8) {
             mm_enemy_pool_init(&g->enemies);

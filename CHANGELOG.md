@@ -10,6 +10,23 @@ O registro detalhado começa em 18/10/2026. A entrada anterior abaixo foi
 reconstituída do commit indicado; o histórico anterior completo permanece no Git
 (`git log`) e as entregas por etapa estão em [docs/PLANO.md](docs/PLANO.md).
 
+## 2026-11-04 21:31:34 −03:00 (America/Sao_Paulo) — Samus coberta pelas bordas do túnel
+
+### Corrigido
+
+- Terreno nas faixas superior/inferior das portas horizontais passa à frente
+  da Samus ao entrar e sair. A prioridade fica restrita às bordas, sem esconder
+  o sprite inteiro nem alterar colisão, animação ou a abertura central.
+- Também cobre as extremidades do metal nessas faixas, conforme a composição
+  inspecionada. Nenhum tile, cor ou sprite novo; custo de quatro bytes de RAM.
+
+**Validação:** revisão independente sem bloqueantes; suíte local completa;
+smoke BlastEm GDB acelerado/headless e onze capturas VDP do Landing Site,
+incluindo quatro sobreposições nos dois lados/orientações. Animação, travessias
+e estabilidade de heap aprovadas. Profile 4 mantém duas perdas em 300 quadros,
+como a base. Faltam readback específico da Crateria 2, scrolling incremental
+junto às portas e cobertura de todas as poses/portas verticais.
+
 ## 2026-11-04 21:29:55 −03:00 (America/Sao_Paulo) — Fidelidade visual do HUD
 
 ### Melhorado

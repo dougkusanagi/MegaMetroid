@@ -6,7 +6,7 @@ from PIL import Image
 
 ROOT=Path(__file__).resolve().parents[1]
 OUT=ROOT/'tests/out'
-NAMES=['ship','west-lower-door','east-lower-door','west-upper-door','east-upper-door','blocks','west-open-overlap','east-open-overlap','zoomer']
+NAMES=['ship','west-lower-door','east-lower-door','west-upper-door','east-upper-door','blocks','west-open-overlap','east-open-overlap','zoomer','west-exit-overlap','east-exit-overlap']
 
 
 def word(data,address):
@@ -76,6 +76,12 @@ def main():
         if mismatch:
             Image.fromarray(colors[a]).save(OUT/f'blastem-{name}-plane.png')
         assert not mismatch,f'{name}: {mismatch} foreground pixels differ from source map (camera {h[68:70]})'
+        # Only the two-tile collars around the upper/lower frame edges are high.
+        yy,xx=np.indices((224,256));xx+=h[68];yy+=h[69]
+        lips=np.zeros((224,256),dtype=bool)
+        for dx,dy in ((0,608),(0,1120),(2272,352),(2272,1120)):
+            lips |= (xx>=dx)&(xx<dx+32)&(((yy>=dy-8)&(yy<dy+8))|((yy>=dy+56)&(yy<dy+72)))
+        assert np.array_equal(ap,lips),name+': terrain priority escaped door collars'
         expected_bg=bg[(np.arange(224)+h[69])%512,:]+16
         expected_bg[(expected_bg&15)==0]=0
         assert np.array_equal(b,expected_bg),name+': sky scroll/palette mismatch'
@@ -97,21 +103,30 @@ def main():
         for pixels,pri,want_high in [(b,bp,False),(a,ap,False),(s,sp,False),
                                      (b,bp,True),(a,ap,True),(s,sp,True)]:
             take=(pixels!=0)&(pri==want_high);composed[take]=pixels[take]
-        if 6 <= i < 8:
+        if 6 <= i < 8 or i >= 9:
             # Independently compare the open door sprite with its transparent source,
             # and prove the SAT order occludes actual Samus pixels at the metal jamb.
             door = np.array(Image.open(ROOT/'res/images/doors/door_cap.png'))[:,128:160]
-            if i == 7: door = door[:,::-1]
-            left = (0 if i == 6 else 2272) - h[68]
+            west = i in (6,9)
+            if not west: door = door[:,::-1]
+            left = (0 if west else 2272) - h[68]
             top = 1120 - h[69]
             region = s[top:top+64,left:left+32]
             solid = door != 0
             assert np.array_equal(region[solid], (door+16)[solid]), name+': door must lead the SAT'
             samus,_ = sprites(vram,h[70],only_palette=2)
-            overlap = solid & (samus[top:top+64,left:left+32] != 0)
+            # The terrain lip is in front of both Samus and the lowest metal edge;
+            # the central frame retains the existing sprite ordering/animation.
+            overlap = solid & (samus[top:top+64,left:left+32] != 0) & ~lips[top:top+64,left:left+32]
             assert np.count_nonzero(overlap) > 0, name+': fixture does not overlap Samus'
             assert np.array_equal(composed[top:top+64,left:left+32][overlap], (door+16)[overlap]), name+': metal must occlude Samus'
             assert not np.any((region[~solid] >= 16) & (region[~solid] < 32)), name+': opaque fill outside door shape'
+            covered=lips & (samus!=0) & (a!=0)
+            assert np.count_nonzero(covered)>0,name+': fixture must overlap terrain collar'
+            assert np.array_equal(composed[covered],a[covered]),name+': terrain lip must occlude Samus'
+            exposed=(samus!=0)&~lips&(s==samus)
+            assert np.count_nonzero(exposed)>0,name+': Samus must remain partly visible'
+            print(f'PASS VDP {name}: {np.count_nonzero(covered)} Samus pixels behind terrain, {np.count_nonzero(exposed)} visible')
             print(f'PASS VDP {name}: transparent underlay and {np.count_nonzero(overlap)} Samus pixels occluded by metal')
         Image.fromarray(colors[composed]).resize((768,672),Image.Resampling.NEAREST).save(OUT/f'blastem-{name}.png')
         print(f'PASS VDP {name}: foreground, palette and sky at {h[68]},{h[69]}')

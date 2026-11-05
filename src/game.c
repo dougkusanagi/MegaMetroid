@@ -13,6 +13,7 @@
 
 /* Both definitions reserve four tiles, so switching to an impact never reallocates VRAM. */
 static SpriteDefinition beam_definition;
+static const room_def *occlusion_room;
 
 /* Build with -DMM_DEBUG_OVERLAY=1 to draw position, velocity, floor and foot tiles. */
 #ifndef MM_DEBUG_OVERLAY
@@ -163,7 +164,7 @@ static u16 hud_attr(const Game *g, u16 cell)
     return TILE_ATTR_FULL(PAL0, TRUE, FALSE, FALSE, g->hud_tile + cell);
 }
 
-/* Rows 0-1 follow energy, ammo and the selected weapon; only changed cells are written. */
+/* Rows 0-3 follow energy, ammo and the selected weapon; only changed cells are written. */
 static void draw_hud(Game *g, bool all)
 {
     u8 cells[MM_HUD_ICON_ROWS][MM_HUD_COLUMNS];
@@ -413,12 +414,44 @@ bool game_room_fits_vram(const room_def *room)
     return room->tileset_fg->numTile + room->tileset_bg->numTile <= TILE_USER_LENGTH - MM_HUD_TILE_COUNT;
 }
 
+/* The terrain lips immediately above/below a horizontal door are foreground.
+   Leave the opening and all other terrain low priority. The transparent pixels
+   retain the sky; the door sprite still supplies the animated metal frame. */
+static void patch_door_lips(Map *map, u16 *buf, u16 x, u16 y, MapUpdateType type, u16 size)
+{
+    u16 i, d;
+    (void)map;
+    for (d = 0; d < occlusion_room->door_count; ++d) {
+        const RoomDoorDef *door = &occlusion_room->doors[d];
+        u16 dx = (u16)door->position.x >> 3, dy = (u16)door->position.y >> 3;
+        if (door->facing != ROOM_DOOR_FACING_RIGHT && door->facing != ROOM_DOOR_FACING_LEFT) continue;
+        if (type == ROW_UPDATE) {
+            if (y + 1 != dy && y != dy && y != dy + 7 && y != dy + 8) continue;
+            for (i = 0; i < 4; ++i) {
+                u16 offset = dx + i - x;
+                if (offset < size) buf[offset] |= TILE_ATTR_PRIORITY_MASK;
+            }
+        } else if (x >= dx && x < dx + 4) {
+            u16 offset = dy - 1 - y;
+            if (offset < size) buf[offset] |= TILE_ATTR_PRIORITY_MASK;
+            offset = dy - y;
+            if (offset < size) buf[offset] |= TILE_ATTR_PRIORITY_MASK;
+            offset = dy + 7 - y;
+            if (offset < size) buf[offset] |= TILE_ATTR_PRIORITY_MASK;
+            offset = dy + 8 - y;
+            if (offset < size) buf[offset] |= TILE_ATTR_PRIORITY_MASK;
+        }
+    }
+}
+
 static bool load_room_maps(Game *g)
 {
     u16 tile = TILE_USER_INDEX;
     if (!game_room_fits_vram(g->room)) return FALSE;
     VDP_loadTileSet(g->room->tileset_fg, tile, CPU);
     g->foreground = MAP_create(g->room->map_fg, BG_A, TILE_ATTR_FULL(PAL0, FALSE, FALSE, FALSE, tile));
+    occlusion_room = g->room;
+    if (g->foreground) MAP_setDataPatchCallback(g->foreground, patch_door_lips);
     tile += g->room->tileset_fg->numTile;
     VDP_loadTileSet(g->room->tileset_bg, tile, CPU);
     g->background = MAP_create(g->room->map_bg, BG_B, TILE_ATTR_FULL(PAL1, FALSE, FALSE, FALSE, tile));
