@@ -319,6 +319,16 @@ static void render(Game *g)
         SPR_setPosition(sprite, mm_pixel(enemy->x) - g->camera.x - art->draw_x,
                         mm_pixel(enemy->y) - g->camera.y - art->draw_y);
     }
+    for (i = 0; i < MM_DROP_MAX; ++i) {
+        const MmDrop *drop = &g->drops.drops[i];
+        Sprite *sprite = g->drop_sprites[i];
+        if (!sprite) continue;
+        /* Blinks for the last two seconds, like the original's fading drops. */
+        if (!drop->active || (drop->life < 120 && (drop->life & 4))) { SPR_setVisibility(sprite, HIDDEN); continue; }
+        SPR_setVisibility(sprite, AUTO_FAST);
+        SPR_setFrame(sprite, drop->kind);
+        SPR_setPosition(sprite, drop->x - g->camera.x, drop->y - g->camera.y);
+    }
     {
         MmRect body = {x + g->player.hitbox.left, y + g->player.hitbox.top,
                        x + g->player.hitbox.right, y + g->player.hitbox.bottom};
@@ -471,12 +481,24 @@ static void release_enemy_sprites(Game *g)
         if (g->enemy_sprites[i]) SPR_releaseSprite(g->enemy_sprites[i]);
         g->enemy_sprites[i] = NULL;
     }
+    for (i = 0; i < MM_DROP_MAX; ++i) {
+        if (g->drop_sprites[i]) SPR_releaseSprite(g->drop_sprites[i]);
+        g->drop_sprites[i] = NULL;
+    }
 }
 
 static void create_enemy_sprites(Game *g)
 {
     u16 i;
     for (i = 0; i < MM_ENEMY_MAX; ++i) g->enemy_sprites[i] = NULL;
+    for (i = 0; i < MM_DROP_MAX; ++i) {
+        Sprite *drop = SPR_addSprite(&drop_sprite, 0, 0, TILE_ATTR(PAL2, FALSE, FALSE, FALSE));
+        g->drop_sprites[i] = drop;
+        if (!drop) continue;
+        SPR_setDepth(drop, SPR_MAX_DEPTH - 3);
+        SPR_setAutoAnimation(drop, FALSE);
+        SPR_setVisibility(drop, HIDDEN);
+    }
     for (i = 0; i < g->enemies.count && i < MM_ENEMY_MAX; ++i) {
         const SpriteDefinition *definition = enemy_definition(g->enemies.enemies[i].kind);
         Sprite *sprite;

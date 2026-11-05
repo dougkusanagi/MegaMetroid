@@ -21,6 +21,8 @@ SPRITE zoomer_sprite "images/enemies/zoomer.png" 3 3 FAST 8 NONE
 # Skree: original strip remapped to the same PAL1 background palette by
 # scripts/build_skree_sprite.py; frames 0-3 hang, 4-7 dive.
 SPRITE skree_sprite "images/enemies/skree.png" 4 4 FAST 8 NONE
+# Drops (PROVISIONAL, scripts/build_drop_sprite.py): frame 0 energy, 1 missile, PAL2 colors.
+SPRITE drop_sprite "images/objects/drops.png" 1 1 FAST 0 NONE
 # Ripper: original strip remapped to the same PAL1 background palette by
 # scripts/build_ripper_sprite.py; its three frames loop as A, B, A, C.
 SPRITE ripper_sprite "images/enemies/ripper.png" 3 2 FAST 8 NONE

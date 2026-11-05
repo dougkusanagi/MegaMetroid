@@ -51,6 +51,7 @@ typedef struct {
     MmDropPool drops; /* Small energy and missile drops from dead enemies (5.4). */
     MmHealth health; /* Energy, tanks and hit invulnerability (5.3); damage sources come with the enemies (5.2). */
     MmEnemyPool enemies; /* Simulated enemies; art and animation arrive in 5.2. */
+    Sprite *drop_sprites[MM_DROP_MAX]; /* One per drop slot, hidden while the slot is free. */
     Sprite *enemy_sprites[MM_ENEMY_MAX]; /* NULL for enemies without art yet. */
     u8 hud_cells[MM_HUD_ICON_ROWS][MM_HUD_COLUMNS]; /* Status bar tiles on the window, redrawn when they change. */
     MmHudState hud_state; /* The state hud_cells was built from; a frame with the same state skips the rebuild. */

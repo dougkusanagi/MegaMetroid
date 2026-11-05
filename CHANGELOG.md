@@ -10,6 +10,20 @@ O registro detalhado começa em 18/10/2026. A entrada anterior abaixo foi
 reconstituída do commit indicado; o histórico anterior completo permanece no Git
 (`git log`) e as entregas por etapa estão em [docs/PLANO.md](docs/PLANO.md).
 
+## 2026-11-05 04:00:00 −03:00 (America/Sao_Paulo) — 5.4 Drops visíveis (arte provisória)
+
+### Adicionado
+
+- Os drops aparecem na tela como esferas 8×8 (verde = energia, vermelha = míssil) e piscam nos
+  últimos 2 s. A arte é **provisória**: os sprites originais dos drops não estão no repositório.
+  Ela usa cores da PAL2 (`scripts/build_drop_sprite.py`), sem banco de paleta novo; os tons mudam
+  se a PAL2 for tingida (B4).
+
+### Validação
+
+- Build e smoke do BlastEm sem regressão (0 VInts perdidos; 968 tiles de VRAM livres como antes).
+  Não vi os drops em execução: o smoke não mata inimigos.
+
 ## 2026-11-05 03:00:00 −03:00 (America/Sao_Paulo) — 5.4 Drops (lógica, sem arte)
 
 ### Adicionado
