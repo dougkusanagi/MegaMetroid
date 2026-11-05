@@ -33,7 +33,7 @@ O plano de trabalho está em [`docs/PLANO.md`](docs/PLANO.md) — siga as etapas
    - Depois do commit, execute `git push`.
 4. Marque a etapa como concluída em `docs/PLANO.md` e atualize o `README.md` quando a mudança afetar o uso.
    - Atualize também `CHANGELOG.md` a cada entrega, com data e hora em `America/Sao_Paulo` (inclua o fuso), categorias aplicáveis (Adicionado, Melhorado, Corrigido, Removido), efeito da mudança e validação. Mantenha as entradas mais recentes no topo; use o mesmo arquivo, sem criar um por commit.
-5. Depois de cada alteração testada e commitada, rebuilde a ROM padrão, para que `build.bin` reflita o código: `./scripts/build.ps1 -Sgdk D:/apps/sgdk -Java D:/apps/jre/bin/java.exe`. Não use `-SmokeTest` nem `-Define` nesse passo, pois eles geram ROMs de teste em `tests/out/`.
+5. Depois de cada alteração testada e commitada, rebuilde a ROM padrão, para que `out/rom.bin` reflita o código: `./scripts/build.ps1 -Sgdk D:/apps/sgdk -Java D:/apps/jre/bin/java.exe`. Não crie `build.bin` na raiz: `out/` é o destino padrão para jogar. Não use `-SmokeTest` nem `-Define` nesse passo, pois eles geram ROMs de teste em `tests/out/`.
 
 ## Convenções
 

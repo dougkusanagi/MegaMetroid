@@ -30,7 +30,6 @@ try {
         Copy-Item -LiteralPath "$out/rom.bin" -Destination tests/out/smoke.bin
     } elseif ($Define) {
         Copy-Item -LiteralPath "$out/rom.bin" -Destination tests/out/variant.bin
-    } else {
-        Copy-Item -LiteralPath "$out/rom.bin" -Destination build.bin
     }
+    Write-Output "ROM: $out/rom.bin"
 } finally { Pop-Location }

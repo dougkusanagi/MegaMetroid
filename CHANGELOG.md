@@ -10,6 +10,17 @@ O registro detalhado começa em 18/10/2026. A entrada anterior abaixo foi
 reconstituída do commit indicado; o histórico anterior completo permanece no Git
 (`git log`) e as entregas por etapa estão em [docs/PLANO.md](docs/PLANO.md).
 
+## 2026-11-04 21:11:57 −03:00 (America/Sao_Paulo) — ROM padrão somente em out
+
+### Corrigido
+
+- `scripts/build.ps1` mantém a ROM para jogar em `out/rom.bin` e informa o caminho,
+  sem gerar `build.bin` na raiz. README, instruções e guia de build usam a mesma saída.
+- Cópia local antiga da raiz removida após confirmar que era igual à ROM padrão.
+
+**Validação:** suíte local completa e build padrão; ROM com o mesmo SHA256
+`423b528f…` da build anterior, sem mudança no jogo. O visual do HUD segue em etapa separada.
+
 ## 2026-11-04 21:07:03 −03:00 (America/Sao_Paulo) — Escalada GPT sem Astra automático
 
 ### Melhorado

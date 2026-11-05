@@ -28,7 +28,10 @@ A partir da raiz do projeto:
 
 Em `cmd`, equivalente a `make -f %GDK%\makefile.gen`.
 
-Saída esperada: `out/rom.bin` (≈ 256 KB). Os `.o` intermediários ficam em `out/`.
+Saída padrão para jogar: `out/rom.bin`. O wrapper `scripts/build.ps1` também
+mantém essa saída, sem criar `build.bin` na raiz. Os `.o` intermediários ficam em
+`out/`. Builds `-SmokeTest` devem ser seguidas de uma build padrão antes de jogar,
+pois compartilham intermediários em `out/`; a ROM de smoke fica em `tests/out/smoke.bin`.
 
 Para forçar uma build limpa, apague `out/` antes de rodar. O makefile do SGDK não faz isso sozinho.
 
