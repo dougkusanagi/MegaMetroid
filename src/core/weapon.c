@@ -36,7 +36,14 @@ static void advance(MmBeam *b, const MmWorld *w, MmCamera camera)
     /* The original accelerates before moving, including the spawn tick. */
     accelerate(b);
     nx = mm_pixel(b->x + b->vx); ny = mm_pixel(b->y + b->vy);
-    /* Sweep every crossed pixel so the beam cannot skip a thin wall. */
+    /* Sweep every crossed pixel so the beam cannot skip a thin wall. A blocked rectangle stays
+       blocked when it grows, so if the box around the whole path is free, no step on it is blocked
+       and the per-pixel sweep (about 3 scanlines a pixel) is skipped. */
+    if (x != nx || y != ny) {
+        MmRect path = {(x < nx ? x : nx) - MM_BEAM_RADIUS, (y < ny ? y : ny) - MM_BEAM_RADIUS,
+                       (x > nx ? x : nx) + MM_BEAM_RADIUS, (y > ny ? y : ny) + MM_BEAM_RADIUS};
+        if (!mm_rect_blocked(w, path)) { x = nx; y = ny; }
+    }
     while (x != nx || y != ny) {
         if (x != nx) x += x < nx ? 1 : -1;
         if (y != ny) y += y < ny ? 1 : -1;

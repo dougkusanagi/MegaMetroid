@@ -38,14 +38,12 @@ reinício, drops, portas e HUD fiéis, sem quadros perdidos.
 1. **5.3 Dano e vida** — implementado (contato, knockback, morte e reinício); falta o cenário
    de validação no smoke do BlastEm (dano, morte, vx do knockback).
 2. **5.4 Drops** — energia e míssil pequenos, com os contadores do HUD.
-3. **8.4 Desempenho** — eliminar os 2 VInts perdidos no giro atirando do Landing Site
-   (`plans/desempenho-saltos.md`).
 
 Depois: Geemer andando em paredes e teto (B3), a paleta do míssil (B2) e a 3.3.
 
 ## Etapas pendentes
 
-Concluídas: fases 0, 1 e 2; 3.1, 3.2, 3.4; 4.1–4.3; 5.1, 5.2; 6.0–6.5; 7.1.1; 8.1.
+Concluídas: fases 0, 1 e 2; 3.1, 3.2, 3.4; 4.1–4.3; 5.1, 5.2; 6.0–6.5; 7.1.1; 8.1, 8.4 (B1).
 Detalhes em `HISTORICO.md`.
 
 | # | Etapa | Falta | Teste |
@@ -64,7 +62,6 @@ Detalhes em `HISTORICO.md`.
 | 7.4 | Save em SRAM | Itens, posição e flags | Salvar, resetar, continuar |
 | 8.2 | SFX | Porta, dano, inimigo, item, mísseis, nave (tiro, giro e pouso feitos) | Canais PCM não se atropelam |
 | 8.3 | Título / game over | Estados de jogo | Título → jogo → game over |
-| 8.4 | Desempenho | 2 VInts perdidos no giro atirando (Landing Site) | 0 VInts perdidos nos cenários do smoke |
 | 8.5 | Release | ROM final, README com controles | BlastEm e hardware real |
 
 ## Próximos marcos

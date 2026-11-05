@@ -10,6 +10,20 @@ O registro detalhado começa em 18/10/2026. A entrada anterior abaixo foi
 reconstituída do commit indicado; o histórico anterior completo permanece no Git
 (`git log`) e as entregas por etapa estão em [docs/PLANO.md](docs/PLANO.md).
 
+## 2026-11-05 00:30:00 −03:00 (America/Sao_Paulo) — B1: fim dos VInts perdidos no giro atirando
+
+### Corrigido
+
+- O tiro varria cada pixel do trajeto com `mm_rect_blocked` (~3 linhas de varredura por pixel), a cada
+  tick e para até 3 tiros. Agora testa antes uma caixa que cobre o trecho inteiro e só varre pixel a pixel
+  se ela estiver bloqueada. Mesma trajetória e mesmos impactos (teste `beam_flight_matches_pixel_walk`).
+- Landing Site, giro atirando: 2 VInts perdidos e 8 quadros apertados → 0 e 0 (folga mínima 21 linhas).
+  Crateria 2: folga 7 → 43. Os demais cenários não mudaram.
+
+### Validação
+
+- `scripts/test.ps1` e smoke do BlastEm (acelerado, headless) nos 8 cenários. Hardware real não medido.
+
 ## 2026-11-04 23:30:00 −03:00 (America/Sao_Paulo) — 5.3 Dano de contato, knockback e morte
 
 ### Adicionado

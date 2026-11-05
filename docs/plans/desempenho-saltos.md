@@ -78,3 +78,7 @@ Nenhuma até agora.
 
 - As medições vêm do BlastEm NTSC. Em hardware real o custo pode diferir (barramento do Z80 com PCM, por exemplo).
 - Os outros relatos (HUD diferente da referência, movimento do tiro durante a corrida) seguem sem triagem.
+
+## Resultado (2026-11-05)
+
+B1 resolvido: `advance()` em `weapon.c` testa a caixa do trecho inteiro antes da varredura por pixel. Cenário 4: 0 VInts perdidos, folga 21; cenário 7: folga 43. Hipótese do `__mulsi3` em `mm_rect_blocked` refutada (sem efeito). Custos fixos restantes (`mm_move` ~29, Zoomer ~25, sprites, `SPR_update`) não perdem quadro; medir de novo se aparecer slowdown.

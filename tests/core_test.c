@@ -1282,6 +1282,62 @@ static void cannon_trace_matches_formula(void) {
     assert(hits > 10000 && checked > hits);
     puts("PASS cannon trace: same impact points as the divide-per-step formula, walls, slopes and door caps");
 }
+/* A shot in flight moves with one test on the box around its whole path; it must stop on the same
+   pixel as the walk that tests every crossed pixel. */
+static void beam_flight_matches_pixel_walk(void) {
+    static const int kinds[4] = {0, 2, 3, -1};
+    static const int speeds[][2] = {{1040, 0}, {-1040, 0}, {0, 1040}, {0, -1040}, {699, 699}, {-699, 699},
+                                    {699, -699}, {-699, -699}, {1520, 0}, {-1520, -16}, {0, 1536}};
+    MmBody b;
+    MmCamera camera = {0, 0};
+    MmRect cap = {0, 0, 8, 24};
+    int checked = 0, hits = 0, kind, tx, ty, v, bx, by;
+    mm_samus_init(&b, 0, 0);
+    for (kind = 0; kind < 4; ++kind)
+        for (ty = 12; ty < 16; ++ty)
+            for (tx = 30; tx < 36; ++tx) {
+                reset();
+                world.solids = 0; world.solid_count = 0;
+                if (kinds[kind] >= 0) tiles[ty * 64 + tx] = (unsigned char)kinds[kind];
+                else { cap.left = tx * 8; cap.top = ty * 8; cap.right = cap.left + 8; cap.bottom = cap.top + 24;
+                       world.solids = &cap; world.solid_count = 1; }
+                for (v = 0; v < 11; ++v)
+                    for (by = 90; by < 150; by += 3)
+                        for (bx = 232; bx < 272; bx += 3) {
+                            MmWeapon w;
+                            MmBeam ref;
+                            int x, y, nx, ny, hit = 0;
+                            mm_weapon_init(&w);
+                            w.beams[0] = (MmBeam){1, bx * MM_UNIT + 77, by * MM_UNIT + 31, speeds[v][0], speeds[v][1],
+                                                  60, MM_BEAM_DAMAGE, MM_SHOT_BEAM, 0, 0, 0};
+                            ref = w.beams[0];
+                            if (ref.vx) ref.vx += ref.vx > 0 ? MM_BEAM_ACCEL : -MM_BEAM_ACCEL;
+                            if (ref.vy) ref.vy += ref.vy > 0 ? MM_BEAM_ACCEL : -MM_BEAM_ACCEL;
+                            x = mm_pixel(ref.x); y = mm_pixel(ref.y);
+                            nx = mm_pixel(ref.x + ref.vx); ny = mm_pixel(ref.y + ref.vy);
+                            while (x != nx || y != ny) {
+                                MmRect r;
+                                if (x != nx) x += x < nx ? 1 : -1;
+                                if (y != ny) y += y < ny ? 1 : -1;
+                                r = (MmRect){x - MM_BEAM_RADIUS, y - MM_BEAM_RADIUS, x + MM_BEAM_RADIUS, y + MM_BEAM_RADIUS};
+                                if (mm_rect_blocked(&world, r)) { hit = 1; break; }
+                            }
+                            mm_weapon_tick(&w, &world, &b, idle, camera, 20, 24);
+                            if (hit) {
+                                assert(!w.beams[0].active && w.beams[0].impact_ticks == MM_IMPACT_TICKS);
+                                assert(w.beams[0].impact_x == x && w.beams[0].impact_y == y);
+                                ++hits;
+                            } else {
+                                assert(w.beams[0].impact_ticks == 0);
+                                assert(w.beams[0].x == ref.x + ref.vx && w.beams[0].y == ref.y + ref.vy);
+                            }
+                            ++checked;
+                        }
+            }
+    world.solids = 0; world.solid_count = 0;
+    assert(hits > 2000 && checked > hits);
+    puts("PASS beam flight: same stopping pixel as testing every crossed pixel, walls, slopes and door caps");
+}
 /* Reference: Mesen crouch_morph, down_hold, morph_jump and morph_up_hold. */
 static void measured_postures(void) {
     MmBody b;
@@ -1917,7 +1973,7 @@ int main(void) {
     measured_missiles();
     missile_loadout();
     movement(); air_steering(); collisions(); jump_and_ledge(); states(); physics(); variable_jump(); ledge_jump();
-    slopes(); slope_sweep(); tunnels(); wall_climb(); wall_jump_rules(); wall_jump_animation(); moonwalk(); poses(); crouch_poses(); crouch_tap(); double_tap(); ball_poses(); aiming(); beam_from_muzzle(); cannon_trace_matches_formula(); morph_rules(); ball_stands_on_slope();
+    slopes(); slope_sweep(); tunnels(); wall_climb(); wall_jump_rules(); wall_jump_animation(); moonwalk(); poses(); crouch_poses(); crouch_tap(); double_tap(); ball_poses(); aiming(); beam_from_muzzle(); cannon_trace_matches_formula(); beam_flight_matches_pixel_walk(); morph_rules(); ball_stands_on_slope();
     ball_stand_real(); camera_and_input(); doors(); world_map(); door_locks(); hud_cells(); health_rules(); enemy_walker(); enemy_zoomer(); enemy_geemer(); enemy_skree(); enemy_ripper(); real_levels();
     puts("All core regression tests passed."); return 0;
 }
