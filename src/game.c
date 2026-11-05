@@ -342,7 +342,11 @@ static void render(Game *g)
         if (!drop->active || (drop->life < 120 && (drop->life & 4))) { SPR_setVisibility(sprite, HIDDEN); continue; }
         /* The energy orb spins through its four original frames; the missile orb is fixed. */
         frame = drop->kind == MM_DROP_ENERGY ?
-            ((MM_DROP_LIFE_TICKS - drop->life) / 8) % 4 : 4;
+            ((MM_DROP_LIFE_TICKS - drop->life) / 8) % 4 : 0;
+        if (sprite->definition != (drop->kind == MM_DROP_ENERGY ? &drop_energy_sprite : &drop_sprite)) {
+            SPR_setDefinition(sprite, drop->kind == MM_DROP_ENERGY ? &drop_energy_sprite : &drop_sprite);
+            SPR_setPalette(sprite, drop->kind == MM_DROP_ENERGY ? PAL0 : PAL2);
+        }
         SPR_setVisibility(sprite, AUTO_FAST);
         SPR_setFrame(sprite, frame);
         SPR_setPosition(sprite, drop->x - g->camera.x, drop->y - g->camera.y);

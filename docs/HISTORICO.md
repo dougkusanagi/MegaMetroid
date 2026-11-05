@@ -375,7 +375,11 @@ energia até o teto (97 → 99) e míssil até a capacidade (4 → 5) com o spri
 terceiro drop expirando.
 
 **Ajuste de playtest (2026-11-05).** A orbe verde provisória da energia virou a orbe roxa original
-animada descrita acima (o usuário a reconheceu do original; o míssil segue provisório). O HUD já
+animada descrita acima (o usuário a reconheceu do original; o míssil segue provisório). Na
+primeira remapagem a orbe ficou vermelha: o magenta claro fora para o vermelho da PAL2 e o
+magenta médio para o índice transparente dela — a folha da energia agora está na PAL0 (magenta e
+roxo suave), e a paleta só é trocada junto com a definição, para não custar quadros no cenário
+de giro atirando. O HUD já
 mostrava a arma ativa, mas o jogador não achou o botão do míssil: o **X** do controle de 6 botões
 passou a alternar a arma como o **START** (`game_frame`), e o `README.md` passou a dizer isso,
 dizendo também que **A** dispara a arma selecionada. A impressão de que a cor de um inimigo da

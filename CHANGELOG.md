@@ -10,6 +10,19 @@ O registro detalhado começa em 18/10/2026. A entrada anterior abaixo foi
 reconstituída do commit indicado; o histórico anterior completo permanece no Git
 (`git log`) e as entregas por etapa estão em [docs/PLANO.md](docs/PLANO.md).
 
+## 2026-11-05 16:48:00 −03:00 (America/Sao_Paulo) — Orbe de energia roxa (PAL0) no lugar da vermelha
+
+### Corrigido
+
+- A orbe de energia mostrava o brilho vermelho da PAL2 (e o quadriculado da folha anterior): a
+  folha de energia agora está na PAL0, com os magentas originais, e a paleta só muda quando a
+  definição do drop muda (sem custo por quadro).
+
+### Validação
+
+- `scripts/test.ps1` completo e smoke do BlastEm (`SMOKE PASS`, acelerado, sem áudio, headless,
+  perfil 4 com 0 VInts perdidos). O drop de míssil segue provisório (vermelho).
+
 ## 2026-11-05 16:11:00 −03:00 (America/Sao_Paulo) — Drops de energia originais e míssil no X
 
 ### Adicionado

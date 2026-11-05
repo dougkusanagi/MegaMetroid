@@ -56,6 +56,17 @@ assert np.array_equal((full // 32)[visible], (converted // 32)[visible]), 'Chang
 assert np.array_equal(np.array(missile) != 0, visible), 'Changed missile transparency'
 print('PASS missile sheet keeps PAL3 ship tones and unchanged hardware colors')
 
+# The energy drop is the original purple orb in the room PAL0 (magenta index 4 and muted
+# purple index 8), animated through its four frames; the missile orb (PAL2) is still provisional.
+drops_energy = Image.open(root / 'res/images/objects/drops_energy.png')
+drops = Image.open(root / 'res/images/objects/drops.png')
+assert drops_energy.size == (32, 8) and drops.size == (8, 8)
+assert drops_energy.getpalette()[0:48] == Image.open(root / 'res/images/maps/landing_site/foreground.png').getpalette()[0:48]
+for frame in range(4):
+    used = set(np.unique(np.array(drops_energy.crop((frame * 8, 0, frame * 8 + 8, 8))))) - {0}
+    assert used <= {4, 8}, f'Energy drop frame {frame} left the purple palette: {sorted(used)}'
+print('PASS energy drop stays purple in PAL0')
+
 # A door must not paint black outside its shape or leave a closed cap in the map.
 from sys import path as module_path
 module_path.insert(0, str(root/'scripts'))
