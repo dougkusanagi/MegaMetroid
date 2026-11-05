@@ -54,10 +54,10 @@ Update: simple tile collision system implemented.
 
 Controles da build atual (Mega Drive): direcional para andar, **B segurado**
 para correr, **C** para pular (soltar C na subida para a subida na hora, como no Super Metroid; não dá para pular depois de sair de uma borda), **C** durante o pulo
-giratório, encostado numa parede e com o direcional apontando para longe dela, faz pulo de parede, e **A** para atirar. **START** (ou **X**) troca a arma: Power Beam,
+giratório, encostado numa parede e com o direcional apontando para longe dela, faz pulo de parede, e **A** para atirar. **MODE** (o SELECT do SNES; ou **X**) troca a arma: Power Beam,
 míssil e super míssil (os compartimentos vazios são pulados). No teclado
 do Fusion configurado nesta máquina: A = tecla A, B = tecla S, C = tecla D.
-No controle de 6 botões, a mira de L/R do SNES fica em Z (baixo) e Y (cima); X alterna a arma como o START e fica livre para
+No controle de 6 botões, a mira de L/R do SNES fica em Z (baixo) e Y (cima); X alterna a arma como o MODE e fica livre para
 cancelar item. Depois de selecionar o míssil, **A** o dispara; o ícone destacado na barra mostra a arma ativa. Nas portas conectadas, aproxime-se e use **A** para atirar na porta; atravesse
 quando a animação terminar. O jogo mostra esse comando ao chegar perto. Segure Y para mirar na diagonal acima ou Z para a diagonal abaixo, inclusive
 parado e agachado; soltar retorna à mira do direcional. Y+Z juntos deixam a mira no direcional. Para jogar com um controle Xbox no layout do SNES, veja o
@@ -95,7 +95,7 @@ O Power Beam não consome munição, não carrega e mantém até três projétei
 Sua velocidade base é 4 px/tick na horizontal/vertical e cerca de 2,668 por eixo
 diagonal, acelerando 1/16 por eixo ativo a cada tick, como nas tabelas originais.
 Há colisão com paredes e rampas, descarte ao sair da tela e o som de tiro original.
-Mísseis e super mísseis entram como armas selecionáveis por START, com a arte original de 16×16
+Mísseis e super mísseis entram como armas selecionáveis pelo MODE (SELECT do SNES), com a arte original de 16×16
 nas oito direções e paleta própria (a PAL3 do beam é trocada enquanto a arma está ativa). A ROM
 começa com 5 mísseis e nenhum super, provisoriamente até os itens coletáveis. Um míssil abre porta azul, cinco (ou um super) abrem vermelha, e verde só aceita super.
 A troca de arma espera o projétil e o impacto saírem da tela para não misturar as paletas, e o

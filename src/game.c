@@ -881,7 +881,8 @@ void game_frame(Game *g)
     input.jump_held = (buttons & BUTTON_C) != 0;
     input.down_pressed = (pressed & BUTTON_DOWN) != 0;
     input.up_pressed = (pressed & BUTTON_UP) != 0;
-    /* START (Super Metroid's SELECT) cycles the weapon; X is an alternative on six-button pads. */
-    input.weapon_pressed = (pressed & (BUTTON_START | BUTTON_X)) != 0;
+    /* MODE (Super Metroid's SELECT) cycles the weapon, as in the original;
+       START is reserved for the Samus status screen. X is an alternative. */
+    input.weapon_pressed = (pressed & (BUTTON_MODE | BUTTON_X)) != 0;
     game_update(g, input);
 }

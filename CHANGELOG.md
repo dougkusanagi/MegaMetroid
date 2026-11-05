@@ -10,6 +10,24 @@ O registro detalhado começa em 18/10/2026. A entrada anterior abaixo foi
 reconstituída do commit indicado; o histórico anterior completo permanece no Git
 (`git log`) e as entregas por etapa estão em [docs/PLANO.md](docs/PLANO.md).
 
+## 2026-11-05 18:23:00 −03:00 (America/Sao_Paulo) — Troca de arma no MODE (SELECT do SNES)
+
+### Corrigido
+
+- Trocar de arma era no START; no original é no SELECT. Agora o MODE do controle
+  de 6 botões (equivalente ao Select) troca a arma, como no Super Metroid; o
+  START fica livre para a tela de status da Samus (etapa 8.3). O botão X
+  continua como alternativa. Nenhum botão sobra/falta: o controle de 6 botões
+  tem 10 inputs (direcional + A/B/C/X/Y/Z/Mode/Start).
+
+### Validação
+
+- `scripts/test.ps1` completo e smoke do BlastEm (`SMOKE PASS`, acelerado, sem
+  áudio, headless). ROM padrão rebuildada em `out/rom.bin` (1.572.864 bytes,
+  checksum 49E7). Configuração do Xbox no BlastEm nativo (`default.cfg`):
+  X=atirar, A=pular, B=correr, Y=mirar cima, LB=diagonal baixo, RB=diagonal cima,
+  Menu=Start, View=Mode (Select).
+
 ## 2026-11-05 18:12:00 −03:00 (America/Sao_Paulo) — Moonwalk no salto (3.3.7)
 
 ### Adicionado
