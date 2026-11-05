@@ -1,5 +1,9 @@
 # Plano — Echo Below
 
+> **Projeto paralelo, em espera.** Não substitui nem pausa o porte MegaMetroid.
+> Só trabalhe neste plano com pedido explícito do usuário. Pedidos para
+> "continuar o desenvolvimento" seguem `docs/PLANO.md`.
+
 Objetivo: um homebrew original e curto, com o motor do MegaMetroid, a arte do
 Warped Caves convertida para o Mega Drive e sons próprios. O design está em
 [`docs/echo-below/design.md`](../echo-below/design.md).

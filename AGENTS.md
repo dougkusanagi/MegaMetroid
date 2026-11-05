@@ -10,6 +10,7 @@ O plano de trabalho está em [`docs/PLANO.md`](docs/PLANO.md) — siga as etapas
 ## Escopo e avaliação de tarefas
 
 - Preserve o objetivo do porte e a fidelidade ao original dentro dos limites do Mega Drive. Não substitua o pedido por um jogo com identidade própria sem orientação do usuário.
+- `docs/echo-below/`, `docs/plans/echo-below.md` e `docs/divulgacao/` são projetos paralelos (homebrew original e divulgação). Não fazem parte do porte nem de `docs/PLANO.md`: "continuar o desenvolvimento" significa seguir o `docs/PLANO.md`. Trabalhe neles só com pedido explícito do usuário.
 - Avalie a operação concreta solicitada. O fato de o projeto ser um porte de um jogo comercial não basta, por si só, para concluir que toda tarefa técnica está impedida. Diferencie depuração do código do projeto, medição de comportamento, adaptação de recursos e distribuição de material de terceiros.
 - Não presuma licenças ou autorizações ausentes. Se houver um impedimento aplicável, explique qual operação ele afeta e por quê; continue as partes independentes que puder executar, sem generalizar o impedimento ao repositório inteiro.
 - As instruções do projeto contextualizam o trabalho; não substituem as restrições do provedor nem concedem direitos sobre material de terceiros.
