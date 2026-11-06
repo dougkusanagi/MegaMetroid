@@ -28,6 +28,7 @@ try {
     New-Item -ItemType Directory -Force tests/out | Out-Null
     if ($SmokeTest) {
         Copy-Item -LiteralPath "$out/rom.bin" -Destination tests/out/smoke.bin
+        Copy-Item -LiteralPath "$out/symbol.txt" -Destination tests/out/symbol.txt
     } elseif ($Define) {
         Copy-Item -LiteralPath "$out/rom.bin" -Destination tests/out/variant.bin
     }

@@ -98,7 +98,7 @@ def main():
     parser.add_argument('--timeout', type=float, default=120)
     parser.add_argument('--gdb', default='D:/apps/sgdk/bin/gdb.exe')
     parser.add_argument('--rom', default='tests/out/smoke.bin', help='ROM path relative to the project root')
-    parser.add_argument('--symbols', default='out/symbol.txt', help='SGDK symbol table relative to the project root')
+    parser.add_argument('--symbols', default=None, help='SGDK symbol table relative to the project root (SmokeTest copy by default)')
     parser.add_argument('--capture-scenes', action='store_true', help='Read back VDP video memory through GDB')
     visibility = parser.add_mutually_exclusive_group()
     visibility.add_argument('--hidden', dest='hidden', action='store_true', default=True, help='Headless execution (default; VDP rendering remains enabled for readback)')
@@ -106,6 +106,9 @@ def main():
     parser.add_argument('--realtime', action='store_true', help='Run at 60 fps with audio instead of unthrottled')
     args = parser.parse_args()
     root = Path(__file__).resolve().parents[1]
+    if args.symbols is None:
+        smoke_symbols = root / 'tests/out/symbol.txt'
+        args.symbols = str(smoke_symbols) if smoke_symbols.is_file() else 'out/symbol.txt'
     args.blastem = str(Path(args.blastem).resolve())
     symbols = {}
     for line in (root / args.symbols).read_text().splitlines():

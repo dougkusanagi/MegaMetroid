@@ -10,6 +10,20 @@ O registro detalhado começa em 18/10/2026. A entrada anterior abaixo foi
 reconstituída do commit indicado; o histórico anterior completo permanece no Git
 (`git log`) e as entregas por etapa estão em [docs/PLANO.md](docs/PLANO.md).
 
+## 2026-11-06 19:51:58 −03:00 (America/Sao_Paulo) — Smoke usa símbolos da própria build
+
+### Corrigido
+
+- A tabela de símbolos da build `-SmokeTest` agora é preservada em
+  `tests/out/symbol.txt` e usada por padrão, mesmo depois de rebuilds da ROM
+  padrão. Sem isso, o GDB podia ler endereços de outro binário e o smoke exibir
+  sprites/paletas como se faltasse memória.
+
+### Validação
+
+- Smoke do BlastEm (`SMOKE PASS`, acelerado, sem áudio, headless) após rebuild
+  padrão da ROM.
+
 ## 2026-11-06 19:45:17 −03:00 (America/Sao_Paulo) — Molduras da porta cobrem a Samus por completo
 
 ### Corrigido

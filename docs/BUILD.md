@@ -73,8 +73,11 @@ Não usa cliques, teclado ou captura da área de trabalho. Se a porta já estive
 ocupada, recusa executar para não interferir em outra sessão. Ajuste os caminhos
 com `--blastem` e `--gdb`; `--timeout` limita a espera (padrão: 120 segundos; o
 smoke completo leva cerca de 50).
-O `out/symbol.txt` deve pertencer à mesma build `-SmokeTest`. Para uma ROM em
-outro diretório, passe os caminhos correspondentes com `--rom` e `--symbols`.
+A build `-SmokeTest` copia `symbol.txt` para `tests/out/` junto com a ROM, então
+uma build padrão posterior não faz `smoke_test.py` ler símbolos de outro binário
+(antes isso podia produzir breakpoints e leitura de memória errados, com sprites
+e paletas aparentemente corrompidos). Para uma ROM em outro diretório, passe os
+caminhos correspondentes com `--rom` e `--symbols`.
 A build `-SmokeTest` valida o cache original e gera as expectativas de animação
 em `tests/out/sm_wall.h`, sem iniciar o Mesen. O smoke compara os 80 quadros
 arquivados do wall jump com a tira e o quadro do sprite após cada VBlank.
