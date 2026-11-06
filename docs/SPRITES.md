@@ -22,23 +22,22 @@ reservar as mesmas cores PAL0. Mini-mapa e progressão de tanques ficam pendente
 A captura original versionada confirma o pequeno ENERGY na linha inferior;
 não se alegam medidas precisas da imagem ampliada nem fidelidade completa.
 
-## Oclusão do túnel: correção distinta de 04/11/2026
+## ## Oclusão da porta: correção atualizada de 06/11/2026
 
-O sprite completo da porta já cobria a Samus, mas pixels do terreno junto à
-base da moldura ainda eram de baixa prioridade. O readback reproduziu o vazamento
-de pixels da Samus na folhagem, mesmo com a ordem correta da SAT.
-`patch_door_lips` altera somente atributos de BG_A nas faixas de 32×16 px em torno
-das bordas superior/inferior de portas horizontais (Y−8..Y+8 e Y+56..Y+72).
-Pixels transparentes continuam transparentes; centro de 48 px, demais tiles e
-prioridades dos sprites permanecem intactos. O terreno cobre também a borda do
-metal nessas faixas; a animação central da tampa continua fornecida pelo sprite.
+A oclusão antiga cobria só os batentes superior e inferior (32×16 px, de
+Y−8..Y+8 e Y+56..Y+72); os lados/centro da moldura ainda deixavam pixels da
+Samus visíveis. `patch_door_lips` agora altera os atributos de BG_A em toda a
+área de 32×64 px da porta, mais uma fileira de tiles acima e abaixo. Pixels
+transparentes continuam transparentes; a abertura mostra o fundo e a animação
+da tampa continua fornecida pelo sprite. O terreno/arte da moldura cobre a
+Samus integralmente na faixa da porta.
 
-Sem tiles, sprites ou cores novos. Ponteiro da sala: +4 bytes RAM. O callback do
-MAP percorre as portas e apenas os quatro tiles de cada faixa que cruza a atualização.
-Smoke confirma animação/travessias e onze vistas VDP, quatro com sobreposição
-nas duas orientações/lados. Nelas, 88–111 pixels da Samus ficam atrás do terreno;
-parte dela permanece visível. A máscara de prioridade é conferida também fora
-das molduras, para impedir que o cenário inteiro ganhe prioridade.
+Sem tiles, sprites ou cores novos. O callback do MAP percorre as portas e
+apenas os quatro tiles de cada fileira que cruza a atualização. `scripts/test.ps1`
+passa e a verificação VDP confere a prioridade em toda a moldura. As cenas de
+sobreposição (6–10) passam a usar a porta leste inferior (sem destino) porque
+as duas portas oeste agora estão ligadas a salas construídas; a ida e volta
+pelas portas oeste é conferida no smoke de travessia.
 Isso não mede todas as poses, salas futuras ou portas verticais. A revisão
 também registra a ausência de readback específico da Crateria 2 e de uma
 sequência incremental de scrolling junto às portas; as travessias passam,

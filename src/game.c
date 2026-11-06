@@ -470,9 +470,10 @@ bool game_room_fits_vram(const room_def *room)
     return room->tileset_fg->numTile + room->tileset_bg->numTile <= TILE_USER_LENGTH - MM_HUD_TILE_COUNT;
 }
 
-/* The terrain lips immediately above/below a horizontal door are foreground.
-   Leave the opening and all other terrain low priority. The transparent pixels
-   retain the sky; the door sprite still supplies the animated metal frame. */
+/* The full 32x64 frame of a horizontal door is foreground, including the
+   top/bottom lips one tile beyond it. This keeps every non-transparent part
+   of the door in front of Samus; transparent pixels retain the sky, and the
+   door sprite still supplies the animated metal frame. */
 static void patch_door_lips(Map *map, u16 *buf, u16 x, u16 y, MapUpdateType type, u16 size)
 {
     u16 i, d;
@@ -482,20 +483,17 @@ static void patch_door_lips(Map *map, u16 *buf, u16 x, u16 y, MapUpdateType type
         u16 dx = (u16)door->position.x >> 3, dy = (u16)door->position.y >> 3;
         if (door->facing != ROOM_DOOR_FACING_RIGHT && door->facing != ROOM_DOOR_FACING_LEFT) continue;
         if (type == ROW_UPDATE) {
-            if (y + 1 != dy && y != dy && y != dy + 7 && y != dy + 8) continue;
+            if ((dy && y < dy - 1) || y > dy + 8) continue;
             for (i = 0; i < 4; ++i) {
                 u16 offset = dx + i - x;
                 if (offset < size) buf[offset] |= TILE_ATTR_PRIORITY_MASK;
             }
         } else if (x >= dx && x < dx + 4) {
-            u16 offset = dy - 1 - y;
-            if (offset < size) buf[offset] |= TILE_ATTR_PRIORITY_MASK;
-            offset = dy - y;
-            if (offset < size) buf[offset] |= TILE_ATTR_PRIORITY_MASK;
-            offset = dy + 7 - y;
-            if (offset < size) buf[offset] |= TILE_ATTR_PRIORITY_MASK;
-            offset = dy + 8 - y;
-            if (offset < size) buf[offset] |= TILE_ATTR_PRIORITY_MASK;
+            u16 first = dy ? dy - 1 : dy;
+            for (i = first; i <= dy + 8; ++i) {
+                u16 offset = i - y;
+                if (offset < size) buf[offset] |= TILE_ATTR_PRIORITY_MASK;
+            }
         }
     }
 }

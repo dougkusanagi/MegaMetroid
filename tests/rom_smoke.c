@@ -499,12 +499,11 @@ static void room_video(Game *g)
     for (scene = 0; scene < 11; ++scene) {
         mm_samus_init(&g->player, views[scene][0] + 108, views[scene][1] + 84);
         if ((scene >= 6 && scene < 8) || scene >= 9) {
-            int west = scene == 6 || scene == 9;
-            int door = west ? 1 : 3;
+            int door = 3;
             g->door_locks[door].state = MM_DOOR_OPEN;
             g->door_locks[door].ticks = 0;
-            mm_samus_init(&g->player, west ? -8 : 2276, 1136);
-            g->player.facing_left = scene < 9 ? west : !west;
+            mm_samus_init(&g->player, 2276, 1136);
+            g->player.facing_left = scene >= 9;
         }
         if (scene == 8) {
             mm_enemy_pool_init(&g->enemies);

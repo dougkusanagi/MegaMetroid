@@ -10,6 +10,22 @@ O registro detalhado começa em 18/10/2026. A entrada anterior abaixo foi
 reconstituída do commit indicado; o histórico anterior completo permanece no Git
 (`git log`) e as entregas por etapa estão em [docs/PLANO.md](docs/PLANO.md).
 
+## 2026-11-06 19:45:17 −03:00 (America/Sao_Paulo) — Molduras da porta cobrem a Samus por completo
+
+### Corrigido
+
+- A oclusão da porta por plano cobria apenas os batentes superior e inferior;
+  partes laterais/centrais da moldura ainda deixavam pixels da Samus visíveis.
+  Agora toda a área de 32×64 px da moldura, mais uma fileira acima e abaixo,
+  fica em alta prioridade, então a moldura cobre a Samus integralmente na
+  travessia.
+
+### Validação
+
+- `scripts/test.ps1` completo no host e smoke do BlastEm (`SMOKE PASS`,
+  acelerado, sem áudio, headless); verificação VDP confere a prioridade em toda
+  a moldura e 400+ pixels da Samus ocluídos na porta.
+
 ## 2026-11-06 19:12:38 −03:00 (America/Sao_Paulo) — Sala a oeste inferior do Landing Site (92FD)
 
 ### Adicionado
