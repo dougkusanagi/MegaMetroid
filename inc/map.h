@@ -4,10 +4,12 @@
 #include "map_crateria_1.h"
 #include "map_crateria_2.h"
 #include "map_crateria_3.h"
+#include "map_crateria_4.h"
 
 #define ROOM_CRATERIA_1 0
 #define ROOM_CRATERIA_2 1
 #define ROOM_CRATERIA_3 2
-#define ROOM_COUNT 3
+#define ROOM_CRATERIA_4 3
+#define ROOM_COUNT 4
 
 const room_def *room_get(u16 index);

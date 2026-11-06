@@ -3,6 +3,6 @@
 
 const room_def *room_get(u16 index)
 {
-    static const room_def * const rooms[ROOM_COUNT] = {&room_crateria_1, &room_crateria_2, &room_crateria_3};
+    static const room_def * const rooms[ROOM_COUNT] = {&room_crateria_1, &room_crateria_2, &room_crateria_3, &room_crateria_4};
     return index < ROOM_COUNT ? rooms[index] : NULL;
 }

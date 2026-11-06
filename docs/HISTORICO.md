@@ -343,6 +343,19 @@ do BlastEm passou depois que `tests/rom_smoke.c` passou a criar o Zoomer de
 teste explicitamente (helper `ensure_zoomer`) em vez de depender do spawn da
 sala.
 
+**Correção — porta oeste inferior (92FD)** ✅ (2026-11-06). Ao testar no jogo, a
+porta acessível pelo chão do Landing Site (a oeste inferior, link 0, nó
+`92FD`) ainda dizia "sala em construção": a sala criada antes era a `92B3`
+(porta oeste superior). A `92FD` foi recortada do mesmo mapa de Crateria
+(1280×1296 px em `[18, 4]`, cinco telas; a arte original teria mais de 1000
+tiles únicos e não cabe na VRAM da sala, então o terreno foi desenhado como
+silhueta com 11 tiles a partir da colisão derivada da imagem) e adicionada como
+`Crateria 4` (`rooms/crateria_4.tmj`), com as sete portas do grafo (só a leste
+para o Landing Site está ligada; as demais já ficam desenhadas, sem destino) e
+quatro Skrees no poço vertical. A porta oeste inferior do Landing Site agora
+liga para `(1216, 112)` e volta para `(24, 1136)`; `scripts/test.ps1` e o smoke
+do BlastEm passaram, com ida e volta nas duas portas oeste.
+
 **Ambiente SGDK (2026-11-05).** O Cygwin do SGDK parou de iniciar nesta máquina
 (`VirtualAlloc ... Win32 error 487`, `Couldn't reserve space for cygwin's heap`,
 também em `make --version` fora do projeto): o MSYS do SGDK quer reservar o heap

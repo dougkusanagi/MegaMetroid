@@ -10,6 +10,22 @@ O registro detalhado começa em 18/10/2026. A entrada anterior abaixo foi
 reconstituída do commit indicado; o histórico anterior completo permanece no Git
 (`git log`) e as entregas por etapa estão em [docs/PLANO.md](docs/PLANO.md).
 
+## 2026-11-06 19:12:38 −03:00 (America/Sao_Paulo) — Sala a oeste inferior do Landing Site (92FD)
+
+### Adicionado
+
+- Nova sala `Crateria 4` a oeste inferior do Landing Site, recortada do mapa de
+  Crateria salvo pelo usuário, com o poço vertical, as sete portas do grafo (a
+  leste para o Landing Site ligada; as demais desenhadas, sem destino) e quatro
+  Skrees. A porta oeste inferior acessível pelo chão não diz mais "sala em
+  construção".
+
+### Validação
+
+- `scripts/test.ps1` completo no host e smoke do BlastEm (`SMOKE PASS`,
+  acelerado, sem áudio, headless), incluindo ida e volta pela porta oeste
+  inferior.
+
 ## 2026-11-05 22:08:32 −03:00 (America/Sao_Paulo) — Sala a oeste do Landing Site (92B3)
 
 ### Adicionado

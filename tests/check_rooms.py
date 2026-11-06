@@ -16,13 +16,15 @@ import export_rooms as ex  # noqa: E402
 assert ex.main(['--check']) == 0  # also run by hand: python scripts/export_rooms.py --check
 
 rooms = ex.load_all()
-assert [r['id'] for r in rooms] == ['crateria_1', 'crateria_2', 'crateria_3']
+assert [r['id'] for r in rooms] == ['crateria_1', 'crateria_2', 'crateria_3', 'crateria_4']
 assert (rooms[0]['cols'], rooms[0]['rows'], rooms[1]['cols'], rooms[1]['rows'],
-        rooms[2]['cols'], rooms[2]['rows']) == (288, 156, 160, 160, 160, 32)
-assert rooms[0]['scroll'] == 512 and rooms[1]['scroll'] == 0 and rooms[2]['scroll'] == 0
+        rooms[2]['cols'], rooms[2]['rows'], rooms[3]['cols'], rooms[3]['rows']) == (288, 156, 160, 160, 160, 32, 160, 162)
+assert rooms[0]['scroll'] == 512 and rooms[1]['scroll'] == 0 and rooms[2]['scroll'] == 0 and rooms[3]['scroll'] == 0
 assert len(rooms[0]['doors']) == 4 and len(rooms[0]['zones']) == 2
 assert rooms[2]['node'] == '92B3' and len(rooms[2]['doors']) == 2 and len(rooms[2]['zones']) == 1
 assert [e[0] for e in rooms[2]['enemies']] == [2, 2, 2, 2]
+assert rooms[3]['node'] == '92FD' and len(rooms[3]['doors']) == 7 and len(rooms[3]['zones']) == 1
+assert [e[0] for e in rooms[3]['enemies']] == [2, 2, 2, 2]
 assert [e[1] for e in rooms[0]['enemies']] == [128, 440]
 
 
@@ -85,11 +87,14 @@ try:
     # and Landing Site west door (link 2) <-> the 92B3 corridor.
     c1 = base['src/map_crateria_1.c']
     assert '{{0, 608}, ROOM_CRATERIA_3, {1216, 112}, ROOM_DOOR_BLUE, ROOM_DOOR_FACING_RIGHT, 2}' in c1
+    assert '{{0, 1120}, ROOM_CRATERIA_4, {1216, 112}, ROOM_DOOR_BLUE, ROOM_DOOR_FACING_RIGHT, 0}' in c1
     assert '{{2272, 352}, ROOM_CRATERIA_2, {24, 112}, ROOM_DOOR_BLUE, ROOM_DOOR_FACING_LEFT, 3}' in c1
-    assert c1.count('ROOM_NO_CONNECTION') == 2  # the two doors whose far rooms are not built
+    assert c1.count('ROOM_NO_CONNECTION') == 1  # only the lower east door's room is not built
     assert '{{0, 96}, ROOM_CRATERIA_1, {2240, 368}, ROOM_DOOR_BLUE, ROOM_DOOR_FACING_RIGHT, 0}' in base['src/map_crateria_2.c']
     assert '{{1248, 96}, ROOM_CRATERIA_1, {24, 624}, ROOM_DOOR_BLUE, ROOM_DOOR_FACING_LEFT, 0}' in base['src/map_crateria_3.c']
     assert base['src/map_crateria_3.c'].count('ROOM_NO_CONNECTION') == 1  # west door to 965B is not built
+    assert '{{1248, 96}, ROOM_CRATERIA_1, {24, 1136}, ROOM_DOOR_BLUE, ROOM_DOOR_FACING_LEFT, 1}' in base['src/map_crateria_4.c']
+    assert base['src/map_crateria_4.c'].count('ROOM_NO_CONNECTION') == 6  # the other 92FD doors are not built
 
     # 4. A door without a link, an enemy and a camera zone appear in the tables.
     doc = load(tmp, 'crateria_2')

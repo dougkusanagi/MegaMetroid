@@ -319,7 +319,8 @@ static void world_map(void) {
     assert(mm_world_node_of_room(world_nodes, WORLD_NODE_COUNT, 0) == WORLD_NODE_91F8);
     assert(mm_world_node_of_room(world_nodes, WORLD_NODE_COUNT, 1) == WORLD_NODE_93AA);
     assert(mm_world_node_of_room(world_nodes, WORLD_NODE_COUNT, 2) == WORLD_NODE_92B3);
-    assert(mm_world_node_of_room(world_nodes, WORLD_NODE_COUNT, 3) == MM_NO_NODE && mm_world_node_of_room(world_nodes, WORLD_NODE_COUNT, -1) == MM_NO_NODE);
+    assert(mm_world_node_of_room(world_nodes, WORLD_NODE_COUNT, 3) == WORLD_NODE_92FD);
+    assert(mm_world_node_of_room(world_nodes, WORLD_NODE_COUNT, 4) == MM_NO_NODE && mm_world_node_of_room(world_nodes, WORLD_NODE_COUNT, -1) == MM_NO_NODE);
     /* Exits to other regions have a destination region and no room. */
     assert(world_nodes[WORLD_NODE_962A].doors[1].to == MM_NO_NODE && world_nodes[WORLD_NODE_962A].doors[1].leaves_area == MM_AREA_BRINSTAR);
     {   /* A graph whose door is not answered, or answered on the same wall, is refused. */

@@ -428,6 +428,29 @@ static int room_transitions(Game *g)
         mm_smoke_memory[4 + trip] = MEM_getFree();
         if (MEM_getFree() != free_start) failed |= 64;
     }
+    /* Lower west door: the route to the 92FD shaft. Shut, its cap stops Samus;
+       a beam opens it and she crosses to the paired door's spawn. */
+    mm_samus_init(&g->player, 40, 1136);
+    idle(g, 40);
+    cap = mm_door_cap(0, 1120, ROOM_DOOR_FACING_RIGHT);
+    for (i = 0; i < 90; ++i) { game_update(g, (MmInput){.axis = -1}); SYS_doVBlankProcess(); }
+    if (g->door_locks[1].state != MM_DOOR_CLOSED ||
+        mm_pixel(g->player.x) + g->player.hitbox.left != cap.right) failed |= 2;
+    if (shoot_door(g, 1) < 0) failed |= 2;
+    idle(g, MM_DOOR_OPEN_TICKS);
+    if (g->door_locks[1].state != MM_DOOR_OPEN) failed |= 2;
+    if (walk_through(g, -1) < 0 || g->room != room_get(ROOM_CRATERIA_4)) failed |= 2;
+    px = mm_pixel(g->player.x); py = mm_pixel(g->player.y);
+    if (!room_loaded(g) || px != 1216 || py != 112 || g->door_locks[1].state != MM_DOOR_OPEN ||
+        g->world.solid_count != 6 || !door_art(g, 1) ||
+        g->enemies.count != 4) failed |= 2;
+    for (i = 0; i < g->enemies.count; ++i)
+        if (g->enemies.enemies[i].kind != MM_ENEMY_SKREE) failed |= 2;
+    /* Back through the lower route to the Landing Site.
+       The final walk below starts from the spawn, so return to Crateria 1 first. */
+    if (walk_through(g, 1) < 0 || g->room != room_get(ROOM_CRATERIA_1)) failed |= 2;
+    px = mm_pixel(g->player.x); py = mm_pixel(g->player.y);
+    if (px != 24 || py != 1136) failed |= 2;
     /* The walk the player makes from the spawn: along the floor to the lower east door (3), which
        links to a room that is not built. Shot open, it lets Samus to the far edge, and nothing
        changes except the prompt. */
@@ -812,8 +835,12 @@ static int missile_weapon(Game *g)
     int failed = 0, i;
     MmBeam *shot;
     Sprite *sprite;
-    /* The southwest door is still shut after the transitions test, so it has a live lock to hit.
+    /* Reset the lower west door shut for this check: the route test left it open.
        Stand clear of the cap: firing flush against it would spawn the missile inside the door. */
+    g->door_locks[1].state = MM_DOOR_CLOSED;
+    g->door_locks[1].ticks = 0;
+    if (!game_change_room(g, ROOM_CRATERIA_1, room_crateria_1.player_initial_pos, -1)) return 1;
+    SYS_doVBlankProcess();
     mm_weapon_init(&g->weapon);
     mm_samus_init(&g->player, 80, 1136);
     idle(g, 30);
