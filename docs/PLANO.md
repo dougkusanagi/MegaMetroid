@@ -30,8 +30,9 @@ cores, ROM de até 4 MB sem mapper). Na prática:
 
 ## Marco atual: A — Crateria inicial completa
 
-Landing Site e Crateria 2 jogáveis como no original: inimigos que causam dano, morte e
-reinício, drops, portas e HUD fiéis, sem quadros perdidos.
+Landing Site, Crateria 2 e a sala oeste do Landing Site (92B3, Crateria 3)
+jogáveis como no original: inimigos que causam dano, morte e reinício, drops,
+portas e HUD fiéis, sem quadros perdidos.
 
 **Próxima tarefa:**
 
@@ -41,7 +42,7 @@ Fora do marco: a arte do drop de míssil e as tabelas de drop do original seguem
 
 ## Etapas pendentes
 
-Concluídas: fases 0, 1 e 2; 3.1, 3.2, 3.4, 3.3.6 (moonwalk diagonal), 3.3.7 (moonwalk no salto); 4.1–4.3; 5.1–5.4; 6.0–6.5; 7.1.1; 8.1, 8.4 (B1).
+Concluídas: fases 0, 1 e 2; 3.1, 3.2, 3.4, 3.3.6 (moonwalk diagonal), 3.3.7 (moonwalk no salto); 4.1–4.3; 5.1–5.4; 6.0–6.5; 7.1.1; 8.1, 8.4 (B1); sala 92B3 a oeste do Landing Site.
 Detalhes em `HISTORICO.md`.
 
 | # | Etapa | Falta | Teste |

@@ -34,6 +34,25 @@ volatile u16 mm_smoke_profile[MM_PROFILE_SCENARIOS][4];
 
 static int enemy_geemer_art(Game *g);
 
+/* The Landing Site no longer spawns the test Zoomer; these smoke checks create one
+   when they need it and return its pool index, or -1 when the sprite cannot be made. */
+static int ensure_zoomer(Game *g)
+{
+    int i;
+    Sprite *sprite;
+    for (i = 0; i < g->enemies.count; ++i)
+        if (g->enemies.enemies[i].kind == MM_ENEMY_ZOOMER) return i;
+    if (g->enemies.count >= MM_ENEMY_MAX) return -1;
+    i = g->enemies.count;
+    if (mm_enemy_spawn(&g->enemies, MM_ENEMY_ZOOMER, 400, 1216) < 0) return -1;
+    sprite = SPR_addSprite(&zoomer_sprite, 0, 0, TILE_ATTR(PAL1, FALSE, FALSE, FALSE));
+    if (!sprite) return -1;
+    SPR_setDepth(sprite, SPR_MAX_DEPTH - 3);
+    SPR_setVisibility(sprite, HIDDEN);
+    g->enemy_sprites[i] = sprite;
+    return i;
+}
+
 /* Samus placed at pos stands in the open, inside the room. */
 static int spawn_valid(const room_def *room, Vect2D_s16 pos)
 {
@@ -335,8 +354,8 @@ static int room_transitions(Game *g)
         mm_smoke_memory[1 + i] = room_get(i)->tileset_fg->numTile + room_get(i)->tileset_bg->numTile;
     mm_smoke_memory[0] = TILE_USER_LENGTH - MM_HUD_TILE_COUNT;
     for (i = 0; i < ROOM_COUNT; ++i) if (!game_room_fits_vram(room_get(i))) failed |= 32;
-    /* The west door of the Landing Site has no route: shut, its cap stops Samus before the
-       strip; one beam opens it, but the open door still leads nowhere and she stays. */
+    /* The west door of the Landing Site leads to the 92B3 corridor: shut, its cap stops Samus
+       before the strip; one beam opens it, then she crosses to the paired door's spawn. */
     mm_samus_init(&g->player, 40, 624);
     idle(g, 40);
     cap = mm_door_cap(0, 608, ROOM_DOOR_FACING_RIGHT);
@@ -356,8 +375,17 @@ static int room_transitions(Game *g)
     if (g->door_locks[0].state != MM_DOOR_OPEN || g->world.solid_count != 3) failed |= 1;
     for (i = g->door_lock_count; i < MM_ROOM_MAX_DOORS; ++i)
         if (SPR_getVisibility(g->door_sprites[i]) != HIDDEN) failed |= 1024;
-    if (walk_through(g, -1) != -1 || g->room != room_get(ROOM_CRATERIA_1) ||
-        mm_pixel(g->player.x) + g->player.hitbox.left >= MM_DOOR_EDGE) failed |= 2;
+    if (walk_through(g, -1) < 0 || g->room != room_get(ROOM_CRATERIA_3)) failed |= 2;
+    px = mm_pixel(g->player.x); py = mm_pixel(g->player.y);
+    if (!room_loaded(g) || px != 1216 || py != 112 || g->door_locks[1].state != MM_DOOR_OPEN ||
+        g->world.solid_count != 1 || !door_art(g, 1) ||
+        g->enemies.count != 4) failed |= 2;
+    for (i = 0; i < g->enemies.count; ++i)
+        if (g->enemies.enemies[i].kind != MM_ENEMY_SKREE) failed |= 2;
+    /* Back east through the paired door, arriving in the Landing Site's upper west strip. */
+    if (walk_through(g, 1) < 0 || g->room != room_get(ROOM_CRATERIA_1)) failed |= 2;
+    px = mm_pixel(g->player.x); py = mm_pixel(g->player.y);
+    if (px != 24 || py != 624) failed |= 2;
     mm_samus_init(&g->player, 2210, 368);
     idle(g, 30);
     free_start = MEM_getFree();
@@ -865,6 +893,7 @@ static int enemy_zoomer_art(Game *g)
     const MmEnemy *enemy = NULL;
     Sprite *sprite = NULL;
     int i, failed = 0;
+    if (ensure_zoomer(g) < 0) return 1;
     for (i = 0; i < g->enemies.count; ++i)
         if (g->enemies.enemies[i].kind == MM_ENEMY_ZOOMER) {
             enemy = &g->enemies.enemies[i];
@@ -1044,12 +1073,14 @@ static int contact_damage(Game *g)
         if (!game_change_room(g, ROOM_CRATERIA_1, room_crateria_1.player_initial_pos, -1)) return 16;
         SYS_doVBlankProcess();
     }
+    i = ensure_zoomer(g);
+    if (i < 0) return 16;
     mm_health_init(&g->health);
     mm_weapon_init(&g->weapon);
     mm_samus_init(&g->player, 256, 1176);
     idle(g, 40);
     if (!g->player.grounded) failed |= 16;
-    e = &g->enemies.enemies[0];
+    e = &g->enemies.enemies[i];
     e->active = 1; e->damage = 5; e->health = 15;
     e->x = (mm_pixel(g->player.x) + 5) * MM_UNIT; e->y = 1216 * MM_UNIT;
     e->vx = e->vy = 0; e->grounded = 1; e->facing_left = 0;
@@ -1131,13 +1162,15 @@ static int drops_on_screen(Game *g)
         if (!game_change_room(g, ROOM_CRATERIA_1, room_crateria_1.player_initial_pos, -1)) return 2048;
         SYS_doVBlankProcess();
     }
+    slot = ensure_zoomer(g);
+    if (slot < 0) return 2048;
     mm_health_init(&g->health);
     mm_weapon_init(&g->weapon);
     mm_drop_init(&g->drops);
     mm_samus_init(&g->player, 256, 1176);
     idle(g, 40);
     if (!g->player.grounded) failed |= 2048;
-    e = &g->enemies.enemies[0];
+    e = &g->enemies.enemies[slot];
     for (kill = 0; kill < 3; ++kill) {
         int kind = kill % 2 ? MM_DROP_MISSILE : MM_DROP_ENERGY;
         int count = 0, killed = 0;

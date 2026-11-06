@@ -321,6 +321,28 @@ era o quadro 0 da tira do giro (pose embutida), não a pose 4D; estado e pose
 nunca trocaram em nenhuma sonda. Sem medição no original da cadência do giro
 com troca de direção (o save state do Mesen não está nesta máquina).
 
+**Sala a oeste do Landing Site (92B3)** ✅ (2026-11-05). O grafo em
+`rooms/world.json` ligava o Landing Site à sala `92B3` (cinco telas, mapa
+`[18, 2]`), mas essa sala ainda não existia no catálogo. O mapa de Crateria
+salvo pelo usuário em
+`res/images/referencias-spriters-resource/139029-crateria-map.png` foi
+recortado na região correspondente (1280×256 px); a arte do terreno foi
+remapeada para a paleta da sala existente, com céu, emendas e cascas de porta
+transparentes, e a colisão 160×32 foi derivada da imagem. O novo
+`rooms/crateria_3.tmj` declara a porta leste (link 0, para o Landing Site) e a
+porta oeste (link 1, ainda sem destino), uma zona de câmera para a sala inteira
+e quatro Skrees pendurados em `(240, 64)`, `(496, 64)`, `(752, 64)` e
+`(1008, 64)`. O Zoomer de teste junto ao spawn do Landing Site foi removido de
+`rooms/crateria_1.tmj` (ficaram Skree e Ripper). Após gerar as fontes com
+`scripts/export_rooms.py`, o catálogo passou a ter três salas
+(`ROOM_CRATERIA_3`): a porta oeste do Landing Site abre e chega em
+`(1216, 112)`, e a porta leste da nova sala volta ao Landing Site em
+`(24, 624)`. `scripts/test.ps1` passou, com as verificações atualizadas em
+`tests/check_rooms.py`, `tests/check_assets.py` e `tests/core_test.c`; o smoke
+do BlastEm passou depois que `tests/rom_smoke.c` passou a criar o Zoomer de
+teste explicitamente (helper `ensure_zoomer`) em vez de depender do spawn da
+sala.
+
 **Ambiente SGDK (2026-11-05).** O Cygwin do SGDK parou de iniciar nesta máquina
 (`VirtualAlloc ... Win32 error 487`, `Couldn't reserve space for cygwin's heap`,
 também em `make --version` fora do projeto): o MSYS do SGDK quer reservar o heap

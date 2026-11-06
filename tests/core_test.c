@@ -314,10 +314,12 @@ static void world_map(void) {
     assert(site->doors[3].wall == MM_WALL_RIGHT && site->doors[3].to == WORLD_NODE_93AA &&
            site->doors[3].at_x == 142 && site->doors[3].at_y == 22);
     assert(world_nodes[WORLD_NODE_93AA].doors[site->doors[3].peer].to == WORLD_NODE_91F8);
-    /* Catalog rooms: Crateria 1 is the Landing Site, Crateria 2 stands in for room 93AA. */
+    /* Catalog rooms: Crateria 1 is the Landing Site, Crateria 2 stands in for room 93AA,
+       Crateria 3 is the corridor west of the Landing Site (92B3). */
     assert(mm_world_node_of_room(world_nodes, WORLD_NODE_COUNT, 0) == WORLD_NODE_91F8);
     assert(mm_world_node_of_room(world_nodes, WORLD_NODE_COUNT, 1) == WORLD_NODE_93AA);
-    assert(mm_world_node_of_room(world_nodes, WORLD_NODE_COUNT, 2) == MM_NO_NODE && mm_world_node_of_room(world_nodes, WORLD_NODE_COUNT, -1) == MM_NO_NODE);
+    assert(mm_world_node_of_room(world_nodes, WORLD_NODE_COUNT, 2) == WORLD_NODE_92B3);
+    assert(mm_world_node_of_room(world_nodes, WORLD_NODE_COUNT, 3) == MM_NO_NODE && mm_world_node_of_room(world_nodes, WORLD_NODE_COUNT, -1) == MM_NO_NODE);
     /* Exits to other regions have a destination region and no room. */
     assert(world_nodes[WORLD_NODE_962A].doors[1].to == MM_NO_NODE && world_nodes[WORLD_NODE_962A].doors[1].leaves_area == MM_AREA_BRINSTAR);
     {   /* A graph whose door is not answered, or answered on the same wall, is refused. */

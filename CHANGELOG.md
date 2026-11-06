@@ -10,6 +10,25 @@ O registro detalhado começa em 18/10/2026. A entrada anterior abaixo foi
 reconstituída do commit indicado; o histórico anterior completo permanece no Git
 (`git log`) e as entregas por etapa estão em [docs/PLANO.md](docs/PLANO.md).
 
+## 2026-11-05 22:08:32 −03:00 (America/Sao_Paulo) — Sala a oeste do Landing Site (92B3)
+
+### Adicionado
+
+- Nova sala `Crateria 3` a oeste do Landing Site, recortada do mapa de Crateria
+  salvo pelo usuário em `res/images/referencias-spriters-resource/`, com porta
+  leste ligada ao Landing Site e porta oeste já desenhada (destino ainda não
+  construído). Quatro Skrees penduram no teto do corredor.
+
+### Removido
+
+- Zoomer de teste junto ao spawn do Landing Site. Os testes que dependiam dele
+  passaram a criá-lo explicitamente.
+
+### Validação
+
+- `scripts/test.ps1` completo no host e smoke do BlastEm (`SMOKE PASS`,
+  acelerado, sem áudio, headless), incluindo ida e volta pela porta oeste.
+
 ## 2026-11-05 19:03:11 −03:00 (America/Sao_Paulo) — Giro do pulo giratório não reinicia na troca de direção (B8)
 
 ### Corrigido

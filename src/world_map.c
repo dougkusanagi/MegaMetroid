@@ -185,7 +185,7 @@ static const MmWorldDoor doors_A66A[] = {
 
 const MmWorldNode world_nodes[WORLD_NODE_COUNT] = {
     {0x91F8, 9, 5, 23, 0, 0, 4, doors_91F8},
-    {0x92B3, 5, 1, 18, 2, MM_NO_NODE, 2, doors_92B3},
+    {0x92B3, 5, 1, 18, 2, 2, 2, doors_92B3},
     {0x92FD, 5, 5, 18, 4, MM_NO_NODE, 7, doors_92FD},
     {0x93AA, 2, 1, 32, 1, 1, 1, doors_93AA},
     {0x93D5, 1, 1, 18, 6, MM_NO_NODE, 1, doors_93D5},

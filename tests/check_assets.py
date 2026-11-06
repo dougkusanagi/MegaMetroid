@@ -7,7 +7,8 @@ import numpy as np
 
 root = Path(__file__).resolve().parents[1]
 fixtures = []
-for index, rows, cols, image in [(1,156,288,'landing_site/foreground.png'), (2,160,160,'crateria/tilemap2.png')]:
+for index, rows, cols, image in [(1,156,288,'landing_site/foreground.png'), (2,160,160,'crateria/tilemap2.png'),
+                                 (3,32,160,'crateria/crateria_west_foreground.png')]:
     source = (root / f'src/map_crateria_{index}.c').read_text()
     match = re.search(r'const u8 map_collision_crateria_\d+\[\d+\]\[\d+\] = (\{.*?\});', source, re.S)
     assert match, 'Missing collision array'
