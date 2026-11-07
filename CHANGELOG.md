@@ -10,6 +10,33 @@ O registro detalhado começa em 18/10/2026. A entrada anterior abaixo foi
 reconstituída do commit indicado; o histórico anterior completo permanece no Git
 (`git log`) e as entregas por etapa estão em [docs/PLANO.md](docs/PLANO.md).
 
+## 2026-11-06 22:20:00 −03:00 (America/Sao_Paulo) — Arte e colisão reais na sala a oeste inferior (92FD)
+
+### Corrigido
+
+- A Crateria 4 (`92FD`) deixa de ser uma silhueta verde chapada com contorno em degraus
+  e passa a usar a arte do mapa de Crateria salvo: rocha em relevo, contorno de seixos,
+  grama e blocos, com o ar transparente sobre o fundo. A colisão sai da mesma arte, com
+  71 rampas onde o chão sobe ou desce (antes só havia sólido e aberto) e sem tufos de
+  grama bloqueando o chão do ponto de chegada.
+- O tileset de primeiro plano das salas é gravado sem compressão na ROM
+  (`scripts/export_rooms.py`): a arte real da Crateria 4 tem 872 tiles e não caberia no
+  buffer de descompactação da heap (~18 KB livres). A ROM passa de 1,57 MB para 1,70 MB.
+
+### Adicionado
+
+- `scripts/build_crateria_west_lower.py` regenera a arte e a colisão da `92FD` a partir do
+  mapa salvo; `--check` roda em `scripts/test.ps1`.
+
+### Validação
+
+- `scripts/test.ps1` completo no host (66 verificações) e smoke do BlastEm
+  (`MM_SMOKE_RESULT=1`, acelerado, sem áudio, headless), incluindo ida e volta pelas
+  portas oeste das salas 3 e 4. Captura da VRAM da sala 4 no BlastEm comparada com a
+  captura do usuário (`tests/out/c4_before_after.png`).
+- Não validado: jogabilidade manual na sala (rampas, tufos e blocos do mapa) e a Crateria 2
+  (substituta da `93AA`), registrada como B10 em `docs/BUGS.md`.
+
 ## 2026-11-06 19:51:58 −03:00 (America/Sao_Paulo) — Smoke usa símbolos da própria build
 
 ### Corrigido

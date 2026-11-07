@@ -163,6 +163,18 @@ fora do índice. `tests/check_rooms.py` (parte de `scripts/test.ps1`) cobre isso
 Para criar uma sala nova: copie um `.tmj`, ajuste e acrescente o id em `index.json`.
 O `-SmokeTest` compila automaticamente todo `src/map*.c`.
 
+O tileset de primeiro plano de cada sala é gravado sem compressão (`TILESET ... NONE`
+em `res/<id>.res`): `VDP_loadTileSet` o copia direto da ROM e não aloca heap. Um tileset
+compactado seria descompactado num buffer da heap, que só tem ~18 KB livres (ver
+`HEAP_FREE_*` no smoke); a sala com 872 tiles (27 KB) não carregaria. O orçamento que
+vale é o da VRAM (`game_room_fits_vram`).
+
+A arte e a colisão da Crateria 4 (`92FD`) saem do mapa de Crateria salvo, não de edição
+manual: `python scripts/build_crateria_west_lower.py` regenera o PNG e a camada de colisão
+de `rooms/crateria_4.tmj` (`--check` verifica; roda em `scripts/test.ps1`). Depois rode
+`export_rooms.py`. As coordenadas do mapa salvo são as de `world.json` menos 5 telas em x
+(a `92FD` fica em `(3328, 1024)` px, a `92B3` em `(3328, 512)`).
+
 ## Arte e verificação visual do Landing Site
 
 Os PNGs e dados de referência necessários estão versionados. Para regenerar
@@ -182,6 +194,9 @@ transparente e a sobreposição da moldura são verificadas nos pixels da SAT. N
 Headless é o padrão; use `--visible` somente para inspeção no monitor secundário. As leituras reservam um buffer de 8 KB na ROM de
 smoke, sem afetar a ROM padrão.
 
+A variante da sala 2 também grava o readback de VRAM/CRAM de seis vistas da sala
+(`tests/out/scene-*.bin`); como o verificador do Landing Site espera 11 cenas, ele reclama
+no fim, e as imagens saem do mesmo formato (`scripts/check_room_video.py` tem `plane()`).
 Para conferir separadamente o carregamento da segunda sala, gere uma variante
 com diretório de saída próprio e use a tabela de símbolos correspondente:
 

@@ -356,6 +356,28 @@ quatro Skrees no poço vertical. A porta oeste inferior do Landing Site agora
 liga para `(1216, 112)` e volta para `(24, 1136)`; `scripts/test.ps1` e o smoke
 do BlastEm passaram, com ida e volta nas duas portas oeste.
 
+**Correção — arte e colisão da 92FD** ✅ (2026-11-06). Relato do usuário: a sala
+estava "toda errada", no visual e na colisão. A Crateria 4 era uma silhueta verde
+chapada (10 tiles) com contorno em degraus de 8 px, e sua colisão só tinha sólido e
+aberto, sem rampas. A causa do atalho estava registrada de forma errada: a arte
+real não cabe porque o tileset compactado é descompactado na heap (~18 KB livres),
+não por falta de VRAM (872 + 44 tiles cabem nos 968 disponíveis). O recorte original
+está no mapa salvo em `(3328, 1024)` px (as coordenadas do mapa são as de `world.json`
+menos 5 telas em x; a `92B3` está em `(3328, 512)`, e as duas batem em 100% dos pixels).
+`scripts/build_crateria_west_lower.py` gera agora a arte (cores a 3 bits nos slots de
+PAL0 da Crateria 3, ar e cascas de porta transparentes, metal fora do vão das portas
+vira rocha) e a colisão da mesma máscara: sólido com 50% ou mais de terreno (grama não
+conta), rampa quando o chão sobe ou desce 3 px ou mais ao longo do tile em passos de
+até 2 px por coluna sobre rocha: 71 rampas no resultado final. A `crateria_2`, mesma
+caverna, tem 94; na primeira versão do critério (88 rampas, com a grama contando como
+sólido) 79 coincidiam em posição e tipo com as dela, deslocadas 1 tile, o que apoia o
+critério, mas não foi remedido no resultado final. `export_rooms.py` passou a gravar o tileset de primeiro
+plano sem compressão (`NONE`); o `HEAP_LARGEST_BLOCK` do smoke subiu de 9834 para
+10916 bytes. Fora do escopo: a `crateria_2` continua a substituta da `93AA`
+(B10). Validação: `scripts/test.ps1` (66 verificações, com o novo `--check`) e smoke
+do BlastEm (`MM_SMOKE_RESULT=1`, falha `0x0`, ida e volta nas portas das salas 3 e
+4), mais captura da VRAM da sala 4 no BlastEm.
+
 **Ambiente SGDK (2026-11-05).** O Cygwin do SGDK parou de iniciar nesta máquina
 (`VirtualAlloc ... Win32 error 487`, `Couldn't reserve space for cygwin's heap`,
 também em `make --version` fora do projeto): o MSYS do SGDK quer reservar o heap
