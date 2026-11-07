@@ -485,15 +485,45 @@ __attribute__((noinline, used, externally_visible)) void mm_smoke_video_ready(vo
     __asm__ volatile ("nop");
 }
 
+static void video_dump(Game *g, int scene)
+{
+    vu32 *control = (vu32 *)VDP_CTRL_PORT;
+    vu16 *data = (vu16 *)VDP_DATA_PORT;
+    int i, chunk;
+    SYS_disableInts();
+    VDP_setAutoInc(2);
+    *control = VDP_READ_CRAM_ADDR(0);
+    for (i = 0; i < 64; ++i) mm_smoke_video_header[i] = *data;
+    mm_smoke_video_header[64] = VDP_getBGAAddress();
+    mm_smoke_video_header[65] = VDP_getBGBAddress();
+    mm_smoke_video_header[66] = VDP_getPlaneWidth();
+    mm_smoke_video_header[67] = VDP_getPlaneHeight();
+    mm_smoke_video_header[68] = g->camera.x;
+    mm_smoke_video_header[69] = g->camera.y;
+    mm_smoke_video_header[70] = VDP_getSpriteListAddress();
+    mm_smoke_video_header[71] = scene;
+    mm_smoke_video_header[72] = VDP_getHScrollTableAddress();
+    *control = VDP_READ_VSRAM_ADDR(0);
+    mm_smoke_video_header[73] = *data;
+    mm_smoke_video_header[74] = *data;
+    /* Window table (a multiple of 0x800 in H32) with its row count in the low bits. */
+    mm_smoke_video_header[75] = VDP_getWindowAddress() | (VDP_getReg(18) & 0x1F);
+    for (chunk = 0; chunk < 8; ++chunk) {
+        *control = VDP_READ_VRAM_ADDR((u32)chunk * 8192);
+        for (i = 0; i < 4096; ++i) mm_smoke_video[i] = *data;
+        mm_smoke_video_chunk = chunk;
+        mm_smoke_video_ready();
+    }
+    SYS_enableInts();
+}
+
 static void room_video(Game *g)
 {
     static const s16 views[][2] = {{1024, 976}, {0, 1024}, {2048, 1024},
                                   {0, 512}, {2048, 256}, {1664, 1024},
                                   {0, 1024}, {2048, 1024}, {256, 1024},
                                   {0, 1024}, {2048, 1024}};
-    vu32 *control = (vu32 *)VDP_CTRL_PORT;
-    vu16 *data = (vu16 *)VDP_DATA_PORT;
-    int scene, i, chunk;
+    int scene;
     MmDoorLock saved_locks[MM_ROOM_MAX_DOORS];
     memcpy(saved_locks, g->door_locks, sizeof saved_locks);
     for (scene = 0; scene < 11; ++scene) {
@@ -515,31 +545,7 @@ static void room_video(Game *g)
         SYS_doVBlankProcess();
         game_update(g, (MmInput){0});
         SYS_doVBlankProcess();
-        SYS_disableInts();
-        VDP_setAutoInc(2);
-        *control = VDP_READ_CRAM_ADDR(0);
-        for (i = 0; i < 64; ++i) mm_smoke_video_header[i] = *data;
-        mm_smoke_video_header[64] = VDP_getBGAAddress();
-        mm_smoke_video_header[65] = VDP_getBGBAddress();
-        mm_smoke_video_header[66] = VDP_getPlaneWidth();
-        mm_smoke_video_header[67] = VDP_getPlaneHeight();
-        mm_smoke_video_header[68] = g->camera.x;
-        mm_smoke_video_header[69] = g->camera.y;
-        mm_smoke_video_header[70] = VDP_getSpriteListAddress();
-        mm_smoke_video_header[71] = scene;
-        mm_smoke_video_header[72] = VDP_getHScrollTableAddress();
-        *control = VDP_READ_VSRAM_ADDR(0);
-        mm_smoke_video_header[73] = *data;
-        mm_smoke_video_header[74] = *data;
-        /* Window table (a multiple of 0x800 in H32) with its row count in the low bits. */
-        mm_smoke_video_header[75] = VDP_getWindowAddress() | (VDP_getReg(18) & 0x1F);
-        for (chunk = 0; chunk < 8; ++chunk) {
-            *control = VDP_READ_VRAM_ADDR((u32)chunk * 8192);
-            for (i = 0; i < 4096; ++i) mm_smoke_video[i] = *data;
-            mm_smoke_video_chunk = chunk;
-            mm_smoke_video_ready();
-        }
-        SYS_enableInts();
+        video_dump(g, scene);
     }
     memcpy(g->door_locks, saved_locks, sizeof saved_locks);
 }
@@ -1297,6 +1303,18 @@ int main(bool hardReset)
         g.world.columns != room_crateria_2.map_width / MM_TILE ||
         g.world.rows != room_crateria_2.map_height / MM_TILE ||
         mm_blocked(&g.world, &g.player, mm_pixel(g.player.x), mm_pixel(g.player.y));
+    {
+        /* VDP readback of six views of the room (scene-vram.bin / scene-headers.bin; see docs/BUILD.md). */
+        static const s16 views[][2] = {{0, 0}, {1024, 0}, {256, 256}, {768, 256}, {256, 768}, {1024, 512}};
+        for (frame = 0; frame < 6; ++frame) {
+            mm_samus_init(&g.player, views[frame][0] + 108, views[frame][1] + 84);
+            game_update(&g, (MmInput){0});
+            SYS_doVBlankProcess();
+            game_update(&g, (MmInput){0});
+            SYS_doVBlankProcess();
+            video_dump(&g, frame);
+        }
+    }
     VDP_drawText(failed ? "SMOKE FAIL" : "SMOKE PASS", 1, 1);
     mm_smoke_failure = failed ? 1 : 0;
     mm_smoke_result = failed ? 2 : 1;
