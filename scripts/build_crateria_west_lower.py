@@ -11,7 +11,7 @@ background plane shows through. Metal that is not sky (door frames, the bottom f
 rock, except inside a door's footprint, which the door sprites draw.
 
 Collision (the "collision" layer of rooms/crateria_4.tmj), from the same pixels:
-  solid          half or more of the 8x8 tile is terrain (grass and moss do not count)
+  solid          half or more of the 8x8 tile is terrain (grass and moss count, except beside a door)
   slope          a floor tile whose ground rises or falls by 3+ px across the tile, in steps of
                  at most 2 px per column, standing on solid rock (the physics treats it as
                  the 45 degree triangle of mm_rect_blocked; the art's slopes are gentler)
@@ -45,8 +45,12 @@ TERRAIN = {
     (112, 64, 88): (96, 64, 64),
 }
 SKY = [(53, 133, 186), (2, 74, 122)]
-# Grass tufts and moss stay in the art, but never block: Samus walks through them.
+# Grass and moss are part of the ground (Samus stands on top of them), except beside a door,
+# where the floor has to stay level with the door's sill and with the arrival point.
 GRASS = [(48, 64, 24), (72, 96, 56)]
+DOOR_MARGIN = 64  # px beside a door where grass does not block
+# Frame pixels that are not rock take the commonest fully opaque tile, aligned to the tile grid, so whole
+# filled tiles repeat (every distinct tile costs VRAM and heap, and the room has ~920 tiles of budget).
 ROCK = (0, 32, 0)
 
 
@@ -87,13 +91,27 @@ def build():
     for x, y, w, h in door_rects(room):
         doors[y:y + h, x:x + w] = True
     metal = (pixels == 0) & ~sky & ~doors
-    pixels[metal] = slot[ROCK]
+    # The commonest fully opaque tile (deep rock) is the fill pattern.
+    th, tw = height // TILE, width // TILE
+    tiles = pixels.reshape(th, TILE, tw, TILE).swapaxes(1, 2).reshape(-1, TILE * TILE)
+    rock_only = tiles[(tiles != 0).all(axis=1)]
+    patterns, counts = np.unique(rock_only, axis=0, return_counts=True)
+    pattern = patterns[counts.argmax()].reshape(TILE, TILE)
+    ys, xs = np.nonzero(metal)
+    pixels[ys, xs] = pattern[ys % TILE, xs % TILE]
     image = Image.fromarray(pixels, 'P')
     image.putpalette(palette)
 
     grass = np.zeros((height, width), bool)
     for color in GRASS:
         grass |= (crop == color).all(axis=2)
+    beside_door = np.zeros((height, width), bool)
+    for x, y, w, h in door_rects(room):
+        if w > h:  # the door is in a floor or ceiling
+            beside_door[max(0, y - DOOR_MARGIN):y + h + DOOR_MARGIN, x:x + w] = True
+        else:
+            beside_door[y:y + h, max(0, x - DOOR_MARGIN):x + w + DOOR_MARGIN] = True
+    grass &= beside_door
     rows, cols = height // TILE, width // TILE
     solid = ((pixels != 0) & ~grass).reshape(rows, TILE, cols, TILE).swapaxes(1, 2)
     fraction = solid.mean(axis=(2, 3))
