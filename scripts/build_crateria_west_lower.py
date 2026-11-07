@@ -11,11 +11,12 @@ background plane shows through. Metal that is not sky (door frames, the bottom f
 rock, except inside a door's footprint, which the door sprites draw.
 
 Collision (the "collision" layer of rooms/crateria_4.tmj), from the same pixels:
-  solid          half or more of the 8x8 tile is terrain (grass and moss count, except beside a door)
+  solid          half or more of the 8x8 tile is rock (grass and moss never block); lone 8 px
+                 bumps and notches in a floor or ceiling are smoothed away
   slope          a floor tile whose ground rises or falls by 3+ px across the tile, in steps of
                  at most 2 px per column, standing on solid rock (the physics treats it as
                  the 45 degree triangle of mm_rect_blocked; the art's slopes are gentler)
-  open           everything else
+  open           everything else, and every tile inside a door's footprint
 
   python scripts/build_crateria_west_lower.py          write the PNG and the collision layer
   python scripts/build_crateria_west_lower.py --check  fail if either is out of date
@@ -45,10 +46,11 @@ TERRAIN = {
     (112, 64, 88): (96, 64, 64),
 }
 SKY = [(53, 133, 186), (2, 74, 122)]
-# Grass and moss are part of the ground (Samus stands on top of them), except beside a door,
-# where the floor has to stay level with the door's sill and with the arrival point.
+# The saved map draws each blue door cap a few pixels wider than the 32 px footprint of the door.
+# Those pixels are never rock: they stay open, so the cap does not wall off the doorway.
+DOOR_CAP = [(56, 112, 224), (144, 168, 224), (24, 64, 152)]
+# Grass and moss: decoration drawn over the rock, never solid.
 GRASS = [(48, 64, 24), (72, 96, 56)]
-DOOR_MARGIN = 64  # px beside a door where grass does not block
 # Frame pixels that are not rock take the commonest fully opaque tile, aligned to the tile grid, so whole
 # filled tiles repeat (every distinct tile costs VRAM and heap, and the room has ~920 tiles of budget).
 ROCK = (0, 32, 0)
@@ -90,6 +92,8 @@ def build():
     doors = np.zeros((height, width), bool)
     for x, y, w, h in door_rects(room):
         doors[y:y + h, x:x + w] = True
+    for color in DOOR_CAP:
+        doors |= (crop == color).all(axis=2)
     metal = (pixels == 0) & ~sky & ~doors
     # The commonest fully opaque tile (deep rock) is the fill pattern.
     th, tw = height // TILE, width // TILE
@@ -105,17 +109,25 @@ def build():
     grass = np.zeros((height, width), bool)
     for color in GRASS:
         grass |= (crop == color).all(axis=2)
-    beside_door = np.zeros((height, width), bool)
-    for x, y, w, h in door_rects(room):
-        if w > h:  # the door is in a floor or ceiling
-            beside_door[max(0, y - DOOR_MARGIN):y + h + DOOR_MARGIN, x:x + w] = True
-        else:
-            beside_door[y:y + h, max(0, x - DOOR_MARGIN):x + w + DOOR_MARGIN] = True
-    grass &= beside_door
+    # Grass and moss are decoration on top of the rock: counting them made 1-tile bumps that stop
+    # Samus while walking. They never block.
     rows, cols = height // TILE, width // TILE
     solid = ((pixels != 0) & ~grass).reshape(rows, TILE, cols, TILE).swapaxes(1, 2)
     fraction = solid.mean(axis=(2, 3))
     values = np.where(fraction >= 0.5, 0, 1)
+    # Smooth the floor and ceiling: a lone 8 px bump or notch between two level neighbours is an
+    # artefact of the 8 px grid (the original world is built from 16 px blocks) and snags Samus.
+    for _ in range(2):
+        for ty in range(1, rows - 1):
+            for tx in range(1, cols - 1):
+                l, r = values[ty, tx - 1], values[ty, tx + 1]
+                if values[ty, tx] == 0 and l == 1 and r == 1 and (values[ty + 1, tx - 1] == 0 and values[ty + 1, tx + 1] == 0 or values[ty - 1, tx - 1] == 0 and values[ty - 1, tx + 1] == 0):
+                    values[ty, tx] = 1
+                elif values[ty, tx] == 1 and l == 0 and r == 0 and values[ty - 1, tx - 1] == 1 and values[ty - 1, tx + 1] == 1:
+                    values[ty, tx] = 0
+    # A door's footprint is its opening: Samus has to reach the strip at its far edge.
+    for x, y, w, h in door_rects(room):
+        values[y // TILE:(y + h) // TILE, x // TILE:(x + w) // TILE] = 1
     for ty in range(rows - 1):
         for tx in range(cols):
             if not 0.25 <= fraction[ty, tx] <= 0.95 or fraction[ty + 1, tx] < 0.9:

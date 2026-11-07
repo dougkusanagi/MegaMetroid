@@ -5,6 +5,10 @@ Door caps and enemy sprites are drawn with the colors of the Landing Site's PAL1
 its doors and enemies come out in the wrong colors. bg-2.bmp has four colors, and each one exists
 in that palette at the same 3-bit value; only the indices change.
 
+Its dark green is also the fill of the rock in the foreground of rooms 3 and 4, so caves and walls
+read as one surface (ceilings vanish and Skrees seem to hang from nothing). That green becomes the
+palette's dark gray. This is for contrast only: the real background of 92FD is not known yet (B11).
+
   python scripts/build_crateria_bg.py          write res/images/maps/crateria/bg-2-pal1.png
   python scripts/build_crateria_bg.py --check  fail if it is out of date
 """
@@ -18,6 +22,7 @@ ROOT = Path(__file__).resolve().parents[1]
 SOURCE = ROOT / 'res/images/maps/crateria/bg-2.bmp'
 PALETTE = ROOT / 'res/images/maps/landing_site/background.png'
 OUT = ROOT / 'res/images/maps/crateria/bg-2-pal1.png'
+DARKEN = {(0, 1, 0): (1, 1, 1)}  # 3-bit color of the rock fill -> dark gray
 
 
 def build():
@@ -28,7 +33,7 @@ def build():
     for index in set(np.array(source).flatten().tolist()):
         color = tuple(c // 32 for c in src_pal[index * 3:index * 3 + 3])
         assert color in dst_slots, f'{color} is not in the Landing Site PAL1'
-        remap[index] = dst_slots[color]
+        remap[index] = dst_slots[DARKEN.get(color, color)]
     image = Image.fromarray(remap[np.array(source)], 'P')
     image.putpalette(dst_pal)
     return image

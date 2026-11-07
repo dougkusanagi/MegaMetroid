@@ -10,6 +10,23 @@ O registro detalhado começa em 18/10/2026. A entrada anterior abaixo foi
 reconstituída do commit indicado; o histórico anterior completo permanece no Git
 (`git log`) e as entregas por etapa estão em [docs/PLANO.md](docs/PLANO.md).
 
+## 2026-11-06 23:40:00 −03:00 (America/Sao_Paulo) — Colisão, portas e contraste da sala 92FD
+
+### Corrigido
+
+- A grama volta a não bloquear e a colisão da 92FD perde os degraus isolados de 8 px no chão e
+  no teto: eles prendiam a Samus ao andar (73 degraus de 1 tile antes, 27 agora, todos bordas reais).
+- A tampa azul das portas, desenhada um pouco mais larga que a porta, deixa de virar parede.
+- O miolo da rocha e o padrão do fundo das salas 2 a 4 usavam o mesmo verde: tetos e paredes
+  sumiam e os Skrees pareciam pendurados no nada. O verde do fundo passa a cinza-escuro. É ajuste
+  de contraste, não de fidelidade: o fundo real da 92FD continua sem referência (B11).
+
+### Validação
+
+- `scripts/test.ps1`, `--check` dos geradores e smoke do BlastEm (`SMOKE PASS`, acelerado e
+  headless). O smoke carrega a sala 1; a sala 4 foi conferida pelo número de tiles (868 de
+  primeiro plano, antes 877), sem sessão própria no emulador.
+
 ## 2026-11-06 22:50:00 −03:00 (America/Sao_Paulo) — Plataforma, porta e cores da sala 92FD
 
 ### Corrigido
