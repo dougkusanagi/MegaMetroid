@@ -13,9 +13,9 @@ rock, except inside a door's footprint, which the door sprites draw.
 Collision (the "collision" layer of rooms/crateria_4.tmj), from the same pixels:
   solid          half or more of the 8x8 tile is rock (grass and moss never block); lone 8 px
                  bumps and notches in a floor or ceiling are smoothed away
-  slope          a floor tile whose ground rises or falls by 3+ px across the tile, in steps of
-                 at most 2 px per column, standing on solid rock (the physics treats it as
-                 the 45 degree triangle of mm_rect_blocked; the art's slopes are gentler)
+  ramp           the open tile at the foot of every 1-tile floor step: the 45 degree triangle
+                 of mm_rect_blocked, so Samus walks up (walking climbs 1 px per px; any 8 px
+                 step would stop her). Steps of 2+ tiles stay walls
   open           everything else, and every tile inside a door's footprint
 
   python scripts/build_crateria_west_lower.py          write the PNG and the collision layer
@@ -56,6 +56,58 @@ GRASS = [(48, 64, 24), (72, 96, 56)]
 ROCK = (0, 32, 0)
 
 
+SOLID, OPEN, RISE_RIGHT, RISE_LEFT = 0, 1, 2, 3
+
+
+def smooth(values):
+    """Remove lone 8 px bumps and notches in floors and ceilings: the 8 px grid makes them where
+    the art's edge is a smooth curve, and Samus cannot walk over an 8 px step."""
+    rows, cols = values.shape
+    for _ in range(3):
+        for ty in range(1, rows - 1):
+            for tx in range(1, cols - 1):
+                l, r = values[ty, tx - 1], values[ty, tx + 1]
+                if values[ty, tx] == SOLID and l == OPEN and r == OPEN and (
+                        values[ty + 1, tx - 1] == SOLID and values[ty + 1, tx + 1] == SOLID or
+                        values[ty - 1, tx - 1] == SOLID and values[ty - 1, tx + 1] == SOLID):
+                    values[ty, tx] = OPEN
+                elif values[ty, tx] == OPEN and l == SOLID and r == SOLID and (
+                        values[ty - 1, tx - 1] == OPEN and values[ty - 1, tx + 1] == OPEN or
+                        values[ty + 1, tx - 1] == OPEN and values[ty + 1, tx + 1] == OPEN):
+                    values[ty, tx] = SOLID
+
+
+def add_ramps(values):
+    """Walking climbs at most 1 px per px, so every 1-tile (8 px) step of a floor would stop Samus.
+    The open tile at the foot of such a step becomes a 45 degree ramp. A step of 2+ tiles is a wall
+    and stays; so does the edge of a floating platform (no ground under the foot tile)."""
+    rows, cols = values.shape
+    for ty in range(1, rows - 1):
+        for tx in range(cols):
+            if values[ty, tx] != OPEN or values[ty + 1, tx] != SOLID:
+                continue  # the ramp sits in open air on top of solid ground
+            left = tx > 0 and values[ty, tx - 1] == SOLID and (ty == 0 or values[ty - 1, tx - 1] != SOLID)
+            right = tx < cols - 1 and values[ty, tx + 1] == SOLID and (ty == 0 or values[ty - 1, tx + 1] != SOLID)
+            if right and not left:
+                values[ty, tx] = RISE_RIGHT
+            elif left and not right:
+                values[ty, tx] = RISE_LEFT
+
+
+def floor_steps(values):
+    """Solid floor tiles beside an open tile that stands on solid ground: an 8 px step."""
+    rows, cols = values.shape
+    steps = []
+    for ty in range(1, rows - 1):
+        for tx in range(1, cols - 1):
+            if values[ty, tx] != SOLID or values[ty - 1, tx] == SOLID:
+                continue
+            for dx in (-1, 1):
+                if values[ty, tx + dx] == OPEN and values[ty + 1, tx + dx] == SOLID:
+                    steps.append((tx * TILE, ty * TILE))
+    return steps
+
+
 def door_rects(room):
     layer = next(l for l in room['layers'] if l['name'] == 'doors')
     for obj in layer['objects']:
@@ -63,16 +115,6 @@ def door_rects(room):
         w, h = (64, 32) if facing in ('up', 'down') else (32, 64)
         yield round(obj['x']), round(obj['y']), w, h
 
-
-def ground_profile(tile):
-    """Opaque pixels counted up from the bottom of each column of an 8x8 mask."""
-    heights = []
-    for column in range(TILE):
-        n = 0
-        while n < TILE and tile[TILE - 1 - n, column]:
-            n += 1
-        heights.append(n)
-    return np.array(heights)
 
 
 def build():
@@ -114,30 +156,11 @@ def build():
     rows, cols = height // TILE, width // TILE
     solid = ((pixels != 0) & ~grass).reshape(rows, TILE, cols, TILE).swapaxes(1, 2)
     fraction = solid.mean(axis=(2, 3))
-    values = np.where(fraction >= 0.5, 0, 1)
-    # Smooth the floor and ceiling: a lone 8 px bump or notch between two level neighbours is an
-    # artefact of the 8 px grid (the original world is built from 16 px blocks) and snags Samus.
-    for _ in range(2):
-        for ty in range(1, rows - 1):
-            for tx in range(1, cols - 1):
-                l, r = values[ty, tx - 1], values[ty, tx + 1]
-                if values[ty, tx] == 0 and l == 1 and r == 1 and (values[ty + 1, tx - 1] == 0 and values[ty + 1, tx + 1] == 0 or values[ty - 1, tx - 1] == 0 and values[ty - 1, tx + 1] == 0):
-                    values[ty, tx] = 1
-                elif values[ty, tx] == 1 and l == 0 and r == 0 and values[ty - 1, tx - 1] == 1 and values[ty - 1, tx + 1] == 1:
-                    values[ty, tx] = 0
-    # A door's footprint is its opening: Samus has to reach the strip at its far edge.
+    values = np.where(fraction >= 0.5, SOLID, OPEN)
+    smooth(values)
     for x, y, w, h in door_rects(room):
-        values[y // TILE:(y + h) // TILE, x // TILE:(x + w) // TILE] = 1
-    for ty in range(rows - 1):
-        for tx in range(cols):
-            if not 0.25 <= fraction[ty, tx] <= 0.95 or fraction[ty + 1, tx] < 0.9:
-                continue
-            h = ground_profile(solid[ty, tx])
-            step = np.diff(h)
-            if h[7] - h[0] >= 3 and step.min() >= -1 and step.max() <= 2:
-                values[ty, tx] = 2
-            elif h[0] - h[7] >= 3 and step.max() <= 1 and step.min() >= -2:
-                values[ty, tx] = 3
+        values[y // TILE:(y + h) // TILE, x // TILE:(x + w) // TILE] = OPEN
+    add_ramps(values)
     return image, values
 
 
@@ -168,7 +191,10 @@ if __name__ == '__main__':
             sys.exit(f'{OUT.relative_to(ROOT)} is out of date; run scripts/build_crateria_west_lower.py')
         if match[2].strip() != text:
             sys.exit('the collision layer of rooms/crateria_4.tmj is out of date; run scripts/build_crateria_west_lower.py')
-        print('PASS Crateria 4 art and collision match the saved map')
+        steps = floor_steps(values)
+        if steps:
+            sys.exit(f'Crateria 4 floor has 8 px steps that stop Samus at {steps[:8]}')
+        print('PASS Crateria 4 art and collision match the saved map; no 8 px floor steps')
     else:
         image.save(OUT, transparency=0)
         source = ROOM.read_text(encoding='utf-8')

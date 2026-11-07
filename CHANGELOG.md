@@ -10,6 +10,23 @@ O registro detalhado começa em 18/10/2026. A entrada anterior abaixo foi
 reconstituída do commit indicado; o histórico anterior completo permanece no Git
 (`git log`) e as entregas por etapa estão em [docs/PLANO.md](docs/PLANO.md).
 
+## 2026-11-07 00:30:00 −03:00 (America/Sao_Paulo) — Colisão da 92FD refeita a partir da arte
+
+### Corrigido
+
+- A colisão da sala 92FD é refeita do zero a partir da arte: todo degrau de 1 tile (8 px) no chão
+  vira rampa de 45°, porque a Samus sobe só 1 px por pixel andado e travava neles. Degraus de 2+
+  tiles continuam paredes e bordas de plataformas flutuantes continuam bordas.
+- Os quatro Skrees da 92FD ficavam presos na ponta de plataformas finas de grama e pareciam soltos
+  no ar; agora ficam sob tetos de rocha (corredor de cima, poço e caverna da direita).
+
+### Validação
+
+- Simulação de caminhada de 1 px por vez com a regra de subida do `mm_move` em todo o chão da sala:
+  24 pontos de travamento na colisão anterior, nenhum na nova. `--check` do gerador falha se voltar
+  algum degrau de 8 px. `scripts/test.ps1` e smoke do BlastEm (`SMOKE PASS`, acelerado e headless;
+  o smoke carrega a sala 1, não a 92FD).
+
 ## 2026-11-06 23:40:00 −03:00 (America/Sao_Paulo) — Colisão, portas e contraste da sala 92FD
 
 ### Corrigido
