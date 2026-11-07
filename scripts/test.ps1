@@ -7,6 +7,8 @@ try {
     if ($LASTEXITCODE -ne 0) { throw 'Saved reference validation failed.' }
     python tests/check_assets.py
     if ($LASTEXITCODE -ne 0) { throw 'Asset validation failed.' }
+    python scripts/build_crateria_west_lower.py --check
+    if ($LASTEXITCODE -ne 0) { throw 'Crateria 4 art/collision validation failed.' }
     python tests/check_rooms.py
     if ($LASTEXITCODE -ne 0) { throw 'Room exporter validation failed.' }
     python tests/check_world.py
