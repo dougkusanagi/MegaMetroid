@@ -175,6 +175,15 @@ de `rooms/crateria_4.tmj` (`--check` verifica; roda em `scripts/test.ps1`). Depo
 `export_rooms.py`. As coordenadas do mapa salvo são as de `world.json` menos 5 telas em x
 (a `92FD` fica em `(3328, 1024)` px, a `92B3` em `(3328, 512)`).
 
+Cada tile distinto da arte custa VRAM e heap: `game_room_fits_vram` recusa a sala se o
+tileset de primeiro plano mais o de fundo passar de 968 tiles, e então o smoke trava em vez
+de falhar. Confira o `dc.w` de `crateria_N_fg_tileset` em `res/crateria_N.rs` depois de mudar
+a arte (a `92FD` tem 877 + 44).
+
+As portas e os inimigos são desenhados com as cores do PAL1 do Landing Site. Por isso todas as
+salas carregam essa paleta em PAL1: `python scripts/build_crateria_bg.py` recolore o fundo
+`bg-2.bmp` para ela (`bg-2-pal1.png`; `--check` roda em `scripts/test.ps1`).
+
 ## Arte e verificação visual do Landing Site
 
 Os PNGs e dados de referência necessários estão versionados. Para regenerar

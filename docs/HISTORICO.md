@@ -378,6 +378,24 @@ plano sem compressão (`NONE`); o `HEAP_LARGEST_BLOCK` do smoke subiu de 9834 pa
 do BlastEm (`MM_SMOKE_RESULT=1`, falha `0x0`, ida e volta nas portas das salas 3 e
 4), mais captura da VRAM da sala 4 no BlastEm.
 
+**Correção — plataforma, porta e fundo da 92FD** ✅ (2026-11-06). Segundo relato: a
+colisão de uma plataforma não batia com os tiles, a porta renderizava errado e o fundo
+não parecia o original. (1) Plataforma: a colisão excluía a grama, mas a grama faz parte
+do chão (a Samus ficava ~14 px afundada nela, com a colisão em y=824 e a grama desde
+y=810). Agora a grama conta como sólida, exceto até 64 px ao lado de uma porta, para o
+chão ficar nivelado com a soleira e o ponto de chegada continuar livre. (2) Porta: o
+sprite da porta e os inimigos usam as cores do PAL1 do Landing Site, e as salas 2, 3 e 4
+carregavam outro PAL1 (`bg-2.bmp`, 4 cores): a porta saía azul-marinho. O fundo foi
+recolorido para essa paleta (`scripts/build_crateria_bg.py`; as quatro cores existem lá
+com o mesmo valor de 3 bits). Os restos de moldura de porta fora do vão (barras verdes
+chapadas) agora usam o tile de rocha mais comum. Uma primeira versão, copiando textura de
+pixels vizinhos, subiu a arte para 1076 tiles: `game_room_fits_vram` recusou a sala e o
+smoke travou sem falha registrada (ver `MEMORY.md`); com o padrão fixo são 877. (3) Fundo:
+só a paleta foi tratada; o desenho do fundo da `92FD` no original segue sem referência
+(B11). Validação: `scripts/test.ps1` e smoke do BlastEm passam; captura da VRAM da sala 4
+com sprites mostra a porta com o metal e a tampa azul do Landing Site. Não validado em
+jogo: a altura em que a Samus fica sobre a plataforma.
+
 **Ambiente SGDK (2026-11-05).** O Cygwin do SGDK parou de iniciar nesta máquina
 (`VirtualAlloc ... Win32 error 487`, `Couldn't reserve space for cygwin's heap`,
 também em `make --version` fora do projeto): o MSYS do SGDK quer reservar o heap

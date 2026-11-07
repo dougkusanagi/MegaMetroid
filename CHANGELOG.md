@@ -10,6 +10,26 @@ O registro detalhado começa em 18/10/2026. A entrada anterior abaixo foi
 reconstituída do commit indicado; o histórico anterior completo permanece no Git
 (`git log`) e as entregas por etapa estão em [docs/PLANO.md](docs/PLANO.md).
 
+## 2026-11-06 22:50:00 −03:00 (America/Sao_Paulo) — Plataforma, porta e cores da sala 92FD
+
+### Corrigido
+
+- A colisão das plataformas passa a incluir a grama: a Samus ficava afundada ~14 px nela.
+  A grama ao lado das portas continua sem bloquear, para o chão ficar nivelado com a soleira.
+- A porta das salas 2, 3 e 4 aparecia azul-marinho e agora usa o metal e a tampa azul do
+  Landing Site (a paleta do fundo dessas salas passa a ser a do Landing Site, a mesma que os
+  inimigos já esperavam). Os restos de moldura ao lado das portas deixam de ser barras verdes lisas.
+
+### Adicionado
+
+- `scripts/build_crateria_bg.py` recolore o fundo das salas de Crateria; `--check` roda em
+  `scripts/test.ps1`.
+
+### Validação
+
+- `scripts/test.ps1` e smoke do BlastEm (`MM_SMOKE_RESULT=1`); captura da VRAM com sprites.
+- Pendente: o desenho do fundo da sala ainda não foi comparado com o original (B11).
+
 ## 2026-11-06 22:20:00 −03:00 (America/Sao_Paulo) — Arte e colisão reais na sala a oeste inferior (92FD)
 
 ### Corrigido
