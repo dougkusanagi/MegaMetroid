@@ -21,7 +21,7 @@
   {
    "name": "bg_image",
    "type": "string",
-   "value": "maps/crateria/bg-2.bmp"
+   "value": "maps/crateria/bg-2-pal1.png"
   },
   {
    "name": "background_scroll_height",
