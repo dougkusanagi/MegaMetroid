@@ -293,7 +293,9 @@ def render_res(r):
     lines = [f'# {BANNER.format(src=rid + ".tmj")}']
     for kind in ('IMAGE', 'PALETTE', 'TILESET'):
         for layer, path in (('fg', fg), ('bg', bg)):
-            tail = '' if kind == 'PALETTE' else '\tBEST'
+            # The foreground tileset is stored raw: VDP_loadTileSet then copies it from ROM and needs no
+            # heap, where unpacking a big room (Crateria 4: 872 tiles, 27 KB) would not fit in the ~18 KB free.
+            tail = '' if kind == 'PALETTE' else '\tNONE' if kind == 'TILESET' and layer == 'fg' else '\tBEST'
             lines.append(f'{kind}\t{rid}_{layer}_{kind.lower()}\t"images/{path}"{tail}')
         lines.append('')
     for layer, path in (('fg', fg), ('bg', bg)):

@@ -5,7 +5,7 @@ IMAGE	crateria_4_bg_image	"images/maps/crateria/bg-2.bmp"	BEST
 PALETTE	crateria_4_fg_palette	"images/maps/crateria/crateria_west_lower_foreground.png"
 PALETTE	crateria_4_bg_palette	"images/maps/crateria/bg-2.bmp"
 
-TILESET	crateria_4_fg_tileset	"images/maps/crateria/crateria_west_lower_foreground.png"	BEST
+TILESET	crateria_4_fg_tileset	"images/maps/crateria/crateria_west_lower_foreground.png"	NONE
 TILESET	crateria_4_bg_tileset	"images/maps/crateria/bg-2.bmp"	BEST
 
 MAP	crateria_4_fg_map	"images/maps/crateria/crateria_west_lower_foreground.png"	crateria_4_fg_tileset	BEST
